@@ -11,5 +11,5 @@ LazyData: true
 Imports:
     dplyr (>= 0.4.3),
     Matrix (>= 1.2-12),
-    purrr (>= 0.2.4)
+    purrr (>= 0.2.4),
     rhdf5 (>= 0.6)
