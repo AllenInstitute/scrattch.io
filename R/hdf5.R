@@ -487,7 +487,7 @@ read_gene_data_hdf5 <- function(hdf5_file,
 #' @param genes A vector of gene names to read. Required.
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
-#' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Each of these will add 1 to values before transformation. Default = "none".
+#' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
 #' @param form The format of the output. Can be "data.frame", or "matrix". Default is "data.frame".
 #'
 #' @return A data.frame with sample_name as the first column and each subsequent column
@@ -715,20 +715,22 @@ read_dttch_gene_data <- function(dttch_file,
 
 #' Read Sample Expression Data from a dttch file
 #'
-#' @param dttch_file dttch file to read
-#' @param samples A vector of sample names to read. If NULL, will read all samples.
+#' @param dttch_file dttch file to read. Required.
+#' @param samples A vector of sample names to read. Required
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
-#' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Each of these will add 1 to values before transformation. Default = "none".
+#' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
+#' @param form The format of the output. Can be "data.frame", or "matrix". Default is "data.frame".
 #'
 #' @return A data.frame with gene_name as the first column and each subsequent column
-#' containing gene expression values and named for the samples.
+#' containing gene expression values and named for the samples; Or a matrix with columns as samples and rows as genes.
 #'
 read_dttch_sample_data <- function(dttch_file,
-                                   samples = NULL,
+                                   samples,
                                    regions = "exon",
                                    type = "counts",
-                                   transform = "none") {
+                                   transform = "none",
+                                   form = "data.frame") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
@@ -781,38 +783,58 @@ read_dttch_sample_data <- function(dttch_file,
       gene_ids
     })
 
-    exon_df <- data.frame(gene_id = gene_names)
+    if(form == "data.frame") {
 
-    exon_dfs <- pmap(list(x = exon_gene_names,
-                          y = exon_values,
-                          z = samples),
-                     function(x,
-                              y,
-                              z) {
-                       if(!is.na(exon_gene_names)[1]) {
-                         df <- data.frame(gene_id = x,
-                                          values = y)
-                         names(df)[2] <- z
-                       } else {
-                         df <- NA
-                       }
-                       df
-                     })
+      exon <- data.frame(gene_id = gene_names)
+
+      exons <- pmap(list(x = exon_gene_names,
+                         y = exon_values,
+                         z = samples),
+                    function(x,
+                             y,
+                             z) {
+                      if(!is.na(exon_gene_names)[1]) {
+                        df <- data.frame(gene_id = x,
+                                         values = y)
+                        names(df)[2] <- z
+                      } else {
+                        df <- NA
+                      }
+                      df
+                    })
 
 
 
-    suppressWarnings({
-      exon_df <- reduce(c(list(exon_df), exon_dfs),
-                        left_join,
-                        by = "gene_id")
-    })
+      suppressWarnings({
+        exon <- reduce(c(list(exon), exons),
+                       left_join,
+                       by = "gene_id")
+      })
 
-    if(type == "cpm") {
-      total_exon_counts <- h5read(root, "/total_exon_counts")[sample_index]
-      exon_df[,samples] <- sweep(exon_df[,samples], 2, (total_exon_counts/1e6), "/")
+      if(type == "cpm") {
+        total_exon_counts <- h5read(root, "/total_exon_counts")[sample_index]
+        exon[,samples] <- sweep(exon[,samples], 2, (total_exon_counts/1e6), "/")
+      }
+
+      exon[is.na(exon)] <- 0
+
+    } else if(form == "matrix") {
+
+      exon <- matrix(0, nrow = length(gene_names), ncol = length(samples))
+      rownames(exon) <- gene_names
+      colnames(exon) <- samples
+      for(i in 1:length(genes)) {
+        exon[exon_gene_names[[i]], i] <- exon_values[[i]]
+      }
+
+      if(type == "cpm") {
+        total_exon_counts <- h5read(root, "/total_exon_counts")[sample_index]
+        exon <- sweep(exon, 2, (total_exon_counts/1e6), "/")
+
+      }
+
     }
 
-    exon_df[is.na(exon_df)] <- 0
 
   }
 
@@ -854,61 +876,131 @@ read_dttch_sample_data <- function(dttch_file,
       gene_ids
     })
 
-    intron_df <- data.frame(gene_id = gene_names)
+    if(form == "data.frame") {
 
-    intron_dfs <- pmap(list(x = intron_gene_names,
-                            y = intron_values,
-                            z = samples),
-                       function(x,
-                                y,
-                                z) {
-                         if(!is.na(intron_gene_names)[1]) {
-                           df <- data.frame(gene_id = x,
-                                            values = y)
-                           names(df)[2] <- z
-                         } else {
-                           df <- NA
-                         }
-                         df
-                       })
+      intron <- data.frame(gene_id = gene_names)
+
+      introns <- pmap(list(x = intron_gene_names,
+                           y = intron_values,
+                           z = samples),
+                      function(x,
+                               y,
+                               z) {
+                        if(!is.na(intron_gene_names)[1]) {
+                          df <- data.frame(gene_id = x,
+                                           values = y)
+                          names(df)[2] <- z
+                        } else {
+                          df <- NA
+                        }
+                        df
+                      })
 
 
 
-    suppressWarnings({
-      intron_df <- reduce(c(list(intron_df), intron_dfs),
-                          left_join,
-                          by = "gene_id")
-    })
+      suppressWarnings({
+        intron <- reduce(c(list(intron), introns),
+                         left_join,
+                         by = "gene_id")
+      })
 
-    if(type == "cpm") {
-      total_intron_counts <- h5read(root, "/total_intron_counts")[sample_index]
-      intron_df[,samples] <- sweep(intron_df[,samples], 2, (total_intron_counts/1e6), "/")
+      if(type == "cpm") {
+        total_intron_counts <- h5read(root, "/total_intron_counts")[sample_index]
+        intron[,samples] <- sweep(intron[,samples], 2, (total_intron_counts/1e6), "/")
+      }
+
+      intron[is.na(intron)] <- 0
+
+    } else if(form == "matrix") {
+
+      intron <- matrix(0, nrow = length(gene_names), ncol = length(samples))
+      rownames(intron) <- gene_names
+      colnames(intron) <- samples
+      for(i in 1:length(genes)) {
+        intron[intron_gene_names[[i]], i] <- intron_values[[i]]
+      }
+
+      if(type == "cpm") {
+        total_intron_counts <- h5read(root, "/total_intron_counts")[sample_index]
+        intron <- sweep(intron, 2, (total_intron_counts/1e6), "/")
+
+      }
+
     }
-
-    intron_df[is.na(intron_df)] <- 0
 
   }
 
   H5Fclose(root)
 
   if(regions == "exon") {
-    out_df <- exon_df
+    out <- exon
   } else if(regions == "intron") {
-    out_df <- intron_df
+    out <- intron
   } else if(regions == "both") {
-    out_df <- exon_df
-    out_df[,samples] <- out_df[,samples] + intron_df[,samples]
-    out_df
+    out <- exon
+    out[,samples] <- out[,samples] + intron[,samples]
+    out
   }
 
   if(transform == "log") {
-    out_df[,samples] <- log(out_df[,samples] + 1)
+    out[,samples] <- log(out[,samples] + 1)
   } else if(transform == "log2") {
-    out_df[,samples] <- log2(out_df[,samples] + 1)
+    out[,samples] <- log2(out[,samples] + 1)
   } else if(transform == "log10") {
-    out_df[,samples] <- log10(out_df[,samples] + 1)
+    out[,samples] <- log10(out[,samples] + 1)
   }
 
-  out_df
+  out
 
+}
+
+read_dttch_gene_names <- function(dttch_file) {
+  root <- H5Fopen(dttch_file)
+  gene_names <- h5read(root,"/gene_names")
+  H5Fclose(root)
+  gene_names
+}
+
+read_dttch_sample_names <- function(dttch_file) {
+  root <- H5Fopen(dttch_file)
+  sample_names <- h5read(root,"/sample_names")
+  H5Fclose(root)
+  sample_names
+}
+
+read_dttch_total_exon_counts <- function(dttch_file) {
+  root <- H5Fopen(dttch_file)
+  total_exon_counts <- h5read(root,"/total_exon_counts")
+  H5Fclose(root)
+  total_exon_counts
+}
+
+read_dttch_total_intron_counts <- function(dttch_file) {
+  root <- H5Fopen(dttch_file)
+  total_intron_counts <- h5read(root,"/total_intron_counts")
+  H5Fclose(root)
+  total_intron_counts
+}
+
+read_dttch_total_both_counts <- function(dttch_file) {
+  root <- H5Fopen(dttch_file)
+  total_exon_counts <- h5read(root,"/total_exon_counts")
+  total_intron_counts <- h5read(root,"/total_intron_counts")
+  H5Fclose(root)
+  total_both_counts <- total_exon_counts + total_intron_counts
+}
+
+read_dttch_data_dims <- function(dttch_file,
+                                 transpose = F) {
+  root <- H5Fopen(dttch_file)
+
+  if(transpose == F) {
+    dims <- h5read(root,"/exon/dims")
+  } else if(transpose == T) {
+    dims <- h5read(root,"/t_exon/dims")
+  }
+
+  H5Fclose(root)
+
+  dims
 }
