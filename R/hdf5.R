@@ -339,14 +339,14 @@ save_dttch <- function(exon_mat,
             "sample_names")
 
     print("Calculating total exon counts per sample")
-    exon_counts <- unname(unlist(apply(t_exon_mat, 2, sum)))
+    total_exon_counts <- unname(unlist(apply(t_exon_mat, 2, sum)))
     print("Writing total_exon_counts.")
     h5write(total_exon_counts,
             out_file,
             "total_exon_counts")
 
     print("Calculating total intron counts per sample")
-    exon_counts <- unname(unlist(apply(t_intron_mat, 2, sum)))
+    total_intron_counts <- unname(unlist(apply(t_intron_mat, 2, sum)))
     print("Writing total_intron_counts.")
     h5write(total_intron_counts,
             out_file,
