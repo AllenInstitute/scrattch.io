@@ -234,10 +234,10 @@ save_dttch <- function(exon_mat,
     print("Writing t_exon/x.")
     h5createDataset(out_file,
                     dataset = "t_exon/x",
-                    dims = length(t_exon_exon_mat@x),
+                    dims = length(t_exon_mat@x),
                     chunk = 1000,
                     level = compression_level)
-    h5write(t_exon_exon_mat@x,
+    h5write(t_exon_mat@x,
             out_file,
             "t_exon/x")
 
@@ -245,19 +245,19 @@ save_dttch <- function(exon_mat,
     print("Writing t_exon/i.")
     h5createDataset(out_file,
                     dataset = "t_exon/i",
-                    dims = length(t_exon_exon_mat@i),
+                    dims = length(t_exon_mat@i),
                     chunk = 1000,
                     level = compression_level)
-    h5write(t_exon_exon_mat@i,
+    h5write(t_exon_mat@i,
             out_file,
             "t_exon/i")
 
     # t_data index pointers
     print("Writing t_exon/p.")
-    h5write(t_exon_exon_mat@p,
+    h5write(t_exon_mat@p,
             out_file,
             "t_exon/p")
-    h5write(c(nrow(t_exon_exon_mat), ncol(t_exon_exon_mat)),
+    h5write(c(nrow(t_exon_mat), ncol(t_exon_mat)),
             out_file,
             "t_exon/dim")
 
@@ -300,10 +300,10 @@ save_dttch <- function(exon_mat,
     print("Writing t_intron/x.")
     h5createDataset(out_file,
                     dataset = "t_intron/x",
-                    dims = length(t_intron_intron_mat@x),
+                    dims = length(t_intron_mat@x),
                     chunk = 1000,
                     level = compression_level)
-    h5write(t_intron_intron_mat@x,
+    h5write(t_intron_mat@x,
             out_file,
             "t_intron/x")
 
@@ -311,19 +311,19 @@ save_dttch <- function(exon_mat,
     print("Writing t_intron/i.")
     h5createDataset(out_file,
                     dataset = "t_intron/i",
-                    dims = length(t_intron_intron_mat@i),
+                    dims = length(t_intron_mat@i),
                     chunk = 1000,
                     level = compression_level)
-    h5write(t_intron_intron_mat@i,
+    h5write(t_intron_mat@i,
             out_file,
             "t_intron/i")
 
     # t_data index pointers
     print("Writing t_intron/p.")
-    h5write(t_intron_intron_mat@p,
+    h5write(t_intron_mat@p,
             out_file,
             "t_intron/p")
-    h5write(c(nrow(t_intron_intron_mat), ncol(t_intron_intron_mat)),
+    h5write(c(nrow(t_intron_mat), ncol(t_intron_mat)),
             out_file,
             "t_intron/dim")
 
