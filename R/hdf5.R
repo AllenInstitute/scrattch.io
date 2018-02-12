@@ -177,13 +177,13 @@ save_dttch <- function(exon_mat,
   if(grepl("sample",cols_are) | grepl("cell",cols_are)) {
     print("Columns are samples; Rows are genes. Matrices will be transposed.")
     t_exon_mat <- exon_mat
-    exon_mat <- t(exon_mat)
+    exon_mat <- Matrix::t(exon_mat)
     t_intron_mat <- intron_mat
-    intron_mat <- t(intron_mat)
+    intron_mat <- Matrix::t(intron_mat)
   } else {
     print("Columns are genes; Rows are samples. Matrices will be used as-is.")
-    t_exon_mat <- t(exon_mat)
-    t_intron_mat <- t(intron_mat)
+    t_exon_mat <- Matrix::t(exon_mat)
+    t_intron_mat <- Matrix::t(intron_mat)
   }
 
   root <- H5Fopen(out_file, flags = "H5F_ACC_RDWR")
