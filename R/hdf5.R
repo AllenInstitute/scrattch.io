@@ -493,7 +493,7 @@ read_gene_data_hdf5 <- function(hdf5_file,
 #' containing gene expression values and named for the genes.
 #'
 read_dttch_gene_data <- function(dttch_file,
-                                 genes,
+                                 genes = NULL,
                                  regions = "exon",
                                  type = "counts",
                                  transform = "none") {
@@ -504,6 +504,10 @@ read_dttch_gene_data <- function(dttch_file,
   root <- H5Fopen(dttch_file)
   gene_names <- h5read(root,"/gene_names")
   sample_names <- h5read(root,"/sample_names")
+
+  if(is.null(genes)) {
+    genes <- gene_names
+  }
 
   gene_index <- match(genes, gene_names)
 
@@ -689,7 +693,7 @@ read_dttch_gene_data <- function(dttch_file,
 #' containing gene expression values and named for the samples.
 #'
 read_dttch_sample_data <- function(dttch_file,
-                                   samples,
+                                   samples = NULL,
                                    regions = "exon",
                                    type = "counts",
                                    transform = "none") {
@@ -700,6 +704,10 @@ read_dttch_sample_data <- function(dttch_file,
   root <- H5Fopen(dttch_file)
   sample_names <- h5read(root,"/sample_names")
   gene_names <- h5read(root,"/gene_names")
+
+  if(is.null(samples)) {
+    samples <- sample_names
+  }
 
   sample_index <- match(samples, sample_names)
 
