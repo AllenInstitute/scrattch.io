@@ -151,8 +151,9 @@ save_dttch <- function(exon_mat,
                        out_file = "counts.dttch",
                        cols_are = "sample_id",
                        overwrite = F,
-                       compression_level = 0) {
+                       compression_level = 4) {
 
+  library(Matrix)
   library(rhdf5)
 
   # Modified from cellrangerRkit
