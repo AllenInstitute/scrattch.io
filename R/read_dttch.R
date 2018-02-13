@@ -529,3 +529,32 @@ ls_dttch <- function(dttch_file) {
   H5Fclose(root)
   ls
 }
+
+read_dttch_anno <- function(dttch_file,
+                            groups = NULL) {
+
+  library(rhdf5)
+  library(purrr)
+
+  H5close()
+
+  ls <- h5ls(dttch_file)
+
+  annos <- ls$name[ls$group == "/sample_meta/anno"]
+
+  if(!is.null(groups)) {
+    if(length(groups) > 1) {
+      groups <- paste(groups, collapse = "|")
+    }
+    annos <- c("sample_name", annos[grepl(groups, annos)])
+  }
+
+  annos <- c("sample_name",annos[annos != "sample_name"])
+
+  anno <- map(annos, function(x) h5read(dttch_file,
+                                        paste0("/sample_meta/anno/",x)))
+  names(anno) <- annos
+  anno <- as.data.frame(anno)
+  anno
+
+}

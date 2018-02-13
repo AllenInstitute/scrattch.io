@@ -11,7 +11,7 @@
 write_dttch_data <- function(exon_mat = NULL,
                              intron_mat = NULL,
                              out_file = "counts.dttch",
-                             cols_are = "sample_id",
+                             cols_are = "sample_name",
                              overwrite = F,
                              compression_level = 4) {
 
@@ -255,5 +255,110 @@ write_dttch_data <- function(exon_mat = NULL,
   }
 
   H5close()
+
+}
+
+#' Write an annotations table to a dttch file.
+#'
+#' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
+#' @param out_file The dttch file to write to
+#' @param mode The write mode. "replace" will remove existing annotations and replace it with anno. "add" will only add columns not already found. Default = "add".
+#'
+write_dttch_anno <- function(anno,
+                             out_file,
+                             mode = "add") {
+
+  library(rhdf5)
+  library(purrr)
+
+  H5close()
+
+  if(names(anno)[1] == "sample_id") {
+    names(anno)[1] <- "sample_name"
+  }
+
+  if(!file.exists(out_file)) {
+    print(paste0(out_file," doesn't exist. Creating new file."))
+    h5createFile(out_file)
+    H5close()
+  }
+
+  ls <- h5ls(out_file) %>%
+    mutate(full_name = paste0(group, name))
+
+  # check for sample_meta
+  if(!"/sample_meta" %in% ls$group) {
+    print("Creating Group /sample_meta")
+    h5createGroup(out_file, "/sample_meta")
+  }
+
+  # check for anno
+  if(!"/sample_meta/anno" %in% ls$group) {
+    print("Creating Group /sample_meta/anno")
+    h5createGroup(out_file, "/sample_meta/anno")
+  }
+
+  existing_anno <- ls %>% filter(group == "/sample_meta/anno")
+  anno_cols <- names(anno)
+
+  # If overwrite, remove everything
+  if(mode == "replace") {
+    print("Removing existing /sample_meta/anno")
+
+    existing_anno <- ls %>% filter(group == "/sample_meta/anno")
+    print(nrow(existing_anno))
+    if(nrow(existing_anno) > 0) {
+      walk(existing_anno$full_name,
+           function(x) {
+             h5_delete(out_file, x)
+           }
+      )
+    }
+
+    print("Writing /sample_meta/anno")
+    walk(anno_cols, function(x) {
+      target <- paste0("/sample_meta/anno/",x)
+      h5write(anno[[x]],
+              out_file,
+              target)
+    })
+
+  } else if(mode == "add") {
+
+    if(nrow(existing_anno) > 0) {
+      anno_cols <- anno_cols[!anno_cols %in% existing_anno$name]
+
+      if(length(anno_cols) > 0) {
+        print(paste0("Adding columns ", paste(anno_cols, collapse = ", "), " to /sample_meta/anno."))
+
+        # Order to match existing annotations
+        existing_sample_names <- h5read(out_file, "/sample_meta/anno/sample_name")
+
+        anno <- anno %>%
+          select(one_of("sample_name", anno_cols))
+
+        anno <- anno[match(anno$sample_name, existing_sample_names),]
+
+        # Write the new columns
+        walk(anno_cols, function(x) {
+          target <- paste0("/sample_meta/anno/",x)
+          h5write(anno[[x]],
+                  out_file,
+                  target)
+        })
+      } else {
+        print("No new columns to add. If you want to replace values, try mode = 'replace' to replace the whole anno table.")
+      }
+    } else {
+      print("Writing /sample_meta/anno")
+      anno_cols <- names(anno)
+      walk(anno_cols, function(x) {
+        target <- paste0("/sample_meta/anno/",x)
+        h5write(anno[[x]],
+                out_file,
+                target)
+      })
+    }
+  }
 
 }
