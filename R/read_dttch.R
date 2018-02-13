@@ -523,13 +523,11 @@ read_dttch_data_dims <- function(dttch_file,
   dims
 }
 
-ls_dttch <- function(dttch_file) {
-  root <- H5Fopen(dttch_file)
-  ls <- h5ls(root)
-  H5Fclose(root)
-  ls
-}
-
+#' Read annotations table from a dttch file
+#'
+#' @param dttch_file The location of the dttch file to read.
+#' @param groups The groups to read - matches column names using grep. Can provide multiple with c(). If NULL, will get all columns. Default is NULL.
+#'
 read_dttch_anno <- function(dttch_file,
                             groups = NULL) {
 
