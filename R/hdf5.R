@@ -238,7 +238,7 @@ write_dttch_data <- function(exon_mat = NULL,
 
       h5write(c(nrow(exon_mat), ncol(exon_mat)),
               out_file,
-              "exon/dim")
+              "exon/dims")
 
       # Rows = Genes, Columns = Samples (Fast sample retrieval)
 
@@ -271,7 +271,7 @@ write_dttch_data <- function(exon_mat = NULL,
               "t_exon/p")
       h5write(c(nrow(t_exon_mat), ncol(t_exon_mat)),
               out_file,
-              "t_exon/dim")
+              "t_exon/dims")
     })
   }
 
@@ -312,7 +312,7 @@ write_dttch_data <- function(exon_mat = NULL,
 
       h5write(c(nrow(intron_mat), ncol(intron_mat)),
               out_file,
-              "intron/dim")
+              "intron/dims")
 
       # Rows = Genes, Columns = Samples (Fast sample retrieval)
 
@@ -345,7 +345,7 @@ write_dttch_data <- function(exon_mat = NULL,
               "t_intron/p")
       h5write(c(nrow(t_intron_mat), ncol(t_intron_mat)),
               out_file,
-              "t_intron/dim")
+              "t_intron/dims")
     })
   }
 
