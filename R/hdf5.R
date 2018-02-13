@@ -222,3 +222,15 @@ read_gene_data_hdf5 <- function(hdf5_file,
 
   out_df
 }
+
+#' Unlink an HDF5 object
+#'
+#' @param h5_file The HDF5 file to edit.
+#' @param h5_object The full name of the object within the HDF5 file to unlink.
+#'
+h5_delete <- function(h5_file,
+                      h5_object) {
+  f <- h5::h5file(h5_file)
+  h5::h5unlink(f, h5_object)
+  h5::h5close(f)
+}
