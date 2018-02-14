@@ -1,7 +1,7 @@
 
-#' Read Gene Expression Data from a dttch file
+#' Read Gene Expression Data from a tome file
 #'
-#' @param dttch_file dttch file to read. Required.
+#' @param tome_file tome file to read. Required.
 #' @param genes A vector of gene names to read. Required.
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
@@ -11,7 +11,7 @@
 #' @return A data.frame with sample_name as the first column and each subsequent column
 #' containing gene expression values and named for the genes; Or a matrix with columns as genes and rows as samples.
 #'
-read_dttch_gene_data <- function(dttch_file,
+read_tome_gene_data <- function(tome_file,
                                  genes,
                                  regions = "exon",
                                  type = "counts",
@@ -22,7 +22,7 @@ read_dttch_gene_data <- function(dttch_file,
   library(dplyr)
   library(Matrix)
 
-  root <- H5Fopen(dttch_file)
+  root <- H5Fopen(tome_file)
   gene_names <- h5read(root,"/gene_names")
   sample_names <- h5read(root,"/sample_names")
 
@@ -231,9 +231,9 @@ read_dttch_gene_data <- function(dttch_file,
 
 }
 
-#' Read Sample Expression Data from a dttch file
+#' Read Sample Expression Data from a tome file
 #'
-#' @param dttch_file dttch file to read. Required.
+#' @param tome_file tome file to read. Required.
 #' @param samples A vector of sample names to read. Required
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
@@ -243,7 +243,7 @@ read_dttch_gene_data <- function(dttch_file,
 #' @return A data.frame with gene_name as the first column and each subsequent column
 #' containing gene expression values and named for the samples; Or a matrix with columns as samples and rows as genes.
 #'
-read_dttch_sample_data <- function(dttch_file,
+read_tome_sample_data <- function(tome_file,
                                    samples,
                                    regions = "exon",
                                    type = "counts",
@@ -253,7 +253,7 @@ read_dttch_sample_data <- function(dttch_file,
   library(purrr)
   library(dplyr)
 
-  root <- H5Fopen(dttch_file)
+  root <- H5Fopen(tome_file)
   sample_names <- h5read(root,"/sample_names")
   gene_names <- h5read(root,"/gene_names")
 
@@ -472,45 +472,49 @@ read_dttch_sample_data <- function(dttch_file,
 
 }
 
-read_dttch_gene_names <- function(dttch_file) {
-  root <- H5Fopen(dttch_file)
+#' Get all gene names in a tome file
+#'
+#' @param tome file.
+#'
+read_tome_gene_names <- function(tome_file) {
+  root <- H5Fopen(tome_file)
   gene_names <- h5read(root,"/gene_names")
   H5Fclose(root)
   gene_names
 }
 
-read_dttch_sample_names <- function(dttch_file) {
-  root <- H5Fopen(dttch_file)
+read_tome_sample_names <- function(tome_file) {
+  root <- H5Fopen(tome_file)
   sample_names <- h5read(root,"/sample_names")
   H5Fclose(root)
   sample_names
 }
 
-read_dttch_total_exon_counts <- function(dttch_file) {
-  root <- H5Fopen(dttch_file)
+read_tome_total_exon_counts <- function(tome_file) {
+  root <- H5Fopen(tome_file)
   total_exon_counts <- h5read(root,"/total_exon_counts")
   H5Fclose(root)
   total_exon_counts
 }
 
-read_dttch_total_intron_counts <- function(dttch_file) {
-  root <- H5Fopen(dttch_file)
+read_tome_total_intron_counts <- function(tome_file) {
+  root <- H5Fopen(tome_file)
   total_intron_counts <- h5read(root,"/total_intron_counts")
   H5Fclose(root)
   total_intron_counts
 }
 
-read_dttch_total_both_counts <- function(dttch_file) {
-  root <- H5Fopen(dttch_file)
+read_tome_total_both_counts <- function(tome_file) {
+  root <- H5Fopen(tome_file)
   total_exon_counts <- h5read(root,"/total_exon_counts")
   total_intron_counts <- h5read(root,"/total_intron_counts")
   H5Fclose(root)
   total_both_counts <- total_exon_counts + total_intron_counts
 }
 
-read_dttch_data_dims <- function(dttch_file,
+read_tome_data_dims <- function(tome_file,
                                  transpose = F) {
-  root <- H5Fopen(dttch_file)
+  root <- H5Fopen(tome_file)
 
   if(transpose == F) {
     dims <- h5read(root,"/exon/dims")
@@ -523,12 +527,12 @@ read_dttch_data_dims <- function(dttch_file,
   dims
 }
 
-#' Read annotations table from a dttch file
+#' Read annotations table from a tome file
 #'
-#' @param dttch_file The location of the dttch file to read.
+#' @param tome_file The location of the tome file to read.
 #' @param groups The groups to read - matches column names using grep. Can provide multiple with c(). If NULL, will get all columns. Default is NULL.
 #'
-read_dttch_anno <- function(dttch_file,
+read_tome_anno <- function(tome_file,
                             groups = NULL) {
 
   library(rhdf5)
@@ -536,7 +540,7 @@ read_dttch_anno <- function(dttch_file,
 
   H5close()
 
-  ls <- h5ls(dttch_file)
+  ls <- h5ls(tome_file)
 
   annos <- ls$name[ls$group == "/sample_meta/anno"]
 
@@ -549,7 +553,7 @@ read_dttch_anno <- function(dttch_file,
 
   annos <- c("sample_name",annos[annos != "sample_name"])
 
-  anno <- map(annos, function(x) h5read(dttch_file,
+  anno <- map(annos, function(x) h5read(tome_file,
                                         paste0("/sample_meta/anno/",x)))
   names(anno) <- annos
   anno <- as.data.frame(anno)

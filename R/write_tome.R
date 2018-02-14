@@ -1,5 +1,5 @@
 
-#' Save a both exon and intron counts to an HDF5 file (dttch)
+#' Save a both exon and intron counts to an HDF5 file (tome)
 #'
 #' @param exon_mat The exon matrix to store in dgCMatrix format
 #' @param intron_mat The intron matrix to store in dgCMatrix format
@@ -8,9 +8,9 @@
 #' @param overwrite Whether or not to overwrite an existing out_file
 #' @param compression_level The data compression level for large HDF5 matrix objects. default = 4.
 #'
-write_dttch_data <- function(exon_mat = NULL,
+write_tome_data <- function(exon_mat = NULL,
                              intron_mat = NULL,
-                             out_file = "counts.dttch",
+                             out_file = "counts.tome",
                              cols_are = "sample_name",
                              overwrite = F,
                              compression_level = 4) {
@@ -258,13 +258,13 @@ write_dttch_data <- function(exon_mat = NULL,
 
 }
 
-#' Write an annotations table to a dttch file.
+#' Write an annotations table to a tome file.
 #'
 #' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
-#' @param out_file The dttch file to write to
+#' @param out_file The tome file to write to
 #' @param mode The write mode. "replace" will remove existing annotations and replace it with anno. "add" will only add columns not already found. Default = "add".
 #'
-write_dttch_anno <- function(anno,
+write_tome_anno <- function(anno,
                              out_file,
                              mode = "add") {
 
