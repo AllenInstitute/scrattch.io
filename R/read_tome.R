@@ -1,7 +1,7 @@
 
 #' Read Gene Expression Data from a tome file
 #'
-#' @param tome_file tome file to read. Required.
+#' @param tome tome file to read. Required.
 #' @param genes A vector of gene names to read. Required.
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
@@ -11,18 +11,18 @@
 #' @return A data.frame with sample_name as the first column and each subsequent column
 #' containing gene expression values and named for the genes; Or a matrix with columns as genes and rows as samples.
 #'
-read_tome_gene_data <- function(tome_file,
-                                 genes,
-                                 regions = "exon",
-                                 type = "counts",
-                                 transform = "none",
-                                 form = "data.frame") {
+read_tome_gene_data <- function(tome,
+                                genes,
+                                regions = "exon",
+                                type = "counts",
+                                transform = "none",
+                                form = "data.frame") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
   library(Matrix)
 
-  root <- H5Fopen(tome_file)
+  root <- H5Fopen(tome)
   gene_names <- h5read(root,"/gene_names")
   sample_names <- h5read(root,"/sample_names")
 
@@ -233,7 +233,7 @@ read_tome_gene_data <- function(tome_file,
 
 #' Read Sample Expression Data from a tome file
 #'
-#' @param tome_file tome file to read. Required.
+#' @param tome tome file to read. Required.
 #' @param samples A vector of sample names to read. Required
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
@@ -243,17 +243,17 @@ read_tome_gene_data <- function(tome_file,
 #' @return A data.frame with gene_name as the first column and each subsequent column
 #' containing gene expression values and named for the samples; Or a matrix with columns as samples and rows as genes.
 #'
-read_tome_sample_data <- function(tome_file,
-                                   samples,
-                                   regions = "exon",
-                                   type = "counts",
-                                   transform = "none",
-                                   form = "data.frame") {
+read_tome_sample_data <- function(tome,
+                                  samples,
+                                  regions = "exon",
+                                  type = "counts",
+                                  transform = "none",
+                                  form = "data.frame") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
 
-  root <- H5Fopen(tome_file)
+  root <- H5Fopen(tome)
   sample_names <- h5read(root,"/sample_names")
   gene_names <- h5read(root,"/gene_names")
 
@@ -474,47 +474,47 @@ read_tome_sample_data <- function(tome_file,
 
 #' Get all gene names in a tome file
 #'
-#' @param tome file.
+#' @param tome Tome file to read.
 #'
-read_tome_gene_names <- function(tome_file) {
-  root <- H5Fopen(tome_file)
+read_tome_gene_names <- function(tome) {
+  root <- H5Fopen(tome)
   gene_names <- h5read(root,"/gene_names")
   H5Fclose(root)
   gene_names
 }
 
-read_tome_sample_names <- function(tome_file) {
-  root <- H5Fopen(tome_file)
+read_tome_sample_names <- function(tome) {
+  root <- H5Fopen(tome)
   sample_names <- h5read(root,"/sample_names")
   H5Fclose(root)
   sample_names
 }
 
-read_tome_total_exon_counts <- function(tome_file) {
-  root <- H5Fopen(tome_file)
+read_tome_total_exon_counts <- function(tome) {
+  root <- H5Fopen(tome)
   total_exon_counts <- h5read(root,"/total_exon_counts")
   H5Fclose(root)
   total_exon_counts
 }
 
-read_tome_total_intron_counts <- function(tome_file) {
-  root <- H5Fopen(tome_file)
+read_tome_total_intron_counts <- function(tome) {
+  root <- H5Fopen(tome)
   total_intron_counts <- h5read(root,"/total_intron_counts")
   H5Fclose(root)
   total_intron_counts
 }
 
-read_tome_total_both_counts <- function(tome_file) {
-  root <- H5Fopen(tome_file)
+read_tome_total_both_counts <- function(tome) {
+  root <- H5Fopen(tome)
   total_exon_counts <- h5read(root,"/total_exon_counts")
   total_intron_counts <- h5read(root,"/total_intron_counts")
   H5Fclose(root)
   total_both_counts <- total_exon_counts + total_intron_counts
 }
 
-read_tome_data_dims <- function(tome_file,
-                                 transpose = F) {
-  root <- H5Fopen(tome_file)
+read_tome_data_dims <- function(tome,
+                                transpose = F) {
+  root <- H5Fopen(tome)
 
   if(transpose == F) {
     dims <- h5read(root,"/exon/dims")
@@ -529,18 +529,18 @@ read_tome_data_dims <- function(tome_file,
 
 #' Read annotations table from a tome file
 #'
-#' @param tome_file The location of the tome file to read.
+#' @param tome The location of the tome file to read.
 #' @param groups The groups to read - matches column names using grep. Can provide multiple with c(). If NULL, will get all columns. Default is NULL.
 #'
-read_tome_anno <- function(tome_file,
-                            groups = NULL) {
+read_tome_anno <- function(tome,
+                           groups = NULL) {
 
   library(rhdf5)
   library(purrr)
 
   H5close()
 
-  ls <- h5ls(tome_file)
+  ls <- h5ls(tome)
 
   annos <- ls$name[ls$group == "/sample_meta/anno"]
 
@@ -553,7 +553,7 @@ read_tome_anno <- function(tome_file,
 
   annos <- c("sample_name",annos[annos != "sample_name"])
 
-  anno <- map(annos, function(x) h5read(tome_file,
+  anno <- map(annos, function(x) h5read(tome,
                                         paste0("/sample_meta/anno/",x)))
   names(anno) <- annos
   anno <- as.data.frame(anno)
