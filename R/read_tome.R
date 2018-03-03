@@ -22,201 +22,34 @@ read_tome_gene_data <- function(tome,
   library(dplyr)
   library(Matrix)
 
-  root <- H5Fopen(tome)
-  gene_names <- h5read(root,"/gene_names")
-  sample_names <- h5read(root,"/sample_names")
+  jagged <- read_tome_genes_jagged(tome,
+                                     genes,
+                                     regions)
 
-  gene_index <- match(genes, gene_names)
-
-  ## Exon values
-  if(regions == "exon" | regions == "both") {
-
-    exon_starts <- h5read(root, "/exon/p")[gene_index] + 1
-    exon_ends <- h5read(root, "/exon/p")[(gene_index + 1)]
-
-    exon_values <- map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/exon/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    exon_sample_indexes <- map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/exon/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    exon_sample_names <- map(exon_sample_indexes, function(exon_indexes) {
-      if(length(exon_indexes) == 1) {
-        if(!is.na(exon_indexes)) {
-          sample_names <- NA
-        } else {
-          # R-like indexing; Previous Python-like indexing +1
-          sample_names <- sample_names[exon_indexes + 1]
-        }
-      } else {
-        sample_names <- sample_names[exon_indexes + 1]
-      }
-      sample_names
-    })
-
-    if(form == "data.frame") {
-      exon <- data.frame(sample_name = sample_names)
-
-      exons <- pmap(list(x = exon_sample_names,
-                         y = exon_values,
-                         z = genes),
-                    function(x,
-                             y,
-                             z) {
-                      if(!is.na(exon_sample_names)[1]) {
-                        df <- data.frame(sample_name = x,
-                                         values = y)
-                        names(df)[2] <- z
-                      } else {
-                        df <- NA
-                      }
-                      df
-                    })
-
-      suppressWarnings({
-        exon <- reduce(c(list(exon), exons),
-                       left_join,
-                       by = "sample_name")
-      })
-
-      if(type == "cpm") {
-        total_exon_counts <- h5read(root, "/total_exon_counts")
-        exon[,genes] <- exon[,genes]/(total_exon_counts/1e6)
-      }
-
-      exon[is.na(exon)] <- 0
-    } else if(form == "matrix") {
-
-      exon <- matrix(0, nrow = length(sample_names), ncol = length(genes))
-      rownames(exon) <- sample_names
-      colnames(exon) <- genes
-      for(i in 1:length(genes)) {
-        exon[exon_sample_names[[i]], i] <- exon_values[[i]]
-      }
-
-      if(type == "cpm") {
-        total_exon_counts <- h5read(root, "/total_exon_counts")
-        exon <- apply(exon, 2, function(x) x/(total_exon_counts/1e6))
-        rownames(exon) <- sample_names
-      }
-
-    }
-
-
-
+  if(format == "data.frame") {
+    out <- jagged_to_data.frame(jagged,
+                                rows = "sample_names",
+                                cols = "gene_names")
+  } else if(format == "matrix") {
+    out <- jagged_to_matrix(jagged,
+                            rows = "sample_names",
+                            cols = "gene_names")
+  } else if(format == "dgCMatrix") {
+    out <- jagged_to_dgCMatrix(jagged,
+                               rows = "sample_names",
+                               cols = "gene_names")
   }
 
-  ## Intron values
-  if(regions == "intron" | regions == "both") {
+  if(type == "cpm") {
 
-    intron_starts <- h5read(root, "/intron/p")[gene_index] + 1
-    intron_ends <- h5read(root, "/intron/p")[(gene_index + 1)]
-
-    intron_values <- map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/intron/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    intron_sample_indexes <- map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/intron/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    intron_sample_names <- map(intron_sample_indexes, function(intron_indexes) {
-      if(length(intron_indexes) == 1) {
-        if(!is.na(intron_indexes)) {
-          sample_names <- NA
-        } else {
-          # R-like indexing; Previous Python-like indexing +1
-          sample_names <- sample_names[intron_indexes + 1]
-        }
-      } else {
-        sample_names <- sample_names[intron_indexes + 1]
-      }
-      sample_names
-    })
-
-    if(form == "data.frame") {
-      intron <- data.frame(sample_name = sample_names)
-
-      introns <- pmap(list(x = intron_sample_names,
-                           y = intron_values,
-                           z = genes),
-                      function(x,
-                               y,
-                               z) {
-                        if(!is.na(intron_sample_names)[1]) {
-                          df <- data.frame(sample_name = x,
-                                           values = y)
-                          names(df)[2] <- z
-                        } else {
-                          df <- NA
-                        }
-                        df
-                      })
-
-      suppressWarnings({
-        intron <- reduce(c(list(intron), introns),
-                         left_join,
-                         by = "sample_name")
-      })
-
-      if(type == "cpm") {
-        total_intron_counts <- h5read(root, "/total_intron_counts")
-        intron[,genes] <- intron[,genes]/(total_intron_counts/1e6)
-      }
-
-      intron[is.na(intron)] <- 0
-
-    } else if(form == "matrix") {
-
-      intron <- matrix(0, nrow = length(sample_names), ncol = length(genes))
-      rownames(intron) <- sample_names
-      colnames(intron) <- genes
-      for(i in 1:length(genes)) {
-        intron[intron_sample_names[[i]], i] <- intron_values[[i]]
-      }
-
-      if(type == "cpm") {
-        total_intron_counts <- h5read(root, "/total_intron_counts")
-        intron <- apply(intron, 2, function(x) x/(total_intron_counts/1e6))
-        rownames(intron) <- sample_names
-      }
-
+    if(regions == "exon") {
+      total_counts <- h5read(root, "/data/total_exon_counts")
+    } else if(regions == "intron") {
+      total_counts <- h5read(root, "/data/total_intron_counts")
+    } else if(regions == "both") {
+      total_counts <- h5read(root, "/data/total_exon_counts") + h5read(root, "/data/total_intron_counts")
     }
-
-  }
-
-  H5Fclose(root)
-
-  if(regions == "exon") {
-    out <- exon
-  } else if(regions == "intron") {
-    out <- intron
-  } else if(regions == "both") {
-    out <- exon
-    out[,genes] <- out[,genes] + intron[,genes]
-    out
+    out[,genes] <- out[,genes]/(total_counts/1e6)
   }
 
   if(transform == "log") {
@@ -238,7 +71,7 @@ read_tome_gene_data <- function(tome,
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
 #' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
-#' @param form The format of the output. Can be "data.frame", or "matrix". Default is "data.frame".
+#' @param format The format of the output. Can be "data.frame", "matrix", or "dgCMatrix". Default is "data.frame".
 #'
 #' @return A data.frame with gene_name as the first column and each subsequent column
 #' containing gene expression values and named for the samples; Or a matrix with columns as samples and rows as genes.
@@ -248,216 +81,41 @@ read_tome_sample_data <- function(tome,
                                   regions = "exon",
                                   type = "counts",
                                   transform = "none",
-                                  form = "data.frame") {
+                                  format = "data.frame") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
 
-  root <- H5Fopen(tome)
-  sample_names <- h5read(root,"/sample_names")
-  gene_names <- h5read(root,"/gene_names")
+  jagged <- read_tome_samples_jagged(tome,
+                                     samples,
+                                     regions)
 
-  if(is.null(samples)) {
-    samples <- sample_names
+  if(format == "data.frame") {
+    out <- jagged_to_data.frame(jagged,
+                                rows = "gene_names",
+                                cols = "sample_names")
+  } else if(format == "matrix") {
+    out <- jagged_to_matrix(jagged,
+                            rows = "gene_names",
+                            cols = "sample_names")
+  } else if(format == "dgCMatrix") {
+    out <- jagged_to_dgCMatrix(jagged,
+                               rows = "gene_names",
+                               cols = "sample_names")
   }
 
-  sample_index <- match(samples, sample_names)
+  if(type == "cpm") {
+    sample_names <- h5read(root,"/sample_names")
+    sample_index <- match(samples, sample_names)
 
-  ## Exon values
-  if(regions == "exon" | regions == "both") {
-
-    exon_starts <- h5read(root, "/t_exon/p")[sample_index] + 1
-    exon_ends <- h5read(root, "/t_exon/p")[(sample_index + 1)]
-
-    exon_values <- map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/t_exon/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    exon_gene_indexes <- map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/t_exon/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    exon_gene_names <- map(exon_gene_indexes, function(exon_indexes) {
-      if(length(exon_indexes) == 1) {
-        if(!is.na(exon_indexes)) {
-          gene_ids <- NA
-        } else {
-          # R-like indexing; Previous Python-like indexing +1
-          gene_ids <- gene_names[exon_indexes + 1]
-        }
-      } else {
-        gene_ids <- gene_names[exon_indexes + 1]
-      }
-      gene_ids
-    })
-
-    if(form == "data.frame") {
-
-      exon <- data.frame(gene_id = gene_names)
-
-      exons <- pmap(list(x = exon_gene_names,
-                         y = exon_values,
-                         z = samples),
-                    function(x,
-                             y,
-                             z) {
-                      if(!is.na(exon_gene_names)[1]) {
-                        df <- data.frame(gene_id = x,
-                                         values = y)
-                        names(df)[2] <- z
-                      } else {
-                        df <- NA
-                      }
-                      df
-                    })
-
-
-
-      suppressWarnings({
-        exon <- reduce(c(list(exon), exons),
-                       left_join,
-                       by = "gene_id")
-      })
-
-      if(type == "cpm") {
-        total_exon_counts <- h5read(root, "/total_exon_counts")[sample_index]
-        exon[,samples] <- sweep(exon[,samples], 2, (total_exon_counts/1e6), "/")
-      }
-
-      exon[is.na(exon)] <- 0
-
-    } else if(form == "matrix") {
-
-      exon <- matrix(0, nrow = length(gene_names), ncol = length(samples))
-      rownames(exon) <- gene_names
-      colnames(exon) <- samples
-      for(i in 1:length(genes)) {
-        exon[exon_gene_names[[i]], i] <- exon_values[[i]]
-      }
-
-      if(type == "cpm") {
-        total_exon_counts <- h5read(root, "/total_exon_counts")[sample_index]
-        exon <- sweep(exon, 2, (total_exon_counts/1e6), "/")
-
-      }
-
+    if(regions == "exon") {
+      total_counts <- h5read(root, "/data/total_exon_counts")[sample_index]
+    } else if(regions == "intron") {
+      total_counts <- h5read(root, "/data/total_intron_counts")[sample_index]
+    } else if(regions == "both") {
+      total_counts <- h5read(root, "/data/total_exon_counts")[sample_index] + h5read(root, "/data/total_intron_counts")[sample_index]
     }
-
-
-  }
-
-  ## Intron values
-  if(regions == "intron" | regions == "both") {
-
-    intron_starts <- h5read(root, "/t_intron/p")[sample_index] + 1
-    intron_ends <- h5read(root, "/t_intron/p")[(sample_index + 1)]
-
-    intron_values <- map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/t_intron/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    intron_gene_indexes <- map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- h5read(root, "/t_intron/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
-
-    intron_gene_names <- map(intron_gene_indexes, function(intron_indexes) {
-      if(length(intron_indexes) == 1) {
-        if(!is.na(intron_indexes)) {
-          gene_ids <- NA
-        } else {
-          # R-like indexing; Previous Python-like indexing +1
-          gene_ids <- gene_names[intron_indexes + 1]
-        }
-      } else {
-        gene_ids <- gene_names[intron_indexes + 1]
-      }
-      gene_ids
-    })
-
-    if(form == "data.frame") {
-
-      intron <- data.frame(gene_id = gene_names)
-
-      introns <- pmap(list(x = intron_gene_names,
-                           y = intron_values,
-                           z = samples),
-                      function(x,
-                               y,
-                               z) {
-                        if(!is.na(intron_gene_names)[1]) {
-                          df <- data.frame(gene_id = x,
-                                           values = y)
-                          names(df)[2] <- z
-                        } else {
-                          df <- NA
-                        }
-                        df
-                      })
-
-
-
-      suppressWarnings({
-        intron <- reduce(c(list(intron), introns),
-                         left_join,
-                         by = "gene_id")
-      })
-
-      if(type == "cpm") {
-        total_intron_counts <- h5read(root, "/total_intron_counts")[sample_index]
-        intron[,samples] <- sweep(intron[,samples], 2, (total_intron_counts/1e6), "/")
-      }
-
-      intron[is.na(intron)] <- 0
-
-    } else if(form == "matrix") {
-
-      intron <- matrix(0, nrow = length(gene_names), ncol = length(samples))
-      rownames(intron) <- gene_names
-      colnames(intron) <- samples
-      for(i in 1:length(genes)) {
-        intron[intron_gene_names[[i]], i] <- intron_values[[i]]
-      }
-
-      if(type == "cpm") {
-        total_intron_counts <- h5read(root, "/total_intron_counts")[sample_index]
-        intron <- sweep(intron, 2, (total_intron_counts/1e6), "/")
-
-      }
-
-    }
-
-  }
-
-  H5Fclose(root)
-
-  if(regions == "exon") {
-    out <- exon
-  } else if(regions == "intron") {
-    out <- intron
-  } else if(regions == "both") {
-    out <- exon
-    out[,samples] <- out[,samples] + intron[,samples]
-    out
+    out[,samples] <- sweep(out[,samples], 2, (total_counts/1e6), "/")
   }
 
   if(transform == "log") {
@@ -492,22 +150,22 @@ read_tome_sample_names <- function(tome) {
 
 read_tome_total_exon_counts <- function(tome) {
   root <- H5Fopen(tome)
-  total_exon_counts <- h5read(root,"/total_exon_counts")
+  total_exon_counts <- h5read(root,"data/total_exon_counts")
   H5Fclose(root)
   total_exon_counts
 }
 
 read_tome_total_intron_counts <- function(tome) {
   root <- H5Fopen(tome)
-  total_intron_counts <- h5read(root,"/total_intron_counts")
+  total_intron_counts <- h5read(root,"data/total_intron_counts")
   H5Fclose(root)
   total_intron_counts
 }
 
 read_tome_total_both_counts <- function(tome) {
   root <- H5Fopen(tome)
-  total_exon_counts <- h5read(root,"/total_exon_counts")
-  total_intron_counts <- h5read(root,"/total_intron_counts")
+  total_exon_counts <- h5read(root,"data/total_exon_counts")
+  total_intron_counts <- h5read(root,"data/total_intron_counts")
   H5Fclose(root)
   total_both_counts <- total_exon_counts + total_intron_counts
 }
@@ -517,9 +175,9 @@ read_tome_data_dims <- function(tome,
   root <- H5Fopen(tome)
 
   if(transpose == F) {
-    dims <- h5read(root,"/exon/dims")
+    dims <- h5read(root,"data/exon/dims")
   } else if(transpose == T) {
-    dims <- h5read(root,"/t_exon/dims")
+    dims <- h5read(root,"data/t_exon/dims")
   }
 
   H5Fclose(root)
@@ -562,11 +220,9 @@ read_tome_anno <- function(tome,
 }
 
 
-read_tome_gene_jagged <- function(tome,
+read_tome_genes_jagged <- function(tome,
                                   genes,
-                                  regions = "exon",
-                                  type = "counts",
-                                  transform = "none") {
+                                  regions = "exon") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
@@ -581,12 +237,12 @@ read_tome_gene_jagged <- function(tome,
   ## Exon values
   if(regions == "exon" | regions == "both") {
 
-    exon_starts <- h5read(root, "/exon/p")[gene_index] + 1
-    exon_ends <- h5read(root, "/exon/p")[(gene_index + 1)]
+    exon_starts <- h5read(root, "data/exon/p")[gene_index] + 1
+    exon_ends <- h5read(root, "data/exon/p")[(gene_index + 1)]
 
     exon_values <- map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "/exon/x", index = list(start:end))
+        values <- h5read(root, "data/exon/x", index = list(start:end))
       } else {
         values <- NA
       }
@@ -595,7 +251,7 @@ read_tome_gene_jagged <- function(tome,
 
     exon_sample_indexes <- map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "/exon/i", index = list(start:end))
+        values <- h5read(root, "data/exon/i", index = list(start:end))
       } else {
         values <- NA
       }
@@ -612,12 +268,12 @@ read_tome_gene_jagged <- function(tome,
   ## Intron values
   if(regions == "intron" | regions == "both") {
 
-    intron_starts <- h5read(root, "/intron/p")[gene_index] + 1
-    intron_ends <- h5read(root, "/intron/p")[(gene_index + 1)]
+    intron_starts <- h5read(root, "data/intron/p")[gene_index] + 1
+    intron_ends <- h5read(root, "data/intron/p")[(gene_index + 1)]
 
     intron_values <- map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "/intron/x", index = list(start:end))
+        values <- h5read(root, "data/intron/x", index = list(start:end))
       } else {
         values <- NA
       }
@@ -626,7 +282,7 @@ read_tome_gene_jagged <- function(tome,
 
     intron_sample_indexes <- map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "/intron/i", index = list(start:end))
+        values <- h5read(root, "data/intron/i", index = list(start:end))
       } else {
         values <- NA
       }
@@ -678,13 +334,131 @@ read_tome_gene_jagged <- function(tome,
 
 }
 
-jagged_gene_to_matrix <- function(jagged) {
+read_tome_samples_jagged <- function(tome,
+                                     samples,
+                                     regions = "exon",
+                                     type = "counts",
+                                     transform = "none") {
+  library(rhdf5)
+  library(purrr)
+  library(dplyr)
+  library(Matrix)
+
+  root <- H5Fopen(tome)
+  gene_names <- h5read(root,"/gene_names")
+  sample_names <- h5read(root,"/sample_names")
+
+  gene_index <- match(genes, gene_names)
+
+  ## Exon values
+  if(regions == "exon" | regions == "both") {
+
+    exon_starts <- h5read(root, "data/t_exon/p")[gene_index] + 1
+    exon_ends <- h5read(root, "data/t_exon/p")[(gene_index + 1)]
+
+    exon_values <- map2(exon_starts, exon_ends, function(start, end) {
+      if(end > start) {
+        values <- h5read(root, "data/t_exon/x", index = list(start:end))
+      } else {
+        values <- NA
+      }
+      values
+    })
+
+    exon_sample_indexes <- map2(exon_starts, exon_ends, function(start, end) {
+      if(end > start) {
+        values <- h5read(root, "data/t_exon/i", index = list(start:end))
+      } else {
+        values <- NA
+      }
+      values
+    })
+
+    exon <- list(x = exon_values,
+                 i = exon_sample_indexes,
+                 p = c(0, cumsum(map_int(exon_values, length))))
+
+
+  }
+
+  ## Intron values
+  if(regions == "intron" | regions == "both") {
+
+    intron_starts <- h5read(root, "t_data/intron/p")[gene_index] + 1
+    intron_ends <- h5read(root, "data/t_intron/p")[(gene_index + 1)]
+
+    intron_values <- map2(intron_starts, intron_ends, function(start, end) {
+      if(end > start) {
+        values <- h5read(root, "data/t_intron/x", index = list(start:end))
+      } else {
+        values <- NA
+      }
+      values
+    })
+
+    intron_sample_indexes <- map2(intron_starts, intron_ends, function(start, end) {
+      if(end > start) {
+        values <- h5read(root, "data/t_intron/i", index = list(start:end))
+      } else {
+        values <- NA
+      }
+      values
+    })
+
+    intron <- list(x = intron_values,
+                   i = intron_sample_indexes,
+                   p = c(0, cumsum(map_int(intron_values, length))))
+
+  }
+
+  H5Fclose(root)
+
+  if(regions == "exon") {
+    out <- exon
+  } else if(regions == "intron") {
+    out <- intron
+  } else if(regions == "both") {
+    out <- exon
+    xi <- pmap(list(exon_x = exon$x,
+                    exon_i = exon$i,
+                    intron_x = intron$x,
+                    intron_i = intron$i),
+               function(exon_x, exon_i,
+                        intron_x, intron_i) {
+                 both_i <- union(exon_i, intron_i)
+                 both_i <- sort(both_i)
+                 both_x <- numeric(length(both_i))
+                 both_x[match(exon_i, both_i)] <- both_x[match(exon_i, both_i)] + exon_x
+                 both_x[match(intron_i, both_i)] <- both_x[match(intron_i, both_i)] + intron_x
+
+                 list(x = both_x,
+                      i = both_i)
+               })
+    for(j in 1:length(xi)) {
+      out$x[[j]] <- xi[[j]]$x
+      out$i[[j]] <- xi[[j]]$i
+    }
+    out$p <- c(0, cumsum(map_int(out$x, length)))
+  }
+
+  out$gene_names <- genes
+  out$sample_names <- read_tome_sample_names(tome)
+  out$dims <- read_tome_data_dims(tome, transpose = true)
+  out$dims[2] <- length(samples)
+
+  out
+
+}
+
+jagged_to_matrix <- function(jagged,
+                             rows = c("sample_names","gene_names"),
+                             cols = c("gene_names", "sample_names")) {
 
   out <- matrix(0,
                 nrow = jagged$dims[1],
                 ncol = jagged$dims[2])
-  rownames(out) <- jagged$sample_names
-  colnames(out) <- jagged$gene_names
+  rownames(out) <- jagged[[rows]]
+  colnames(out) <- jagged[[cols]]
 
   for(j in 1:length(jagged$x)) {
     x <- jagged$x[[j]]
@@ -696,13 +470,24 @@ jagged_gene_to_matrix <- function(jagged) {
   out
 }
 
-jagged_gene_to_data.frame <- function(jagged) {
+jagged_to_data.frame <- function(jagged,
+                                 rows = c("sample_names","gene_names"),
+                                 cols = c("gene_names", "sample_names")) {
+  if(rows == "sample_names") {
+    out <- data.frame(sample_name = jagged$sample_names,
+                      matrix(0,
+                             nrow = jagged$dims[1],
+                             ncol = jagged$dims[2]))
+    names(out)[-1] <- jagged$gene_names
 
-  out <- data.frame(sample_name = jagged$sample_names,
-                    matrix(0,
-                           nrow = jagged$dims[1],
-                           ncol = jagged$dims[2]))
-  names(out)[-1] <- jagged$gene_names
+  } else {
+    out <- data.frame(gene_name = jagged$gene_names,
+                      matrix(0,
+                             nrow = jagged$dims[1],
+                             ncol = jagged$dims[2]))
+    names(out)[-1] <- jagged$sample_names
+
+  }
 
   for(j in 1:length(jagged$x)) {
     x <- jagged$x[[j]]
@@ -713,14 +498,16 @@ jagged_gene_to_data.frame <- function(jagged) {
   out
 }
 
-jagged_gene_to_dgCMatrix <- function(jagged) {
+jagged_gene_to_dgCMatrix <- function(jagged,
+                                     rows = c("sample_names","gene_names"),
+                                     cols = c("gene_names", "sample_names")) {
 
   sparseMatrix(i = unlist(jagged$i),
                p = jagged$p,
                x = unlist(jagged$x),
                index1 = FALSE,
                dims = jagged$dims,
-               dimnames = list(jagged$sample_names,
-                               jagged$gene_names))
+               dimnames = list(jagged[[rows]],
+                               jagged[[cols]]))
 
 }
