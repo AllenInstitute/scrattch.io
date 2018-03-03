@@ -64,7 +64,7 @@ write_tome_data <- function(exon_mat = NULL,
   root <- H5Fopen(tome, flags = "H5F_ACC_RDWR")
   H5Fclose(root)
 
-  h5CreateGroup(tome, "data")
+  h5createGroup(tome, "data")
 
   ## Exon Data
   if(!is.null(exon_mat)) {
