@@ -443,8 +443,8 @@ read_tome_samples_jagged <- function(tome,
     out$p <- c(0, cumsum(map_int(out$x, length)))
   }
 
-  out$gene_names <- genes
-  out$sample_names <- read_tome_sample_names(tome)
+  out$gene_names <- read_tome_gene_names(tome)
+  out$sample_names <- samples
   out$dims <- read_tome_data_dims(tome, transpose = TRUE)
   out$dims[2] <- length(samples)
 
