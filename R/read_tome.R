@@ -41,6 +41,7 @@ read_tome_gene_data <- function(tome,
   }
 
   if(type == "cpm") {
+    root <- H5Fopen(tome)
 
     if(regions == "exon") {
       total_counts <- h5read(root, "/data/total_exon_counts")
