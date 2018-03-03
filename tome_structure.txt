@@ -1,0 +1,59 @@
+/ - root
+	data/
+		exon/
+			dims
+			i
+			p
+			x
+		exon_lengths - a vector object
+		intron/
+			dims
+			i
+			p
+			x
+		intron_lengths - a vector object
+		t_exon/
+			dims
+			i
+			p
+			x
+		t_intron/
+			dims
+			i
+			p
+			x
+		total_exon_counts - a vector object
+		total_intron_counts - a vector object
+	dend/
+		[dend_name]/
+			nodes - a data.frame object
+			segments - a data.frame object
+		desc - a data.frame object
+	gene_meta/
+		gene/
+			[gene_columns] - vector objects
+		desc - a data.frame object
+	gene_names - a vector object
+	log - a data.frame object
+	mapping/
+		[mapping_name]/
+			memb - a data.frame object
+		desc - a data.frame object
+	projection/
+		[projection_name] - a data.frame object
+		desc - a data.frame object
+	sample_meta/
+		anno/
+			[anno_columns] - vector objects
+		desc - a data.frame object
+	sample_names - a vector object
+	stats/
+		count_gt0 - a data.frame object
+		count_gt1 - a data.frame object
+		count_n - a data.frame object
+		medians - a data.frame object
+		sums - a data.frame object
+		desc - a data.frame object
+	tome_meta/
+		citation - a data.frame object
+		desc - a data.frame object
