@@ -44,11 +44,11 @@ read_tome_gene_data <- function(tome,
     root <- H5Fopen(tome)
 
     if(regions == "exon") {
-      total_counts <- h5read(root, "/data/total_exon_counts")
+      total_counts <- c(h5read(root, "/data/total_exon_counts"))
     } else if(regions == "intron") {
-      total_counts <- h5read(root, "/data/total_intron_counts")
+      total_counts <- c(h5read(root, "/data/total_intron_counts"))
     } else if(regions == "both") {
-      total_counts <- h5read(root, "/data/total_exon_counts") + h5read(root, "/data/total_intron_counts")
+      total_counts <- c(h5read(root, "/data/total_exon_counts") + h5read(root, "/data/total_intron_counts"))
     }
     out[,genes] <- out[,genes]/(total_counts/1e6)
   }
@@ -111,11 +111,11 @@ read_tome_sample_data <- function(tome,
     sample_index <- match(samples, sample_names)
 
     if(regions == "exon") {
-      total_counts <- h5read(root, "/data/total_exon_counts")[sample_index]
+      total_counts <- c(h5read(root, "/data/total_exon_counts")[sample_index])
     } else if(regions == "intron") {
-      total_counts <- h5read(root, "/data/total_intron_counts")[sample_index]
+      total_counts <- c(h5read(root, "/data/total_intron_counts")[sample_index])
     } else if(regions == "both") {
-      total_counts <- h5read(root, "/data/total_exon_counts")[sample_index] + h5read(root, "/data/total_intron_counts")[sample_index]
+      total_counts <- c(h5read(root, "/data/total_exon_counts")[sample_index] + h5read(root, "/data/total_intron_counts")[sample_index])
     }
     out[,samples] <- sweep(out[,samples], 2, (total_counts/1e6), "/")
   }
