@@ -16,7 +16,7 @@ read_tome_gene_data <- function(tome,
                                 regions = "exon",
                                 type = "counts",
                                 transform = "none",
-                                form = "data.frame") {
+                                format = "data.frame") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
