@@ -105,6 +105,7 @@ read_tome_sample_data <- function(tome,
   }
 
   if(type == "cpm") {
+    root <- H5Fopen(tome)
     sample_names <- h5read(root,"/sample_names")
     sample_index <- match(samples, sample_names)
 
