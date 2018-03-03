@@ -386,7 +386,7 @@ read_tome_samples_jagged <- function(tome,
   ## Intron values
   if(regions == "intron" | regions == "both") {
 
-    intron_starts <- h5read(root, "t_data/intron/p")[sample_index] + 1
+    intron_starts <- h5read(root, "data/t_intron/p")[sample_index] + 1
     intron_ends <- h5read(root, "data/t_intron/p")[(sample_index + 1)]
 
     intron_values <- map2(intron_starts, intron_ends, function(start, end) {
