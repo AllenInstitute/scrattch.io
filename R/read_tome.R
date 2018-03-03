@@ -350,13 +350,13 @@ read_tome_samples_jagged <- function(tome,
   gene_names <- h5read(root,"/gene_names")
   sample_names <- h5read(root,"/sample_names")
 
-  gene_index <- match(genes, gene_names)
+  sample_index <- match(samples, sample_names)
 
   ## Exon values
   if(regions == "exon" | regions == "both") {
 
-    exon_starts <- h5read(root, "data/t_exon/p")[gene_index] + 1
-    exon_ends <- h5read(root, "data/t_exon/p")[(gene_index + 1)]
+    exon_starts <- h5read(root, "data/t_exon/p")[sample_index] + 1
+    exon_ends <- h5read(root, "data/t_exon/p")[(sample_index + 1)]
 
     exon_values <- map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
@@ -386,8 +386,8 @@ read_tome_samples_jagged <- function(tome,
   ## Intron values
   if(regions == "intron" | regions == "both") {
 
-    intron_starts <- h5read(root, "t_data/intron/p")[gene_index] + 1
-    intron_ends <- h5read(root, "data/t_intron/p")[(gene_index + 1)]
+    intron_starts <- h5read(root, "t_data/intron/p")[sample_index] + 1
+    intron_ends <- h5read(root, "data/t_intron/p")[(sample_index + 1)]
 
     intron_values <- map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
@@ -445,7 +445,7 @@ read_tome_samples_jagged <- function(tome,
 
   out$gene_names <- genes
   out$sample_names <- read_tome_sample_names(tome)
-  out$dims <- read_tome_data_dims(tome, transpose = true)
+  out$dims <- read_tome_data_dims(tome, transpose = TRUE)
   out$dims[2] <- length(samples)
 
   out
