@@ -499,9 +499,9 @@ jagged_to_data.frame <- function(jagged,
   out
 }
 
-jagged_gene_to_dgCMatrix <- function(jagged,
-                                     rows = c("sample_names","gene_names"),
-                                     cols = c("gene_names", "sample_names")) {
+jagged_to_dgCMatrix <- function(jagged,
+                                rows = c("sample_names","gene_names"),
+                                cols = c("gene_names", "sample_names")) {
 
   sparseMatrix(i = unlist(jagged$i),
                p = jagged$p,
