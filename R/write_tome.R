@@ -348,7 +348,7 @@ write_tome_data.frame <- function(df,
                               paste(group, name, sep = "/")))
 
   existing_objects <- ls %>%
-    filter(group == target_path | full_name == target)
+    filter(group == target | full_name == target)
 
   if(length(existing_objects$full_name) > 0) {
     print(paste0("Removing existing ", target))
