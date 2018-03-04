@@ -262,21 +262,46 @@ write_tome_data <- function(exon_mat = NULL,
 #' Write an annotations table to a tome file.
 #'
 #' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
-#' @param tome The tome file to write to
-#' @param mode The write mode. "replace" will remove existing annotations and replace it with anno. "add" will only add columns not already found. Default = "add".
+#' @param tome Path to the target tome file.
 #'
 write_tome_anno <- function(anno,
-                             tome,
-                             mode = "add") {
+                            tome) {
+
+  if(names(anno)[1] == "sample_id") {
+    names(anno)[1] <- "sample_name"
+  }
+
+  write_tome_data.frame(df = anno,
+                        tome = tome,
+                        target = "/sample_meta/anno",
+                        store_as = "vectors")
+
+}
+
+#' Write annotation desc table to a tome file.
+#'
+#' @param desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_desc <- function(desc,
+                            tome) {
+
+  write_tome_data.frame(df = desc,
+                        tome = tome,
+                        target = "sample_meta/desc",
+                        store_as = "data.frame")
+
+}
+
+write_tome_data.frame <- function(df,
+                                  tome,
+                                  target,
+                                  store_as = "vectors") {
 
   library(rhdf5)
   library(purrr)
 
   H5close()
-
-  if(names(anno)[1] == "sample_id") {
-    names(anno)[1] <- "sample_name"
-  }
 
   if(!file.exists(tome)) {
     print(paste0(tome," doesn't exist. Creating new file."))
@@ -284,82 +309,115 @@ write_tome_anno <- function(anno,
     H5close()
   }
 
-  ls <- h5ls(tome) %>%
-    mutate(full_name = paste0(group, name))
+  target_path <- sub("/$","",target)
 
-  # check for sample_meta
-  if(!"/sample_meta" %in% ls$group) {
-    print("Creating Group /sample_meta")
-    h5createGroup(tome, "/sample_meta")
+  if(store_as == "vectors") {
+    target_path <- target_path
+  } else if(store_as == "data.frame") {
+    target_path <- sub("(/.+/).+","\\1",target_path)
   }
 
-  # check for anno
-  if(!"/sample_meta/anno" %in% ls$group) {
-    print("Creating Group /sample_meta/anno")
-    h5createGroup(tome, "/sample_meta/anno")
-  }
+  target_path <- sub("/$","",target_path)
 
-  existing_anno <- ls %>% filter(group == "/sample_meta/anno")
-  anno_cols <- names(anno)
+  target_groups <- collapse_along(unlist(strsplit(target_path,"/"))[-1])
+  target_groups <- paste0("/",target_groups)
+
+  ## Now, need to check for existing vectors (for vector write)
+  ## or existing frame (for data.frame write)
+  #
+  #   existing_anno <- ls %>% filter(group == "/sample_meta/anno")
+  #   anno_cols <- names(anno)
 
   # If overwrite, remove everything
-  if(mode == "replace") {
-    print("Removing existing /sample_meta/anno")
+  #if(mode == "overwrite") {
 
-    existing_anno <- ls %>% filter(group == "/sample_meta/anno")
-    print(nrow(existing_anno))
-    if(nrow(existing_anno) > 0) {
-      walk(existing_anno$full_name,
-           function(x) {
+  ls <- h5ls(tome) %>%
+    mutate(full_name = ifelse(group == "/",
+                              paste0(group, name),
+                              paste(group, name, sep = "/")))
+
+  existing_objects <- ls %>%
+    filter(group == target_path | full_name == target)
+
+  if(length(existing_objects$full_name) > 0) {
+    print(paste0("Removing existing ", target))
+
+    walk(existing_objects$full_name,
+         function(x) {
+           suppressWarnings(
              h5_delete(tome, x)
-           }
-      )
-    }
+           )
+         }
+    )
+  }
 
-    print("Writing /sample_meta/anno")
-    walk(anno_cols, function(x) {
-      target <- paste0("/sample_meta/anno/",x)
-      h5write(anno[[x]],
-              tome,
-              target)
-    })
+  # check for group structure
+  for(target_group in target_groups) {
+    ls <- h5ls(tome) %>%
+      mutate(full_name = ifelse(group == "/",
+                                paste0(group, name),
+                                paste(group, name, sep = "/")))
 
-  } else if(mode == "add") {
-
-    if(nrow(existing_anno) > 0) {
-      anno_cols <- anno_cols[!anno_cols %in% existing_anno$name]
-
-      if(length(anno_cols) > 0) {
-        print(paste0("Adding columns ", paste(anno_cols, collapse = ", "), " to /sample_meta/anno."))
-
-        # Order to match existing annotations
-        existing_sample_names <- h5read(tome, "/sample_meta/anno/sample_name")
-
-        anno <- anno %>%
-          select(one_of("sample_name", anno_cols))
-
-        anno <- anno[match(anno$sample_name, existing_sample_names),]
-
-        # Write the new columns
-        walk(anno_cols, function(x) {
-          target <- paste0("/sample_meta/anno/",x)
-          h5write(anno[[x]],
-                  tome,
-                  target)
-        })
-      } else {
-        print("No new columns to add. If you want to replace values, try mode = 'replace' to replace the whole anno table.")
-      }
-    } else {
-      print("Writing /sample_meta/anno")
-      anno_cols <- names(anno)
-      walk(anno_cols, function(x) {
-        target <- paste0("/sample_meta/anno/",x)
-        h5write(anno[[x]],
-                tome,
-                target)
-      })
+    if(!target_group %in% ls$full_name) {
+      print(paste0("Creating Group ",target_group))
+      h5createGroup(tome, target_group)
     }
   }
+
+  print(paste0("Writing ", target))
+
+  if(store_as == "vectors") {
+    walk(names(df), function(x) {
+      vec_target <- paste(target,x,sep = "/")
+      h5write(df[[x]],
+              tome,
+              vec_target)
+    })
+
+  } else if(store_as == "data.frame") {
+    h5write(df,
+            tome,
+            target)
+  }
+
+  # }
+  # alternate modes for future use.
+  # else if(mode == "add") {
+  #
+  #   if(nrow(existing_anno) > 0) {
+  #     anno_cols <- anno_cols[!anno_cols %in% existing_anno$name]
+  #
+  #     if(length(anno_cols) > 0) {
+  #       print(paste0("Adding columns ", paste(anno_cols, collapse = ", "), " to /sample_meta/anno."))
+  #
+  #       # Order to match existing annotations
+  #       existing_sample_names <- h5read(tome, "/sample_meta/anno/sample_name")
+  #
+  #       anno <- anno %>%
+  #         select(one_of("sample_name", anno_cols))
+  #
+  #       anno <- anno[match(anno$sample_name, existing_sample_names),]
+  #
+  #       # Write the new columns
+  #       walk(anno_cols, function(x) {
+  #         target <- paste0("/sample_meta/anno/",x)
+  #         h5write(anno[[x]],
+  #                 tome,
+  #                 target)
+  #       })
+  #     } else {
+  #       print("No new columns to add. If you want to replace values, try mode = 'replace' to replace the whole anno table.")
+  #     }
+  #   } else {
+  #     print("Writing /sample_meta/anno")
+  #     anno_cols <- names(anno)
+  #     walk(anno_cols, function(x) {
+  #       target <- paste0("/sample_meta/anno/",x)
+  #       h5write(anno[[x]],
+  #               tome,
+  #               target)
+  #     })
+  #   }
+  # }
 
 }
