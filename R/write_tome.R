@@ -288,7 +288,7 @@ write_tome_desc <- function(desc,
 
   write_tome_data.frame(df = desc,
                         tome = tome,
-                        target = "sample_meta/desc",
+                        target = "/sample_meta/desc",
                         store_as = "data.frame")
 
 }
