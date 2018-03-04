@@ -293,6 +293,17 @@ write_tome_desc <- function(desc,
 
 }
 
+#' Generalized write for data.frames to a tome file
+#'
+#' This function currently only works in an overwrite mode. Anything at the target
+#' location will be removed, and the new df will be written.
+#'
+#' @param df The data.frame to store
+#' @param tome Path to the target tome file
+#' @param target The target location within the tome file
+#' @param store_as Either "data.frame", which will store as a compound object; or
+#' "vectors", which stores each column as a separate object.
+#'
 write_tome_data.frame <- function(df,
                                   tome,
                                   target,

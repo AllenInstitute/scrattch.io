@@ -4,14 +4,12 @@
 \alias{write_tome_anno}
 \title{Write an annotations table to a tome file.}
 \usage{
-write_tome_anno(anno, tome, mode = "add")
+write_tome_anno(anno, tome)
 }
 \arguments{
 \item{anno}{The annotations data.frame to write. The first column must be "sample_id" or "sample_name".}
 
-\item{tome}{The tome file to write to}
-
-\item{mode}{The write mode. "replace" will remove existing annotations and replace it with anno. "add" will only add columns not already found. Default = "add".}
+\item{tome}{Path to the target tome file.}
 }
 \description{
 Write an annotations table to a tome file.

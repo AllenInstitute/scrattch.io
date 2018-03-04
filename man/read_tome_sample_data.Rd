@@ -5,7 +5,7 @@
 \title{Read Sample Expression Data from a tome file}
 \usage{
 read_tome_sample_data(tome, samples, regions = "exon", type = "counts",
-  transform = "none", form = "data.frame")
+  transform = "none", format = "data.frame")
 }
 \arguments{
 \item{tome}{tome file to read. Required.}
@@ -16,7 +16,7 @@ read_tome_sample_data(tome, samples, regions = "exon", type = "counts",
 
 \item{transform}{Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".}
 
-\item{form}{The format of the output. Can be "data.frame", or "matrix". Default is "data.frame".}
+\item{format}{The format of the output. Can be "data.frame", "matrix", or "dgCMatrix". Default is "data.frame".}
 
 \item{values}{The type of values to return. Can be "counts" or "cpm". Default = "counts".}
 }
