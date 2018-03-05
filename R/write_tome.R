@@ -278,6 +278,7 @@ write_tome_data.frame <- function(df,
 
   library(rhdf5)
   library(purrr)
+  library(h5)
 
   H5close()
 
@@ -504,6 +505,7 @@ write_tome_stats <- function(stats,
 #'
 write_tome_stats_desc <- function(stats_desc,
                                        tome) {
+
   write_tome_data.frame(df = stats_desc,
                         tome = tome,
                         target = "/stats/desc",
@@ -511,4 +513,46 @@ write_tome_stats_desc <- function(stats_desc,
 
 }
 
+#' Write a dendrogram object as serialized ASCII to a tome file.
+#'
+#' @param dend The desc data.frame to write.
+#' @param dend_name The name of the dendrogram to store.
+#' @param tome Path to the target tome file.
+#'
+write_tome_dend <- function(dend,
+                            dend_name,
+                            tome) {
 
+  if(!is.null(dend_name)) {
+
+    ls <- h5ls(tome) %>%
+      mutate(full_name = ifelse(group == "/",
+                                paste0(group, name),
+                                paste(group, name, sep = "/")))
+
+    if(!"/dend" %in% ls$full_name) {
+      print("Creating group /dend")
+      h5createGroup(tome,
+                    "/dend")
+    }
+
+    dend_target <- paste0("/dend/", dend_name)
+
+    if(dend_target %in% ls$full_name) {
+      print(paste0("Removing existing ",dend_target))
+      h5_delete(tome, dend_target)
+    }
+
+    print(paste0("Writing ",dend_target))
+
+    serial_dend <- rawToChar(serialize(dend, NULL, ascii = T))
+
+    h5write(serial_dend,
+            tome,
+            dend_target)
+
+  } else {
+    stop("A name for the dendrogram (dend_name) is required.")
+  }
+
+}

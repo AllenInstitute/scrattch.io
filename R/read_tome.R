@@ -531,3 +531,16 @@ jagged_to_dgCMatrix <- function(jagged,
                                jagged[[cols]]))
 
 }
+
+read_tome_dend <- function(tome,
+                           dend_name) {
+
+  dend_target <- paste0("/dend/",dend_name)
+
+  serial_dend <- h5read(tome,
+                        dend_name)
+
+  dend <- unserialize(charToRaw(serial_dend))
+
+  dend
+}
