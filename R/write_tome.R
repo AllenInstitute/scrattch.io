@@ -488,7 +488,7 @@ write_tome_stats <- function(stats,
     if(names(stats)[1] == "sample_id") {
       names(stats)[1] <- "sample_name"
     }
-    write_tome_data.frame(df = desc,
+    write_tome_data.frame(df = stats,
                           tome = tome,
                           target = paste0("/stats/",stats_name),
                           store_as = "data.frame")
