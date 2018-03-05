@@ -221,6 +221,26 @@ read_tome_anno <- function(tome,
 
 }
 
+#' Read annotations table from a tome file
+#'
+#' @param tome The location of the tome file to read.
+#' @param groups The groups to read - matches column names using grep. Can provide multiple with c(). If NULL, will get all columns. Default is NULL.
+#'
+read_tome_desc<- function(tome) {
+
+  library(rhdf5)
+  library(purrr)
+
+  H5close()
+
+  ls <- h5ls(tome)
+
+  desc <- h5read(tome,
+                "/sample_meta/desc")
+
+  desc
+
+}
 
 read_tome_genes_jagged <- function(tome,
                                   genes,
