@@ -484,7 +484,7 @@ write_tome_stats <- function(stats,
                              stats_name = NULL,
                              tome) {
 
-  if(!is.null(proj_name)) {
+  if(!is.null(stats_name)) {
     if(names(stats)[1] == "sample_id") {
       names(stats)[1] <- "sample_name"
     }
@@ -554,5 +554,20 @@ write_tome_dend <- function(dend,
   } else {
     stop("A name for the dendrogram (dend_name) is required.")
   }
+
+}
+
+#' Write a dend descriptions table to a tome file.
+#'
+#' @param dend_desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_dend_desc <- function(dend_desc,
+                                  tome) {
+
+  write_tome_data.frame(df = dend_desc,
+                        tome = tome,
+                        target = "/dend/desc",
+                        store_as = "data.frame")
 
 }
