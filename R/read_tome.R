@@ -538,7 +538,7 @@ read_tome_dend <- function(tome,
   dend_target <- paste0("/dend/",dend_name)
 
   serial_dend <- h5read(tome,
-                        dend_name)
+                        dend_target)
 
   dend <- unserialize(charToRaw(serial_dend))
 
