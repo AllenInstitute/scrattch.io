@@ -535,7 +535,7 @@ jagged_to_dgCMatrix <- function(jagged,
 read_tome_dend <- function(tome,
                            dend_name) {
 
-  dend_target <- paste0("/dend/",dend_name)
+  dend_target <- paste0("dend/",dend_name)
 
   serial_dend <- h5read(tome,
                         dend_target)
