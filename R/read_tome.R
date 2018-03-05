@@ -150,26 +150,27 @@ read_tome_sample_names <- function(tome) {
   sample_names
 }
 
-read_tome_total_exon_counts <- function(tome) {
+read_tome_total_counts <- function(tome,
+                                   region = "exon") {
   root <- H5Fopen(tome)
-  total_exon_counts <- h5read(root,"data/total_exon_counts")
-  H5Fclose(root)
-  total_exon_counts
-}
+  if(region == "exon") {
 
-read_tome_total_intron_counts <- function(tome) {
-  root <- H5Fopen(tome)
-  total_intron_counts <- h5read(root,"data/total_intron_counts")
-  H5Fclose(root)
-  total_intron_counts
-}
+    total_counts <- h5read(root,"data/total_exon_counts")
 
-read_tome_total_both_counts <- function(tome) {
-  root <- H5Fopen(tome)
-  total_exon_counts <- h5read(root,"data/total_exon_counts")
-  total_intron_counts <- h5read(root,"data/total_intron_counts")
+  } else if(region == "intron") {
+
+    total_counts <- h5read(root,"data/total_intron_counts")
+
+  } else if(region == "both") {
+
+    total_exon_counts <- h5read(root,"data/total_exon_counts")
+    total_intron_counts <- h5read(root,"data/total_intron_counts")
+    total_counts <- total_exon_counts + total_intron_counts
+
+  }
+
   H5Fclose(root)
-  total_both_counts <- total_exon_counts + total_intron_counts
+  total_counts
 }
 
 read_tome_data_dims <- function(tome,
@@ -221,19 +222,16 @@ read_tome_anno <- function(tome,
 
 }
 
-#' Read annotations table from a tome file
+#' Read desc table from a tome file
 #'
 #' @param tome The location of the tome file to read.
-#' @param groups The groups to read - matches column names using grep. Can provide multiple with c(). If NULL, will get all columns. Default is NULL.
 #'
-read_tome_desc<- function(tome) {
+read_tome_anno_desc<- function(tome) {
 
   library(rhdf5)
   library(purrr)
 
   H5close()
-
-  ls <- h5ls(tome)
 
   desc <- h5read(tome,
                 "/sample_meta/desc")

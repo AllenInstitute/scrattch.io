@@ -1,5 +1,5 @@
 / - root
-	data/
+	data/ : write_tome_data()
 		exon/
 			dims
 			i
@@ -33,27 +33,27 @@
 		gene/
 			[gene_columns] - vector objects
 		desc - a data.frame object
-	gene_names - a vector object
+	gene_names - a vector object : write_tome_data()
 	log - a data.frame object
 	mapping/
 		[mapping_name]/
 			memb - a data.frame object
 		desc - a data.frame object
 	projection/
-		[projection_name] - a data.frame object
-		desc - a data.frame object
+		[projection_name] - a data.frame object : write_tome_projection()
+		desc - a data.frame object : write_tome_projection_desc()
 	sample_meta/
-		anno/
+		anno/ : write_tome_anno()
 			[anno_columns] - vector objects
-		desc - a data.frame object
-	sample_names - a vector object
+		desc - a data.frame object : write_tome_anno_desc()
+	sample_names - a vector object : write_tome_data()
 	stats/
-		count_gt0 - a data.frame object
-		count_gt1 - a data.frame object
-		count_n - a data.frame object
-		medians - a data.frame object
-		sums - a data.frame object
-		desc - a data.frame object
+		count_gt0 - a data.frame object : write_tome_stats()
+		count_gt1 - a data.frame object : write_tome_stats()
+		count_n - a data.frame object : write_tome_stats()
+		medians - a data.frame object : write_tome_stats()
+		sums - a data.frame object : write_tome_stats()
+		desc - a data.frame object : write_tome_stats_desc()
 	tome_meta/
 		citation - a data.frame object
 		desc - a data.frame object

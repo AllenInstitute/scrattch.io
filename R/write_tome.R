@@ -259,39 +259,6 @@ write_tome_data <- function(exon_mat = NULL,
 
 }
 
-#' Write an annotations table to a tome file.
-#'
-#' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
-#' @param tome Path to the target tome file.
-#'
-write_tome_anno <- function(anno,
-                            tome) {
-
-  if(names(anno)[1] == "sample_id") {
-    names(anno)[1] <- "sample_name"
-  }
-
-  write_tome_data.frame(df = anno,
-                        tome = tome,
-                        target = "/sample_meta/anno",
-                        store_as = "vectors")
-
-}
-
-#' Write annotation desc table to a tome file.
-#'
-#' @param desc The desc data.frame to write.
-#' @param tome Path to the target tome file.
-#'
-write_tome_desc <- function(desc,
-                            tome) {
-
-  write_tome_data.frame(df = desc,
-                        tome = tome,
-                        target = "/sample_meta/desc",
-                        store_as = "data.frame")
-
-}
 
 #' Generalized write for data.frames to a tome file
 #'
@@ -432,3 +399,116 @@ write_tome_data.frame <- function(df,
   # }
 
 }
+
+
+#' Write an annotations table to a tome file.
+#'
+#' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
+#' @param tome Path to the target tome file.
+#'
+write_tome_anno <- function(anno,
+                            tome) {
+
+  if(names(anno)[1] == "sample_id") {
+    names(anno)[1] <- "sample_name"
+  }
+
+  write_tome_data.frame(df = anno,
+                        tome = tome,
+                        target = "/sample_meta/anno",
+                        store_as = "vectors")
+
+}
+
+#' Write annotation desc table to a tome file.
+#'
+#' @param anno_desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_anno_desc <- function(anno_desc,
+                                 tome) {
+
+  write_tome_data.frame(df = anno_desc,
+                        tome = tome,
+                        target = "/sample_meta/desc",
+                        store_as = "data.frame")
+
+}
+
+#' Write projection coordinates (e.g. tSNE or PCA) to a tome file.
+#'
+#' @param proj A data.frame with projection coordinates to write.
+#' Requires columns: sample_name, x, y (, z optional)
+#' @param proj_name The base name of the projection. Should match the projection description table
+#' @param tome Path to the target tome file.
+#'
+write_tome_projection <- function(proj,
+                                  proj_name = NULL,
+                                  tome) {
+  if(!is.null(proj_name)) {
+    if(names(proj)[1] == "sample_id") {
+      names(proj)[1] <- "sample_name"
+    }
+
+    write_tome_data.frame(df = proj,
+                          tome = tome,
+                          target = paste0("/projection/",proj_name),
+                          store_as = "data.frame")
+  } else {
+    stop("A name for the projection (proj_name) is required.")
+  }
+
+}
+
+#' Write a projection descriptions table to a tome file.
+#'
+#' @param proj_desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_projection_desc <- function(proj_desc,
+                                       tome) {
+  write_tome_data.frame(df = proj_desc,
+                        tome = tome,
+                        target = "/projection/desc",
+                        store_as = "data.frame")
+
+}
+
+#' Write a stats table (e.g. median expression per cluster) to a tome file.
+#'
+#' @param stats The stats data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_stats <- function(stats,
+                             stats_name = NULL,
+                             tome) {
+
+  if(!is.null(proj_name)) {
+    if(names(stats)[1] == "sample_id") {
+      names(stats)[1] <- "sample_name"
+    }
+    write_tome_data.frame(df = desc,
+                          tome = tome,
+                          target = paste0("/stats/",stats_name),
+                          store_as = "data.frame")
+  } else {
+    stop("A name for the stats table (stats_name) is required.")
+  }
+
+}
+
+#' Write a stats descriptions table to a tome file.
+#'
+#' @param stats_desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_stats_desc <- function(stats_desc,
+                                       tome) {
+  write_tome_data.frame(df = stats_desc,
+                        tome = tome,
+                        target = "/stats/desc",
+                        store_as = "data.frame")
+
+}
+
+
