@@ -265,7 +265,8 @@ write_tome_data <- function(exon_mat = NULL,
 #' @param tome Path to the target tome file.
 #'
 write_tome_anno <- function(anno,
-                            tome) {
+                            tome,
+                            overwrite = FALSE) {
 
   if(names(anno)[1] == "sample_id") {
     names(anno)[1] <- "sample_name"
@@ -274,7 +275,8 @@ write_tome_anno <- function(anno,
   write_tome_data.frame(df = anno,
                         tome = tome,
                         target = "/sample_meta/anno",
-                        store_as = "vectors")
+                        store_as = "vectors",
+                        overwrite = overwrite)
 
 }
 
@@ -284,12 +286,14 @@ write_tome_anno <- function(anno,
 #' @param tome Path to the target tome file.
 #'
 write_tome_anno_desc <- function(anno_desc,
-                                 tome) {
+                                 tome,
+                                 overwrite = FALSE) {
 
   write_tome_data.frame(df = anno_desc,
                         tome = tome,
                         target = "/sample_meta/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
@@ -302,7 +306,8 @@ write_tome_anno_desc <- function(anno_desc,
 #'
 write_tome_projection <- function(proj,
                                   proj_name = NULL,
-                                  tome) {
+                                  tome,
+                                  overwrite = FALSE) {
   if(!is.null(proj_name)) {
     if(names(proj)[1] == "sample_id") {
       names(proj)[1] <- "sample_name"
@@ -311,7 +316,8 @@ write_tome_projection <- function(proj,
     write_tome_data.frame(df = proj,
                           tome = tome,
                           target = paste0("/projection/",proj_name),
-                          store_as = "data.frame")
+                          store_as = "data.frame",
+                          overwrite = overwrite)
   } else {
     stop("A name for the projection (proj_name) is required.")
   }
@@ -324,11 +330,14 @@ write_tome_projection <- function(proj,
 #' @param tome Path to the target tome file.
 #'
 write_tome_projection_desc <- function(proj_desc,
-                                       tome) {
+                                       tome,
+                                       overwrite = FALSE) {
+
   write_tome_data.frame(df = proj_desc,
                         tome = tome,
                         target = "/projection/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
@@ -339,14 +348,16 @@ write_tome_projection_desc <- function(proj_desc,
 #'
 write_tome_stats <- function(stats,
                              stats_name = NULL,
-                             tome) {
+                             tome,
+                             overwrite = FALSE) {
 
   if(!is.null(stats_name)) {
 
     write_tome_data.frame(df = stats,
                           tome = tome,
                           target = paste0("/stats/",stats_name),
-                          store_as = "vectors")
+                          store_as = "vectors",
+                          overwrite = overwrite)
   } else {
     stop("A name for the stats table (stats_name) is required.")
   }
@@ -359,12 +370,14 @@ write_tome_stats <- function(stats,
 #' @param tome Path to the target tome file.
 #'
 write_tome_stats_desc <- function(stats_desc,
-                                       tome) {
+                                  tome,
+                                  overwrite = FALSE) {
 
   write_tome_data.frame(df = stats_desc,
                         tome = tome,
                         target = "/stats/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
@@ -376,35 +389,16 @@ write_tome_stats_desc <- function(stats_desc,
 #'
 write_tome_dend <- function(dend,
                             dend_name,
-                            tome) {
+                            tome,
+                            overwrite = FALSE) {
 
   if(!is.null(dend_name)) {
+    dend_target <- paste0("/dend/",dend_name)
 
-    ls <- h5ls(tome) %>%
-      mutate(full_name = ifelse(group == "/",
-                                paste0(group, name),
-                                paste(group, name, sep = "/")))
-
-    if(!"/dend" %in% ls$full_name) {
-      print("Creating group /dend")
-      h5createGroup(tome,
-                    "/dend")
-    }
-
-    dend_target <- paste0("/dend/", dend_name)
-
-    if(dend_target %in% ls$full_name) {
-      print(paste0("Removing existing ",dend_target))
-      h5_delete(tome, dend_target)
-    }
-
-    print(paste0("Writing ",dend_target))
-
-    serial_dend <- rawToChar(serialize(dend, NULL, ascii = T))
-
-    h5write(serial_dend,
-            tome,
-            dend_target)
+    write_tome_serialized(dend,
+                          tome,
+                          dend_target,
+                          overwrite = overwrite)
 
   } else {
     stop("A name for the dendrogram (dend_name) is required.")
@@ -418,23 +412,35 @@ write_tome_dend <- function(dend,
 #' @param tome Path to the target tome file.
 #'
 write_tome_dend_desc <- function(dend_desc,
-                                  tome) {
+                                  tome,
+                                 overwrite = FALSE) {
 
   write_tome_data.frame(df = dend_desc,
                         tome = tome,
                         target = "/dend/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
 write_tome_exon_lengths <- function(exon_lengths,
-                                    tome) {
+                                    tome,
+                                    overwrite = FALSE) {
 
-
+  write_tome_vector(vec = exon_lengths,
+                    tome = tome,
+                    target = "/data/exon_lengths",
+                    overwrite = overwrite)
 
 }
 
 write_tome_intron_lengths <- function(intron_lengths,
-                                      tome) {
+                                      tome,
+                                      overwrite = FALSE) {
+
+  write_tome_vector(vec = intron_lengths,
+                    tome = tome,
+                    target = "/data/intron_lengths",
+                    overwrite = overwrite)
 
 }

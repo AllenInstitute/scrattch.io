@@ -1,4 +1,3 @@
-
 #' Generalized write for data.frames to a tome file
 #'
 #' This function currently only works in an overwrite mode. Anything at the target
@@ -149,6 +148,13 @@ write_tome_data.frame <- function(df,
 
 }
 
+#' Generalized write for individual vector objects to a tome file
+#'
+#' @param vec The vector to store
+#' @param tome Path to the target tome file
+#' @param target The target location within the tome file
+#' @param overwrite logical, whether or not to overwrite existing objects. Default = FALSE.
+#'
 write_tome_vector <- function(vec,
                               tome,
                               target,
@@ -197,6 +203,71 @@ write_tome_vector <- function(vec,
   print(paste0("Writing ", target))
 
   h5write(vec,
+          tome,
+          target)
+
+}
+
+
+#' Generalized write for individual vector objects to a tome file
+#'
+#' Useful for R objects that can't easily be coerced to a data.frame or a vector, like lists or S3 classes.
+#' Think of it like saveRDS() for HDF5 files.
+#'
+#' @param obj The R object to store
+#' @param tome Path to the target tome file
+#' @param target The target location within the tome file
+#' @param overwrite logical, whether or not to overwrite existing objects. Default = FALSE.
+#'
+write_tome_serialized <- function(obj,
+                                  tome,
+                                  target,
+                                  overwrite = FALSE) {
+
+  library(rhdf5)
+  library(purrr)
+  library(h5)
+
+  H5close()
+
+  if(!file.exists(tome)) {
+    print(paste0(tome," doesn't exist. Creating new file."))
+    h5createFile(tome)
+    H5close()
+  }
+
+  ls <- h5ls(tome) %>%
+    mutate(full_name = ifelse(group == "/",
+                              paste0(group, name),
+                              paste(group, name, sep = "/")))
+
+  existing_objects <- ls %>%
+    filter(group == target | full_name == target)
+
+  if(length(existing_objects$full_name) > 0) {
+    if(overwrite) {
+
+      print(paste0("Removing existing ", target))
+
+      walk(existing_objects$full_name,
+           function(x) {
+             suppressWarnings(
+               h5_delete(tome, x)
+             )
+           }
+      )
+    } else {
+
+      stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
+
+    }
+  }
+
+  ser_obj <- rawToChar(serialize(obj, ascii = TRUE))
+
+  print(paste0("Writing ", target))
+
+  h5write(ser_obj,
           tome,
           target)
 
