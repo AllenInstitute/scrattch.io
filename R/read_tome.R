@@ -288,7 +288,7 @@ read_tome_stats <- function(tome,
   library(purrr)
 
   ls <- h5ls(tome)
-  stats_names <- ls$name[ls$group == "stats/"]
+  stats_names <- ls$name[ls$group == "/stats"]
 
   if(is.null(stats_name)) { stats_name <- ".namenotfound"}
 
@@ -355,7 +355,7 @@ read_tome_projection <- function(tome,
   library(rhdf5)
 
   ls <- h5ls(tome)
-  proj_names <- ls$name[ls$group == "projections/"]
+  proj_names <- ls$name[ls$group == "/projections"]
 
   if(is.null(proj_name)) { proj_name <- ".namenotfound" }
 
