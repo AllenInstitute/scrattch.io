@@ -16,6 +16,8 @@ read_tome_data.frame <- function(tome,
   library(rhdf5)
   library(purrr)
 
+  H5close()
+
   ls <- h5ls(tome)
 
   if(stored_as == "vectors") {
@@ -64,6 +66,8 @@ read_tome_data.frame <- function(tome,
 read_tome_serialized <- function(tome,
                                  target) {
 
+  H5close()
+
   serial_obj <- h5read(tome,
                        target)
 
@@ -88,6 +92,8 @@ read_tome_genes_jagged <- function(tome,
   library(purrr)
   library(dplyr)
   library(Matrix)
+
+  H5close()
 
   root <- H5Fopen(tome)
   gene_names <- h5read(root,"/gene_names")
@@ -210,6 +216,8 @@ read_tome_samples_jagged <- function(tome,
   library(purrr)
   library(dplyr)
   library(Matrix)
+
+  H5close()
 
   root <- H5Fopen(tome)
   gene_names <- h5read(root,"/gene_names")
