@@ -156,7 +156,7 @@ read_tome_sample_names <- function(tome) {
 #' @param return_as If "vector", will return only the length values as a vector.
 #' If "data.frame", will return a data.frame with two columns: "gene_name" and "exon_length".
 #'
-read_tome_sample_names <- function(tome,
+read_tome_exon_lengths <- function(tome,
                                    genes = NULL,
                                    return_as = "vector") {
 
@@ -187,7 +187,7 @@ read_tome_sample_names <- function(tome,
 #' @param return_as If "vector", will return only the length values as a vector.
 #' If "data.frame", will return a data.frame with two columns: "gene_name" and "intron_length".
 #'
-read_tome_sample_names <- function(tome,
+read_tome_intron_lengths <- function(tome,
                                    genes = NULL,
                                    return_as = "vector") {
 
@@ -210,7 +210,6 @@ read_tome_sample_names <- function(tome,
   }
 
 }
-
 
 #' Get total per-gene counts from a tome-file.
 #'
