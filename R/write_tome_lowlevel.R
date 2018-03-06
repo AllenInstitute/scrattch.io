@@ -314,7 +314,7 @@ write_tome_serialized <- function(obj,
     }
   }
 
-  ser_obj <- rawToChar(serialize(obj, ascii = TRUE))
+  ser_obj <- rawToChar(serialize(obj, NULL, ascii = TRUE))
 
   if(verbosity == 2) {
     print(paste0("Writing ", target))
