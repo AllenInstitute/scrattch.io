@@ -4,7 +4,7 @@
 \alias{write_tome_anno}
 \title{Write an annotations table to a tome file.}
 \usage{
-write_tome_anno(anno, tome)
+write_tome_anno(anno, tome, overwrite = FALSE)
 }
 \arguments{
 \item{anno}{The annotations data.frame to write. The first column must be "sample_id" or "sample_name".}

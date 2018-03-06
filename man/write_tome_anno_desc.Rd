@@ -4,7 +4,7 @@
 \alias{write_tome_anno_desc}
 \title{Write annotation desc table to a tome file.}
 \usage{
-write_tome_anno_desc(anno_desc, tome)
+write_tome_anno_desc(anno_desc, tome, overwrite = FALSE)
 }
 \arguments{
 \item{anno_desc}{The desc data.frame to write.}
