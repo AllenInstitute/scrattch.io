@@ -173,7 +173,7 @@ read_tome_exon_lengths <- function(tome,
   }
 
   if(!is.null(genes)) {
-    exon_lengths <- exon_lengths[exon_lengths$gene_name %in% genes,]
+    exon_lengths <- exon_lengths[match(genes,exon_lengths$gene_name),]
   }
 
   H5close()
@@ -208,7 +208,7 @@ read_tome_intron_lengths <- function(tome,
   }
 
   if(!is.null(genes)) {
-    intron_lengths <- intron_lengths[intron_lengths$gene_name %in% genes,]
+    intron_lengths <- intron_lengths[match(genes,intron_lengths$gene_name),]
   }
 
   H5close()
