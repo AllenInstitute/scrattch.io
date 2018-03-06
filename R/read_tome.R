@@ -414,7 +414,7 @@ read_tome_stats <- function(tome,
       stats <- read_tome_data.frame(tome,
                                     stats_target,
                                     stored_as = "vectors",
-                                    columns = "sample_name",
+                                    columns = columns,
                                     get_all = get_all)
     }
   } else {
