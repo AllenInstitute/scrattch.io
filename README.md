@@ -21,7 +21,7 @@ devtools::install_github("AllenInstitute/scrattch.io")
 ## .tome files
 A major component of scrattch.io is a set of helpful functions for writing and reading .tome files, which are an HDF5-based format for transcriptomics.  
 
-The (.tome cheatsheets on Google Docs)[https://docs.google.com/spreadsheets/d/1tJUgnfEXUv1IuzGAykDCTIUTsgzEWkT-jfl4UcEUl48/edit?usp=sharing] is a helpful reference.
+The [.tome cheatsheets on Google Docs](https://docs.google.com/spreadsheets/d/1tJUgnfEXUv1IuzGAykDCTIUTsgzEWkT-jfl4UcEUl48/edit?usp=sharing) is a helpful reference.
 
 ## Contact
 Contact Lucas Graybuck (lucasg@alleninstitute.org) or post and Issue on Github if you find a bug or have a feature request.
