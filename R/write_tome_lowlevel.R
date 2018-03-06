@@ -24,10 +24,14 @@ write_tome_data.frame <- function(df,
     overwrite <- .scrattch.io_env$overwrite
   }
 
+  verbosity <- .scrattch.io_env$verbosity
+
   H5close()
 
   if(!file.exists(tome)) {
-    print(paste0(tome," doesn't exist. Creating new file."))
+    if(verbosity == 2) {
+      print(paste0(tome," doesn't exist. Creating new file."))
+    }
     h5createFile(tome)
     H5close()
   }
@@ -65,7 +69,9 @@ write_tome_data.frame <- function(df,
   if(length(existing_objects$full_name) > 0) {
     if(overwrite) {
 
-      print(paste0("Removing existing ", target))
+      if(verbosity == 2) {
+        print(paste0("Removing existing ", target))
+      }
 
       walk(existing_objects$full_name,
            function(x) {
@@ -75,8 +81,11 @@ write_tome_data.frame <- function(df,
            }
       )
     } else {
-
-      stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
+      if(verbosity == 2) {
+        stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
+      } else if(verbosity == 1) {
+        return(FALSE)
+      }
 
     }
   }
@@ -89,12 +98,16 @@ write_tome_data.frame <- function(df,
                                 paste(group, name, sep = "/")))
 
     if(!target_group %in% ls$full_name) {
-      print(paste0("Creating Group ",target_group))
+      if(verbosity == 2) {
+        print(paste0("Creating Group ",target_group))
+      }
       h5createGroup(tome, target_group)
     }
   }
 
-  print(paste0("Writing ", target))
+  if(verbosity == 2) {
+    print(paste0("Writing ", target))
+  }
 
   if(store_as == "vectors") {
     walk(names(df), function(x) {
@@ -150,6 +163,10 @@ write_tome_data.frame <- function(df,
   #   }
   # }
 
+  if(verbosity == 1) {
+    return(TRUE)
+  }
+
 }
 
 #' Generalized write for individual vector objects to a tome file
@@ -171,10 +188,14 @@ write_tome_vector <- function(vec,
     overwrite <- .scrattch.io_env$overwrite
   }
 
+  verbosity <- .scrattch.io_env$verbosity
+
   H5close()
 
   if(!file.exists(tome)) {
-    print(paste0(tome," doesn't exist. Creating new file."))
+    if(verbosity == 2) {
+      print(paste0(tome," doesn't exist. Creating new file."))
+    }
     h5createFile(tome)
     H5close()
   }
@@ -189,9 +210,9 @@ write_tome_vector <- function(vec,
 
   if(length(existing_objects$full_name) > 0) {
     if(overwrite) {
-
-      print(paste0("Removing existing ", target))
-
+      if(verbosity == 2) {
+        print(paste0("Removing existing ", target))
+      }
       walk(existing_objects$full_name,
            function(x) {
              suppressWarnings(
@@ -200,20 +221,27 @@ write_tome_vector <- function(vec,
            }
       )
     } else {
-
-      stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
-
+      if(verbosity == 2) {
+        stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
+      } else if(verbosity == 1) {
+        return(FALSE)
+      }
     }
   }
 
   vec <- unlist(vec)
 
-  print(paste0("Writing ", target))
+    if(verbosity == 2) {
+    print(paste0("Writing ", target))
+  }
 
   h5write(vec,
           tome,
           target)
 
+  if(verbosity == 1) {
+    return(TRUE)
+  }
 }
 
 
@@ -243,7 +271,9 @@ write_tome_serialized <- function(obj,
   H5close()
 
   if(!file.exists(tome)) {
-    print(paste0(tome," doesn't exist. Creating new file."))
+    if(verbosity == 2) {
+      print(paste0(tome," doesn't exist. Creating new file."))
+    }
     h5createFile(tome)
     H5close()
   }
@@ -258,8 +288,10 @@ write_tome_serialized <- function(obj,
 
   if(length(existing_objects$full_name) > 0) {
     if(overwrite) {
+      if(verbosity == 2) {
+        print(paste0("Removing existing ", target))
 
-      print(paste0("Removing existing ", target))
+      }
 
       walk(existing_objects$full_name,
            function(x) {
@@ -269,18 +301,29 @@ write_tome_serialized <- function(obj,
            }
       )
     } else {
+      if(verbosity == 2) {
+        stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
 
-      stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
+      } else if(verbosity == 1) {
+        return(FALSE)
+      }
+
 
     }
   }
 
   ser_obj <- rawToChar(serialize(obj, ascii = TRUE))
 
-  print(paste0("Writing ", target))
+  if(verbosity == 2) {
+    print(paste0("Writing ", target))
+  }
 
   h5write(ser_obj,
           tome,
           target)
+
+  if(verbosity == 1) {
+    return(TRUE)
+  }
 
 }

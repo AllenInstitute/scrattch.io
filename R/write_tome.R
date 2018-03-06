@@ -487,6 +487,23 @@ write_tome_gene_meta <- function(genes,
 
 }
 
+#' Write a gene metadata descriptions table to a tome file.
+#'
+#' @param genes_desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_gene_meta_desc <- function(genes_desc,
+                                      tome,
+                                      overwrite = NULL) {
+
+  write_tome_data.frame(df = genes_desc,
+                        tome = tome,
+                        target = "/gene_meta/desc",
+                        store_as = "data.frame",
+                        overwrite = overwrite)
+
+}
+
 #' Write a mapping frequencies table to a tome file.
 #'
 #' @param mapping A data.frame with mapping results to write.

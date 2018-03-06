@@ -313,6 +313,54 @@ read_tome_anno_desc <- function(tome) {
 
 }
 
+#' Read gene metadata table from a tome file
+#'
+#' @param tome The location of the tome file to read.
+#' @param columns Specific columns to read If NULL, will get all columns. Default is NULL.
+#'
+read_tome_gene_meta <- function(tome,
+                                columns = NULL) {
+
+  library(rhdf5)
+  library(purrr)
+
+  if(!is.null(columns)) {
+    genes <- read_tome_data.frame(tome,
+                                  "/gene_meta/genes",
+                                  stored_as = "vectors",
+                                  columns = c("gene_name", columns),
+                                  get_all = FALSE)
+  } else {
+    genes <- read_tome_data.frame(tome,
+                                  "/gene_meta/genes",
+                                  stored_as = "vectors",
+                                  columns = "gene_name",
+                                  get_all = TRUE)
+  }
+
+  genes
+
+}
+
+#' Read gene metadata descriptions table from a tome file
+#'
+#' @param tome The location of the tome file to read.
+#'
+read_tome_gene_meta_desc <- function(tome) {
+
+  library(rhdf5)
+  library(purrr)
+
+  H5close()
+
+  desc <- read_tome_data.frame(tome,
+                               "/gene_meta/desc",
+                               stored_as = "data.frame")
+
+  desc
+
+}
+
 #' Read dendrogram descriptions table from a tome file
 #'
 #' @param tome The location of the tome file to read.

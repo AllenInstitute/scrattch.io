@@ -23,7 +23,7 @@ set_scrattch.io_global_overwrite <- function(overwrite = FALSE) {
 #'
 #' There are 3 levels:
 #' 0 removes all messages.
-#' 1 provides TRUE or FALSE for success or failure of reads/writes.
+#' 1 provides TRUE or FALSE for success or failure of writes. Reads are silent.
 #' 2 provides useful feedback for interactive use.
 #' Default is 2.
 #'
