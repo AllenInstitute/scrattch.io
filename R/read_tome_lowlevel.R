@@ -28,11 +28,11 @@ read_tome_data.frame <- function(tome,
       } else {
         column_pattern <- columns
       }
-      selected_columns <- all_columns[grepl(column_pattern, columns)]
+      selected_columns <- all_columns[grepl(column_pattern, all_columns)]
 
       # If get_all, get the selected columns first, then all of the others
       if(get_all) {
-        selected_columns <- c(selected_columns,setdiff(all_columns, selected_columns))
+        selected_columns <- c(selected_columns, setdiff(all_columns, selected_columns))
       }
 
     } else {
