@@ -5,7 +5,7 @@
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
 #' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
-#' @param form The format of the output. Can be "data.frame", or "matrix". Default is "data.frame".
+#' @param format The format of the output. Can be "data.frame", "matrix", or "dgcMatrix" (sparse matrix). Default is "data.frame".
 #'
 #' @return A data.frame with sample_name as the first column and each subsequent column
 #' containing gene expression values and named for the genes; Or a matrix with columns as genes and rows as samples.
@@ -71,7 +71,7 @@ read_tome_gene_data <- function(tome,
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
 #' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
-#' @param format The format of the output. Can be "data.frame", "matrix", or "dgCMatrix". Default is "data.frame".
+#' @param format The format of the output. Can be "data.frame", "matrix", or "dgcMatrix" (sparse matrix). Default is "data.frame".
 #'
 #' @return A data.frame with gene_name as the first column and each subsequent column
 #' containing gene expression values and named for the samples; Or a matrix with columns as samples and rows as genes.
@@ -136,7 +136,9 @@ read_tome_sample_data <- function(tome,
 #' @param tome tome file to read.
 #'
 read_tome_gene_names <- function(tome) {
+  H5close()
   gene_names <- h5read(tome,"/gene_names")
+  H5close()
   gene_names
 }
 
@@ -145,7 +147,9 @@ read_tome_gene_names <- function(tome) {
 #' @param tome tome file to read.
 #'
 read_tome_sample_names <- function(tome) {
+  H5close()
   sample_names <- h5read(tome,"/sample_names")
+  H5close()
   sample_names
 }
 
@@ -159,7 +163,7 @@ read_tome_sample_names <- function(tome) {
 read_tome_exon_lengths <- function(tome,
                                    genes = NULL,
                                    return_as = "vector") {
-
+  H5close()
   exon_lengths <- h5read(tome,"/data/exon_lengths")
 
   if(return_as == "data.frame" | !is.null(genes)) {
@@ -171,6 +175,8 @@ read_tome_exon_lengths <- function(tome,
   if(!is.null(genes)) {
     exon_lengths <- exon_lengths[gene_name %in% genes,]
   }
+
+  H5close()
 
   if(return_as == "vector") {
     unlist(exon_lengths$exon_length)
@@ -191,6 +197,8 @@ read_tome_intron_lengths <- function(tome,
                                    genes = NULL,
                                    return_as = "vector") {
 
+  H5close()
+
   intron_lengths <- h5read(tome,"/data/intron_lengths")
 
   if(return_as == "data.frame" | !is.null(genes)) {
@@ -202,6 +210,8 @@ read_tome_intron_lengths <- function(tome,
   if(!is.null(genes)) {
     intron_lengths <- intron_lengths[gene_name %in% genes,]
   }
+
+  H5close()
 
   if(return_as == "vector") {
     unlist(intron_lengths$intron_length)
@@ -220,24 +230,24 @@ read_tome_intron_lengths <- function(tome,
 #'
 read_tome_total_counts <- function(tome,
                                    region = "exon") {
-  root <- H5Fopen(tome)
+  H5close()
   if(region == "exon") {
 
-    total_counts <- h5read(root,"data/total_exon_counts")
+    total_counts <- h5read(tome,"data/total_exon_counts")
 
   } else if(region == "intron") {
 
-    total_counts <- h5read(root,"data/total_intron_counts")
+    total_counts <- h5read(tome,"data/total_intron_counts")
 
   } else if(region == "both") {
 
-    total_exon_counts <- h5read(root,"data/total_exon_counts")
-    total_intron_counts <- h5read(root,"data/total_intron_counts")
+    total_exon_counts <- h5read(tome,"data/total_exon_counts")
+    total_intron_counts <- h5read(tome,"data/total_intron_counts")
     total_counts <- total_exon_counts + total_intron_counts
 
   }
 
-  H5Fclose(root)
+  H5close()
   total_counts
 }
 
@@ -250,15 +260,15 @@ read_tome_total_counts <- function(tome,
 #'
 read_tome_data_dims <- function(tome,
                                 transpose = F) {
-  root <- H5Fopen(tome)
+  H5close()
 
   if(transpose == F) {
-    dims <- h5read(root,"data/exon/dims")
+    dims <- h5read(tome,"data/exon/dims")
   } else if(transpose == T) {
-    dims <- h5read(root,"data/t_exon/dims")
+    dims <- h5read(tome,"data/t_exon/dims")
   }
 
-  H5Fclose(root)
+  H5close()
 
   dims
 }
@@ -395,6 +405,8 @@ read_tome_stats <- function(tome,
   library(rhdf5)
   library(purrr)
 
+  H5close()
+
   ls <- h5ls(tome)
   stats_names <- ls$name[ls$group == "/stats"]
   stats_names <- stats_names[stats_names != "desc"]
@@ -419,6 +431,7 @@ read_tome_stats <- function(tome,
                                     get_all = TRUE)
     }
   } else {
+    H5close()
 
     if(length(stats_names) > 0) {
       stats_message <- paste0("A stats table name (stats_name) is required. Available in this dataset are: ", paste(stats_names,collapse = ", "))
@@ -429,6 +442,7 @@ read_tome_stats <- function(tome,
     stop(stats_message)
 
   }
+  H5close()
 
 
   stats
@@ -462,6 +476,7 @@ read_tome_projection <- function(tome,
                                  proj_name = NULL) {
 
   library(rhdf5)
+  H5close()
 
   ls <- h5ls(tome)
   proj_names <- ls$name[ls$group == "/projection"]
@@ -475,8 +490,12 @@ read_tome_projection <- function(tome,
     proj <- read_tome_data.frame(tome,
                                  proj_target,
                                  stored_as = "data.frame")
+    H5close()
+
     proj
   } else {
+    H5close()
+
     if(length(proj_names) > 0) {
       proj_message <- paste0("A projection name (proj_name) is required. Available in this dataset are: ", paste(proj_names,collapse = ", "))
     } else {
@@ -509,6 +528,7 @@ read_tome_projection_desc <- function(tome) {
 read_tome_dend <- function(tome,
                            dend_name = NULL) {
   library(rhdf5)
+  H5close()
 
   ls <- h5ls(tome)
   dend_names <- ls$name[ls$group == "/dend"]
@@ -521,8 +541,12 @@ read_tome_dend <- function(tome,
 
     dend <- read_tome_serialized(tome,
                                  dend_target)
+    H5close()
+
     dend
   } else {
+    H5close()
+
     if(length(dend_names) > 0) {
       dend_message <- paste0("A dendrogram name (dend_name) is required. Available in this dataset are: ", paste(dend_names,collapse = ", "))
     } else {
@@ -547,6 +571,7 @@ read_tome_mapping <- function(tome,
                               get_all = FALSE) {
   library(rhdf5)
   library(purrr)
+  H5close()
 
   ls <- h5ls(tome)
   mapping_names <- ls$name[ls$group == "/mapping"]
@@ -572,6 +597,7 @@ read_tome_mapping <- function(tome,
                                       get_all = get_all)
     }
   } else {
+    H5close()
 
     if(length(mapping_names) > 0) {
       mapping_message <- paste0("A mapping table name (mapping_name) is required. Available in this dataset are: ", paste(mapping_names,collapse = ", "))
@@ -582,7 +608,7 @@ read_tome_mapping <- function(tome,
     stop(mapping_message)
 
   }
-
+  H5close()
 
   mapping
 }
