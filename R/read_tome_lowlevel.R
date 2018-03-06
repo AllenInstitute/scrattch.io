@@ -25,6 +25,8 @@ read_tome_data.frame <- function(tome,
     if(!is.null(columns)) {
       if(length(columns) > 1) {
         column_pattern <- paste(columns, collapse = "|")
+      } else {
+        column_pattern <- columns
       }
       selected_columns <- all_columns[grepl(column_pattern, columns)]
 
@@ -39,7 +41,7 @@ read_tome_data.frame <- function(tome,
 
     df <- map(selected_columns,
               function(x) {
-                h5read(tome, paste0(df_name,"/", x))
+                h5read(tome, paste0(df_name,"/",x))
               }
     )
     names(df) <- selected_columns
