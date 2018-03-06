@@ -4,7 +4,7 @@
 \alias{write_tome_stats_desc}
 \title{Write a stats descriptions table to a tome file.}
 \usage{
-write_tome_stats_desc(stats_desc, tome, overwrite = FALSE)
+write_tome_stats_desc(stats_desc, tome, overwrite = NULL)
 }
 \arguments{
 \item{stats_desc}{The desc data.frame to write.}

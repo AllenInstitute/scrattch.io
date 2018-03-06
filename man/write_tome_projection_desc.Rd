@@ -4,7 +4,7 @@
 \alias{write_tome_projection_desc}
 \title{Write a projection descriptions table to a tome file.}
 \usage{
-write_tome_projection_desc(proj_desc, tome, overwrite = FALSE)
+write_tome_projection_desc(proj_desc, tome, overwrite = NULL)
 }
 \arguments{
 \item{proj_desc}{The desc data.frame to write.}

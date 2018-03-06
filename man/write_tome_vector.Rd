@@ -4,7 +4,7 @@
 \alias{write_tome_vector}
 \title{Generalized write for individual vector objects to a tome file}
 \usage{
-write_tome_vector(vec, tome, target, overwrite = FALSE)
+write_tome_vector(vec, tome, target, overwrite = NULL)
 }
 \arguments{
 \item{vec}{The vector to store}

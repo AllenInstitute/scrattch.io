@@ -4,7 +4,7 @@
 \alias{write_tome_serialized}
 \title{Generalized write for individual vector objects to a tome file}
 \usage{
-write_tome_serialized(obj, tome, target, overwrite = FALSE)
+write_tome_serialized(obj, tome, target, overwrite = NULL)
 }
 \arguments{
 \item{obj}{The R object to store}

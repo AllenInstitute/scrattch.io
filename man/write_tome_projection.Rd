@@ -4,7 +4,7 @@
 \alias{write_tome_projection}
 \title{Write projection coordinates (e.g. tSNE or PCA) to a tome file.}
 \usage{
-write_tome_projection(proj, proj_name = NULL, tome, overwrite = FALSE)
+write_tome_projection(proj, proj_name = NULL, tome, overwrite = NULL)
 }
 \arguments{
 \item{proj}{A data.frame with projection coordinates to write.

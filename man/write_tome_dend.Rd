@@ -4,7 +4,7 @@
 \alias{write_tome_dend}
 \title{Write a dendrogram object as serialized ASCII to a tome file.}
 \usage{
-write_tome_dend(dend, dend_name, tome, overwrite = FALSE)
+write_tome_dend(dend, dend_name, tome, overwrite = NULL)
 }
 \arguments{
 \item{dend}{The desc data.frame to write.}
