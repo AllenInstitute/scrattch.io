@@ -411,7 +411,7 @@ read_tome_stats <- function(tome,
   stats_names <- ls$name[ls$group == "/stats"]
   stats_names <- stats_names[stats_names != "desc"]
 
-  if(is.null(stats_name)) { stats_name <- ".namenotfound"}
+  if(is.null(stats_name)) { stats_name <- ".namenotfound" }
 
   if(stats_name %in% stats_names) {
 
