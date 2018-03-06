@@ -162,6 +162,7 @@ write_tome_data.frame <- function(df,
   #     })
   #   }
   # }
+  H5close()
 
   if(verbosity == 1) {
     return(TRUE)
@@ -221,6 +222,8 @@ write_tome_vector <- function(vec,
            }
       )
     } else {
+      H5close()
+
       if(verbosity == 2) {
         stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
       } else if(verbosity == 1) {
@@ -238,6 +241,8 @@ write_tome_vector <- function(vec,
   h5write(vec,
           tome,
           target)
+
+  H5close()
 
   if(verbosity == 1) {
     return(TRUE)
@@ -303,6 +308,8 @@ write_tome_serialized <- function(obj,
            }
       )
     } else {
+      H5close()
+
       if(verbosity == 2) {
         stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
 
@@ -323,6 +330,8 @@ write_tome_serialized <- function(obj,
   h5write(ser_obj,
           tome,
           target)
+
+  H5close()
 
   if(verbosity == 1) {
     return(TRUE)

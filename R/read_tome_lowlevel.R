@@ -50,6 +50,8 @@ read_tome_data.frame <- function(tome,
     df <- h5read(tome, df_name)
   }
 
+  H5close()
+
   df
 
 }
@@ -66,6 +68,8 @@ read_tome_serialized <- function(tome,
                        target)
 
   obj <- unserialize(charToRaw(serial_obj))
+
+  H5close()
 
   obj
 }
@@ -187,6 +191,8 @@ read_tome_genes_jagged <- function(tome,
   out$dims <- read_tome_data_dims(tome)
   out$dims[2] <- length(genes)
 
+  H5close()
+
   out
 
 }
@@ -306,6 +312,8 @@ read_tome_samples_jagged <- function(tome,
   out$sample_names <- samples
   out$dims <- read_tome_data_dims(tome, transpose = TRUE)
   out$dims[2] <- length(samples)
+
+  H5close()
 
   out
 
