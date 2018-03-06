@@ -281,27 +281,44 @@ read_tome_dend_desc <- function(tome) {
 #' @param get_all logical, whether or not to append all other columns after the specified columns. Default = FALSE.
 #'
 read_tome_stats <- function(tome,
-                            stats_name,
+                            stats_name = NULL,
                             columns = NULL,
                             get_all = FALSE) {
   library(rhdf5)
   library(purrr)
 
-  stats_target <- paste0("stats/", stats_name)
+  ls <- h5ls(tome)
+  stats_names <- ls$name[ls$group == "stats/"]
 
-  if(!is.null(columns)) {
-    stats <- read_tome_data.frame(tome,
-                                  stats_target,
-                                  stored_as = "vectors",
-                                  columns = c("sample_name", columns),
-                                  get_all = get_all)
+  if(!is.null(stats_name) & stats_name %in% stats_names) {
+
+    stats_target <- paste0("stats/", stats_name)
+
+    if(!is.null(columns)) {
+      stats <- read_tome_data.frame(tome,
+                                    stats_target,
+                                    stored_as = "vectors",
+                                    columns = c("sample_name", columns),
+                                    get_all = get_all)
+    } else {
+      stats <- read_tome_data.frame(tome,
+                                    stats_target,
+                                    stored_as = "vectors",
+                                    columns = "sample_name",
+                                    get_all = get_all)
+    }
   } else {
-    stats <- read_tome_data.frame(tome,
-                                  stats_target,
-                                  stored_as = "vectors",
-                                  columns = "sample_name",
-                                  get_all = get_all)
+
+    if(length(stats_names) > 0) {
+      stats_message <- paste0("A stats table name (stats_name) is required. Available in this dataset are: ", paste(stats_names,collapse = ", "))
+    } else {
+      stats_message <- "No stats tables are found in this dataset."
+    }
+
+    stop(stats_message)
+
   }
+
 
   stats
 }
@@ -323,4 +340,48 @@ read_tome_stats_desc <- function(tome) {
 
   desc
 
+}
+
+#' Read projection coordinates table from a tome file
+#'
+#' @param tome the location of the tome file to read.
+#' @param proj_name the projection to read
+#'
+read_tome_projection <- function(tome,
+                                 proj_name = NULL) {
+
+  library(rhdf5)
+
+  if(!is.null(proj_name)) {
+    proj_target <- paste0("projections/",proj_name)
+
+    proj <- read_tome_data.frame(tome,
+                                 proj_target,
+                                 stored_as = "data.frame")
+    proj
+  } else {
+    ls <- h5ls(tome)
+    proj_names <- ls$name[ls$group == "projections/"]
+    if(length(proj_names) > 0) {
+      proj_message <- paste0("A projection name (proj_name) is required. Available in this dataset are: ", paste(proj_names,collapse = ", "))
+    } else {
+      proj_message <- "No projections are found in this dataset."
+    }
+    stop(proj_message)
+  }
+
+}
+
+#' Read projection descriptions table from a tome file
+#'
+#' @param tome The location of the tome file to read.
+#'
+read_tome_projection_desc <- function(tome) {
+  library(rhdf5)
+
+  desc <- read_tome-data.frame(tome,
+                               "/projections/desc",
+                               stored_as = "data.frame")
+
+  desc
 }
