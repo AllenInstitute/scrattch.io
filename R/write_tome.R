@@ -431,7 +431,7 @@ write_tome_exon_lengths <- function(exon_lengths,
                                     tome,
                                     overwrite = NULL) {
 
-  if(c("gene_name","exon_length") %in% names(exon_lengths)) {
+  if(sum(c("gene_name","exon_length") %in% names(exon_lengths)) == 2) {
     gene_names <- read_tome_gene_names(tome)
 
     exon_df <- exon_lengths[match(gene_names, exon_lengths$gene_name),]
@@ -455,7 +455,7 @@ write_tome_intron_lengths <- function(intron_lengths,
                                       tome,
                                       overwrite = NULL) {
 
-  if(c("gene_name","intron_length") %in% names(intron_lengths)) {
+  if(sum(c("gene_name","intron_length") %in% names(intron_lengths)) == 2) {
     gene_names <- read_tome_gene_names(tome)
 
     intron_df <- intron_lengths[match(gene_names, intron_lengths$gene_name),]
