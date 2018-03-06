@@ -280,6 +280,7 @@ read_tome_anno <- function(tome,
                                  "/sample_meta/anno",
                                  stored_as = "vectors",
                                  columns = c("sample_name", groups),
+                                 match_type = "grep",
                                  get_all = FALSE)
   } else {
     anno <- read_tome_data.frame(tome,

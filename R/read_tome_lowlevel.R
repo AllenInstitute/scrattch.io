@@ -11,6 +11,7 @@ read_tome_data.frame <- function(tome,
                                  df_name,
                                  stored_as = "data.frame",
                                  columns = NULL,
+                                 match_type = "exact",
                                  get_all = FALSE) {
 
   library(rhdf5)
@@ -25,12 +26,17 @@ read_tome_data.frame <- function(tome,
 
     # Filter cols if columns are provided.
     if(!is.null(columns)) {
-      if(length(columns) > 1) {
-        column_pattern <- paste(columns, collapse = "|")
-      } else {
-        column_pattern <- columns
+      if(match_type == "grep") {
+        if(length(columns) > 1) {
+          column_pattern <- paste(columns, collapse = "|")
+        } else {
+          column_pattern <- columns
+        }
+        selected_columns <- all_columns[grepl(column_pattern, all_columns)]
+      } else if(match_type == "exact") {
+        selected_columns <- all_columns[selected_columns %in% columns]
       }
-      selected_columns <- all_columns[grepl(column_pattern, all_columns)]
+
 
       # If get_all, get the selected columns first, then all of the others
       if(get_all) {
