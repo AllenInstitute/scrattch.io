@@ -2,37 +2,13 @@
 % Please edit documentation in R/read_tome.R
 \name{read_tome_sample_names}
 \alias{read_tome_sample_names}
-\alias{read_tome_sample_names}
-\alias{read_tome_sample_names}
 \title{Get all sample names in a tome file}
 \usage{
-read_tome_sample_names(tome, genes = NULL, return_as = "vector")
-
-read_tome_sample_names(tome, genes = NULL, return_as = "vector")
-
-read_tome_sample_names(tome, genes = NULL, return_as = "vector")
+read_tome_sample_names(tome)
 }
 \arguments{
 \item{tome}{tome file to read.}
-
-\item{genes}{specific genes to retrieve}
-
-\item{return_as}{If "vector", will return only the length values as a vector.
-If "data.frame", will return a data.frame with two columns: "gene_name" and "exon_length".}
-
-\item{tome}{tome file to read.}
-
-\item{tome}{tome file to read.}
-
-\item{genes}{specific genes to retrieve}
-
-\item{return_as}{If "vector", will return only the length values as a vector.
-If "data.frame", will return a data.frame with two columns: "gene_name" and "intron_length".}
 }
 \description{
 Get all sample names in a tome file
-
-Get exon lengths from a tome file
-
-Get intron lengths from a tome file
 }

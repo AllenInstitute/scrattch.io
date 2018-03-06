@@ -5,7 +5,7 @@
 \title{Read a data.frame from a tome file}
 \usage{
 read_tome_data.frame(tome, df_name, stored_as = "data.frame",
-  columns = NULL, get_all = FALSE)
+  columns = NULL, match_type = "exact", get_all = FALSE)
 }
 \arguments{
 \item{tome}{tome file to read}

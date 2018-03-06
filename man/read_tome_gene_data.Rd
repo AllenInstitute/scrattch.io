@@ -16,9 +16,9 @@ read_tome_gene_data(tome, genes, regions = "exon", type = "counts",
 
 \item{transform}{Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".}
 
-\item{values}{The type of values to return. Can be "counts" or "cpm". Default = "counts".}
+\item{format}{The format of the output. Can be "data.frame", "matrix", or "dgcMatrix" (sparse matrix). Default is "data.frame".}
 
-\item{form}{The format of the output. Can be "data.frame", or "matrix". Default is "data.frame".}
+\item{values}{The type of values to return. Can be "counts" or "cpm". Default = "counts".}
 }
 \value{
 A data.frame with sample_name as the first column and each subsequent column
