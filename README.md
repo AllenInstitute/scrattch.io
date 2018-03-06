@@ -24,4 +24,4 @@ A major component of scrattch.io is a set of helpful functions for writing and r
 The [.tome cheatsheets on Google Docs](https://docs.google.com/spreadsheets/d/1tJUgnfEXUv1IuzGAykDCTIUTsgzEWkT-jfl4UcEUl48/edit?usp=sharing) is a helpful reference.
 
 ## Contact
-Contact Lucas Graybuck (lucasg@alleninstitute.org) or post and Issue on Github if you find a bug or have a feature request.
+Contact Lucas Graybuck (lucasg@alleninstitute.org) or post an Issue on Github if you find a bug or have a feature request.
