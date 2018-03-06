@@ -1,4 +1,3 @@
-
 #' Save a both exon and intron counts to an HDF5 file (tome)
 #'
 #' @param exon_mat The exon matrix to store in dgCMatrix format
@@ -266,7 +265,7 @@ write_tome_data <- function(exon_mat = NULL,
 #'
 write_tome_anno <- function(anno,
                             tome,
-                            overwrite = FALSE) {
+                            overwrite = NULL) {
 
   if(names(anno)[1] == "sample_id") {
     names(anno)[1] <- "sample_name"
@@ -287,7 +286,7 @@ write_tome_anno <- function(anno,
 #'
 write_tome_anno_desc <- function(anno_desc,
                                  tome,
-                                 overwrite = FALSE) {
+                                 overwrite = NULL) {
 
   write_tome_data.frame(df = anno_desc,
                         tome = tome,
@@ -307,7 +306,7 @@ write_tome_anno_desc <- function(anno_desc,
 write_tome_projection <- function(proj,
                                   proj_name = NULL,
                                   tome,
-                                  overwrite = FALSE) {
+                                  overwrite = NULL) {
   if(!is.null(proj_name)) {
     if(names(proj)[1] == "sample_id") {
       names(proj)[1] <- "sample_name"
@@ -331,7 +330,7 @@ write_tome_projection <- function(proj,
 #'
 write_tome_projection_desc <- function(proj_desc,
                                        tome,
-                                       overwrite = FALSE) {
+                                       overwrite = NULL) {
 
   write_tome_data.frame(df = proj_desc,
                         tome = tome,
@@ -349,7 +348,7 @@ write_tome_projection_desc <- function(proj_desc,
 write_tome_stats <- function(stats,
                              stats_name = NULL,
                              tome,
-                             overwrite = FALSE) {
+                             overwrite = NULL) {
 
   if(!is.null(stats_name)) {
 
@@ -371,7 +370,7 @@ write_tome_stats <- function(stats,
 #'
 write_tome_stats_desc <- function(stats_desc,
                                   tome,
-                                  overwrite = FALSE) {
+                                  overwrite = NULL) {
 
   write_tome_data.frame(df = stats_desc,
                         tome = tome,
@@ -390,7 +389,7 @@ write_tome_stats_desc <- function(stats_desc,
 write_tome_dend <- function(dend,
                             dend_name,
                             tome,
-                            overwrite = FALSE) {
+                            overwrite = NULL) {
 
   if(!is.null(dend_name)) {
     dend_target <- paste0("/dend/",dend_name)
@@ -412,8 +411,8 @@ write_tome_dend <- function(dend,
 #' @param tome Path to the target tome file.
 #'
 write_tome_dend_desc <- function(dend_desc,
-                                  tome,
-                                 overwrite = FALSE) {
+                                 tome,
+                                 overwrite = NULL) {
 
   write_tome_data.frame(df = dend_desc,
                         tome = tome,
@@ -423,24 +422,91 @@ write_tome_dend_desc <- function(dend_desc,
 
 }
 
+#' Write exon lengths to a tome file.
+#'
+#' @param exon_lengths A data.frame containing the columns "gene_name" and "exon_length".
+#' @param tome Path to the target tome file.
+#'
 write_tome_exon_lengths <- function(exon_lengths,
                                     tome,
-                                    overwrite = FALSE) {
+                                    overwrite = NULL) {
 
-  write_tome_vector(vec = exon_lengths,
-                    tome = tome,
-                    target = "/data/exon_lengths",
-                    overwrite = overwrite)
+  if(c("gene_name","exon_length")) {
+    gene_names <- read_tome_gene_names(tome)
+
+    exon_df <- exon_lengths[match(gene_names, exon_lengths$gene_name),]
+
+    write_tome_vector(vec = exon_df$exon_length,
+                      tome = tome,
+                      target = "/data/exon_lengths",
+                      overwrite = overwrite)
+  } else {
+    stop("exon_lengths must be a data.frame containing the columns gene_name and exon_length")
+  }
 
 }
 
+#' Write intron lengths to a tome file.
+#'
+#' @param intron_lengths A data.frame containing the columns "gene_name" and "intron_length".
+#' @param tome Path to the target tome file.
+#'
 write_tome_intron_lengths <- function(intron_lengths,
                                       tome,
-                                      overwrite = FALSE) {
+                                      overwrite = NULL) {
 
-  write_tome_vector(vec = intron_lengths,
-                    tome = tome,
-                    target = "/data/intron_lengths",
-                    overwrite = overwrite)
+  if(c("gene_name","intron_length")) {
+    gene_names <- read_tome_gene_names(tome)
+
+    intron_df <- intron_lengths[match(gene_names, intron_lengths$gene_name),]
+
+    write_tome_vector(vec = intron_df$intron_length,
+                      tome = tome,
+                      target = "/data/intron_lengths",
+                      overwrite = overwrite)
+  } else {
+    stop("intron_lengths must be a data.frame containing the columns gene_name and intron_length")
+  }
+
+}
+
+#' Write gene info table to a tome file.
+#'
+#' @param genes The genes data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_gene_meta <- function(genes,
+                                 tome,
+                                 overwrite = NULL) {
+
+    write_tome_data.frame(df = genes,
+                          tome = tome,
+                          target = "/gene_meta/genes",
+                          store_as = "vectors",
+                          overwrite = overwrite)
+
+}
+
+#' Write a mapping frequencies table to a tome file.
+#'
+#' @param mapping A data.frame with mapping results to write.
+#' @param mapping_name The base name of the mapping Should match the mapping description table
+#' @param tome Path to the target tome file.
+#'
+write_tome_mapping <- function(mapping,
+                               mapping_name = NULL,
+                               tome,
+                               overwrite = NULL) {
+
+  if(!is.null(mapping_name)) {
+
+    write_tome_data.frame(df = mapping,
+                          tome = tome,
+                          target = paste0("/mapping/",mapping_name),
+                          store_as = "vectors",
+                          overwrite = overwrite)
+  } else {
+    stop("A name for the mapping (mapping_name) is required.")
+  }
 
 }

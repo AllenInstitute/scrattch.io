@@ -136,9 +136,7 @@ read_tome_sample_data <- function(tome,
 #' @param tome tome file to read.
 #'
 read_tome_gene_names <- function(tome) {
-  root <- H5Fopen(tome)
-  gene_names <- h5read(root,"/gene_names")
-  H5Fclose(root)
+  gene_names <- h5read(tome,"/gene_names")
   gene_names
 }
 
@@ -147,11 +145,72 @@ read_tome_gene_names <- function(tome) {
 #' @param tome tome file to read.
 #'
 read_tome_sample_names <- function(tome) {
-  root <- H5Fopen(tome)
-  sample_names <- h5read(root,"/sample_names")
-  H5Fclose(root)
+  sample_names <- h5read(tome,"/sample_names")
   sample_names
 }
+
+#' Get exon lengths from a tome file
+#'
+#' @param tome tome file to read.
+#' @param genes specific genes to retrieve
+#' @param return_as If "vector", will return only the length values as a vector.
+#' If "data.frame", will return a data.frame with two columns: "gene_name" and "exon_length".
+#'
+read_tome_sample_names <- function(tome,
+                                   genes = NULL,
+                                   return_as = "vector") {
+
+  exon_lengths <- h5read(tome,"/data/exon_lengths")
+
+  if(return_as == "data.frame" | !is.null(genes)) {
+    tome_genes <- read_tome_gene_names(tome)
+    exon_lengths <- data.frame(gene_name = tome_genes,
+                               exon_length = exon_lengths)
+  }
+
+  if(!is.null(genes)) {
+    exon_lengths <- exon_lengths[gene_name %in% genes,]
+  }
+
+  if(return_as == "vector") {
+    unlist(exon_lengths$exon_length)
+  } else if(return_as == "data.frame") {
+    exon_lengths
+  }
+
+}
+
+#' Get intron lengths from a tome file
+#'
+#' @param tome tome file to read.
+#' @param genes specific genes to retrieve
+#' @param return_as If "vector", will return only the length values as a vector.
+#' If "data.frame", will return a data.frame with two columns: "gene_name" and "intron_length".
+#'
+read_tome_sample_names <- function(tome,
+                                   genes = NULL,
+                                   return_as = "vector") {
+
+  intron_lengths <- h5read(tome,"/data/intron_lengths")
+
+  if(return_as == "data.frame" | !is.null(genes)) {
+    tome_genes <- read_tome_gene_names(tome)
+    intron_lengths <- data.frame(gene_name = tome_genes,
+                               intron_length = intron_lengths)
+  }
+
+  if(!is.null(genes)) {
+    intron_lengths <- intron_lengths[gene_name %in% genes,]
+  }
+
+  if(return_as == "vector") {
+    unlist(intron_lengths$intron_length)
+  } else if(return_as == "data.frame") {
+    intron_lengths
+  }
+
+}
+
 
 #' Get total per-gene counts from a tome-file.
 #'
@@ -391,4 +450,109 @@ read_tome_projection_desc <- function(tome) {
                                stored_as = "data.frame")
 
   desc
+}
+
+#' Read dendrogram object from a tome file
+#'
+#' @param tome the location of the tome file to read.
+#' @param dend_name the dendrogram to read.
+#'
+read_tome_dend <- function(tome,
+                           dend_name = NULL) {
+  library(rhdf5)
+
+  ls <- h5ls(tome)
+  dend_names <- ls$name[ls$group == "/dend"]
+  dend_names <- dend_names[dend_names != "desc"]
+
+  if(is.null(dend_name)) { dend_name <- ".namenotfound" }
+
+  if(dend_name %in% dend_names) {
+    dend_target <- paste0("dend/",dend_name)
+
+    dend <- read_tome_serialized(tome,
+                                 dend_target)
+    dend
+  } else {
+    if(length(dend_names) > 0) {
+      dend_message <- paste0("A dendrogram name (dend_name) is required. Available in this dataset are: ", paste(dend_names,collapse = ", "))
+    } else {
+      dend_message <- "No dendrograms are found in this dataset."
+    }
+    stop(dend_message)
+  }
+
+}
+
+
+#' Read mapping table from a tome file
+#'
+#' @param tome the location of the tome file to read.
+#' @param mapping_name the name of the mapping table to read
+#' @param columns selected columns to read. If NULL, reads all columns. Default = NULL.
+#' @param get_all logical, whether or not to append all other columns after the specified columns. Default = FALSE.
+#'
+read_tome_mapping <- function(tome,
+                              mapping_name = NULL,
+                              columns = NULL,
+                              get_all = FALSE) {
+  library(rhdf5)
+  library(purrr)
+
+  ls <- h5ls(tome)
+  mapping_names <- ls$name[ls$group == "/mapping"]
+  mapping_names <- mapping_names[mapping_names != "desc"]
+
+  if(is.null(mapping_name)) { mapping_name <- ".namenotfound"}
+
+  if(mapping_name %in% mapping_names) {
+
+    mapping_target <- paste0("mapping/", mapping_name)
+
+    if(!is.null(columns)) {
+      mapping <- read_tome_data.frame(tome,
+                                      mapping_target,
+                                      stored_as = "vectors",
+                                      columns = c("sample_name", columns),
+                                      get_all = get_all)
+    } else {
+      mapping <- read_tome_data.frame(tome,
+                                      mapping_target,
+                                      stored_as = "vectors",
+                                      columns = "sample_name",
+                                      get_all = get_all)
+    }
+  } else {
+
+    if(length(mapping_names) > 0) {
+      mapping_message <- paste0("A mapping table name (mapping_name) is required. Available in this dataset are: ", paste(mapping_names,collapse = ", "))
+    } else {
+      mapping_message <- "No mapping tables are found in this dataset."
+    }
+
+    stop(mapping_message)
+
+  }
+
+
+  mapping
+}
+
+#' Read mapping descriptions table from a tome file
+#'
+#' @param tome The location of the tome file to read.
+#'
+read_tome_mapping_desc <- function(tome) {
+
+  library(rhdf5)
+  library(purrr)
+
+  H5close()
+
+  desc <- read_tome_data.frame(tome,
+                               "/mapping/desc",
+                               stored_as = "data.frame")
+
+  desc
+
 }

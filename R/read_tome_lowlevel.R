@@ -52,6 +52,29 @@ read_tome_data.frame <- function(tome,
 
 }
 
+#' Read a serialized object from a tome file
+#'
+#' @param tome tome file to read
+#' @param target character, the name of the serialized object in the tome file structure
+#'
+read_tome_serialized <- function(tome,
+                                 target) {
+
+  serial_obj <- h5read(tome,
+                       target)
+
+  obj <- unserialize(charToRaw(serial_obj))
+
+  obj
+}
+
+
+#' Read tome gene count data as a jagged list
+#'
+#' @param tome the tome file to read.
+#' @param genes a character vector of genes to read from the tome.
+#' @param regions Which regions to retrieve. Can be "exon", "intron", or "both".
+#'
 read_tome_genes_jagged <- function(tome,
                                    genes,
                                    regions = "exon") {
@@ -166,11 +189,15 @@ read_tome_genes_jagged <- function(tome,
 
 }
 
+#' Read tome sample count data as a jagged list
+#'
+#' @param tome the tome file to read.
+#' @param samples a character vector of genes to read from the tome.
+#' @param regions Which regions to retrieve. Can be "exon", "intron", or "both".
+#'
 read_tome_samples_jagged <- function(tome,
                                      samples,
-                                     regions = "exon",
-                                     type = "counts",
-                                     transform = "none") {
+                                     regions = "exon") {
   library(rhdf5)
   library(purrr)
   library(dplyr)
@@ -282,6 +309,12 @@ read_tome_samples_jagged <- function(tome,
 
 }
 
+#' Convert a jagged list of gene counts to a matrix
+#'
+#' @param jagged The jagged list object to convert.
+#' @param rows Character, either "sample_names" or "gene_names".
+#' @param cols Character, either "sample_names" or "gene_names".
+#'
 jagged_to_matrix <- function(jagged,
                              rows = c("sample_names","gene_names"),
                              cols = c("gene_names", "sample_names")) {
@@ -302,6 +335,12 @@ jagged_to_matrix <- function(jagged,
   out
 }
 
+#' Convert a jagged list of gene counts to a data.frame
+#'
+#' @param jagged The jagged list object to convert.
+#' @param rows Character, either "sample_names" or "gene_names".
+#' @param cols Character, either "sample_names" or "gene_names".
+#'
 jagged_to_data.frame <- function(jagged,
                                  rows = c("sample_names","gene_names"),
                                  cols = c("gene_names", "sample_names")) {
@@ -330,6 +369,12 @@ jagged_to_data.frame <- function(jagged,
   out
 }
 
+#' Convert a jagged list of gene counts to a sparse, dgCMatrix
+#'
+#' @param jagged The jagged list object to convert.
+#' @param rows Character, either "sample_names" or "gene_names".
+#' @param cols Character, either "sample_names" or "gene_names".
+#'
 jagged_to_dgCMatrix <- function(jagged,
                                 rows = c("sample_names","gene_names"),
                                 cols = c("gene_names", "sample_names")) {
@@ -342,17 +387,4 @@ jagged_to_dgCMatrix <- function(jagged,
                dimnames = list(jagged[[rows]],
                                jagged[[cols]]))
 
-}
-
-read_tome_dend <- function(tome,
-                           dend_name) {
-
-  dend_target <- paste0("dend/",dend_name)
-
-  serial_dend <- h5read(tome,
-                        dend_target)
-
-  dend <- unserialize(charToRaw(serial_dend))
-
-  dend
 }

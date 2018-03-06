@@ -14,11 +14,15 @@ write_tome_data.frame <- function(df,
                                   tome,
                                   target,
                                   store_as = "vectors",
-                                  overwrite = FALSE) {
+                                  overwrite = NULL) {
 
   library(rhdf5)
   library(purrr)
   library(h5)
+
+  if(is.null(overwrite)) {
+    overwrite <- .scrattch.io_env$overwrite
+  }
 
   H5close()
 
@@ -158,10 +162,14 @@ write_tome_data.frame <- function(df,
 write_tome_vector <- function(vec,
                               tome,
                               target,
-                              overwrite = FALSE) {
+                              overwrite = NULL) {
   library(rhdf5)
   library(purrr)
   library(h5)
+
+  if(is.null(overwrite)) {
+    overwrite <- .scrattch.io_env$overwrite
+  }
 
   H5close()
 
@@ -222,11 +230,15 @@ write_tome_vector <- function(vec,
 write_tome_serialized <- function(obj,
                                   tome,
                                   target,
-                                  overwrite = FALSE) {
+                                  overwrite = NULL) {
 
   library(rhdf5)
   library(purrr)
   library(h5)
+
+  if(is.null(overwrite)) {
+    overwrite <- .scrattch.io_env$overwrite
+  }
 
   H5close()
 
