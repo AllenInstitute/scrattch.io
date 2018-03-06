@@ -290,7 +290,9 @@ read_tome_stats <- function(tome,
   ls <- h5ls(tome)
   stats_names <- ls$name[ls$group == "stats/"]
 
-  if(!is.null(stats_name) & stats_name %in% stats_names) {
+  if(is.null(stats_name)) { stats_name <- ".namenotfound"}
+
+  if(stats_name %in% stats_names) {
 
     stats_target <- paste0("stats/", stats_name)
 
@@ -352,7 +354,12 @@ read_tome_projection <- function(tome,
 
   library(rhdf5)
 
-  if(!is.null(proj_name)) {
+  ls <- h5ls(tome)
+  proj_names <- ls$name[ls$group == "projections/"]
+
+  if(is.null(proj_name)) { proj_name <- ".namenotfound" }
+
+  if(proj_name %in% proj_names) {
     proj_target <- paste0("projections/",proj_name)
 
     proj <- read_tome_data.frame(tome,
@@ -360,8 +367,6 @@ read_tome_projection <- function(tome,
                                  stored_as = "data.frame")
     proj
   } else {
-    ls <- h5ls(tome)
-    proj_names <- ls$name[ls$group == "projections/"]
     if(length(proj_names) > 0) {
       proj_message <- paste0("A projection name (proj_name) is required. Available in this dataset are: ", paste(proj_names,collapse = ", "))
     } else {
