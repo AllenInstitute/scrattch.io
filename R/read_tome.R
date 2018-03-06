@@ -402,7 +402,7 @@ read_tome_stats <- function(tome,
 
   if(stats_name %in% stats_names) {
 
-    stats_target <- paste0("stats/", stats_name)
+    stats_target <- paste0("/stats/", stats_name)
 
     if(!is.null(columns)) {
       stats <- read_tome_data.frame(tome,
