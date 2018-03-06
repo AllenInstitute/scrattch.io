@@ -289,6 +289,7 @@ read_tome_stats <- function(tome,
 
   ls <- h5ls(tome)
   stats_names <- ls$name[ls$group == "/stats"]
+  stats_names <- stats_names[stats_names != "desc"]
 
   if(is.null(stats_name)) { stats_name <- ".namenotfound"}
 
@@ -355,12 +356,13 @@ read_tome_projection <- function(tome,
   library(rhdf5)
 
   ls <- h5ls(tome)
-  proj_names <- ls$name[ls$group == "/projections"]
+  proj_names <- ls$name[ls$group == "/projection"]
+  proj_names <- proj_names[proj_names != "desc"]
 
   if(is.null(proj_name)) { proj_name <- ".namenotfound" }
 
   if(proj_name %in% proj_names) {
-    proj_target <- paste0("projections/",proj_name)
+    proj_target <- paste0("projection/",proj_name)
 
     proj <- read_tome_data.frame(tome,
                                  proj_target,
@@ -385,7 +387,7 @@ read_tome_projection_desc <- function(tome) {
   library(rhdf5)
 
   desc <- read_tome-data.frame(tome,
-                               "/projections/desc",
+                               "/projection/desc",
                                stored_as = "data.frame")
 
   desc
