@@ -268,6 +268,8 @@ write_tome_serialized <- function(obj,
     overwrite <- .scrattch.io_env$overwrite
   }
 
+  verbosity <- .scrattch.io_env$verbosity
+
   H5close()
 
   if(!file.exists(tome)) {

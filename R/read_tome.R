@@ -290,7 +290,8 @@ read_tome_anno <- function(tome,
                                  get_all = TRUE)
   }
 
-  anno
+  anno <- anno %>%
+    select(sample_name, everything())
 
 }
 
