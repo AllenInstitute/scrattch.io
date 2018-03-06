@@ -485,13 +485,11 @@ write_tome_stats <- function(stats,
                              tome) {
 
   if(!is.null(stats_name)) {
-    if(names(stats)[1] == "sample_id") {
-      names(stats)[1] <- "sample_name"
-    }
+
     write_tome_data.frame(df = stats,
                           tome = tome,
                           target = paste0("/stats/",stats_name),
-                          store_as = "data.frame")
+                          store_as = "vectors")
   } else {
     stop("A name for the stats table (stats_name) is required.")
   }
