@@ -34,7 +34,7 @@ read_tome_data.frame <- function(tome,
         }
         selected_columns <- all_columns[grepl(column_pattern, all_columns)]
       } else if(match_type == "exact") {
-        selected_columns <- all_columns[selected_columns %in% columns]
+        selected_columns <- all_columns[all_columns %in% columns]
       }
 
 
