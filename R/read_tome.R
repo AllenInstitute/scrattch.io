@@ -513,7 +513,7 @@ read_tome_projection <- function(tome,
 read_tome_projection_desc <- function(tome) {
   library(rhdf5)
 
-  desc <- read_tome-data.frame(tome,
+  desc <- read_tome_data.frame(tome,
                                "/projection/desc",
                                stored_as = "data.frame")
 
