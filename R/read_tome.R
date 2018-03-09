@@ -3,7 +3,7 @@
 #' @param tome tome file to read. Required.
 #' @param genes A vector of gene names to read. Required.
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
-#' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
+#' @param units The type of values to return. Can be "counts" or "cpm". Default = "counts".
 #' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
 #' @param format The format of the output. Can be "data.frame", "matrix", or "dgcMatrix" (sparse matrix). Default is "data.frame".
 #'
@@ -13,7 +13,7 @@
 read_tome_gene_data <- function(tome,
                                 genes,
                                 regions = "exon",
-                                type = "counts",
+                                units = "counts",
                                 transform = "none",
                                 format = "data.frame") {
   library(rhdf5)
@@ -69,7 +69,7 @@ read_tome_gene_data <- function(tome,
 #' @param tome tome file to read. Required.
 #' @param samples A vector of sample names to read. Required
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
-#' @param values The type of values to return. Can be "counts" or "cpm". Default = "counts".
+#' @param units The type of values to return. Can be "counts" or "cpm". Default = "counts".
 #' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
 #' @param format The format of the output. Can be "data.frame", "matrix", or "dgcMatrix" (sparse matrix). Default is "data.frame".
 #'
@@ -79,7 +79,7 @@ read_tome_gene_data <- function(tome,
 read_tome_sample_data <- function(tome,
                                   samples,
                                   regions = "exon",
-                                  type = "counts",
+                                  units = "counts",
                                   transform = "none",
                                   format = "data.frame") {
   library(rhdf5)
