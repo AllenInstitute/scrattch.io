@@ -4,7 +4,7 @@
 \alias{read_tome_gene_data}
 \title{Read Gene Expression Data from a tome file}
 \usage{
-read_tome_gene_data(tome, genes, regions = "exon", type = "counts",
+read_tome_gene_data(tome, genes, regions = "exon", units = "counts",
   transform = "none", format = "data.frame")
 }
 \arguments{
@@ -14,11 +14,11 @@ read_tome_gene_data(tome, genes, regions = "exon", type = "counts",
 
 \item{regions}{The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".}
 
+\item{units}{The type of values to return. Can be "counts" or "cpm". Default = "counts".}
+
 \item{transform}{Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".}
 
 \item{format}{The format of the output. Can be "data.frame", "matrix", or "dgcMatrix" (sparse matrix). Default is "data.frame".}
-
-\item{values}{The type of values to return. Can be "counts" or "cpm". Default = "counts".}
 }
 \value{
 A data.frame with sample_name as the first column and each subsequent column
