@@ -39,7 +39,7 @@ read_tome_gene_data <- function(tome,
                                cols = "gene_names")
   }
 
-  if(type == "cpm") {
+  if(units == "cpm") {
     root <- H5Fopen(tome)
 
     if(regions == "exon") {
@@ -104,7 +104,7 @@ read_tome_sample_data <- function(tome,
                                cols = "sample_names")
   }
 
-  if(type == "cpm") {
+  if(units == "cpm") {
     root <- H5Fopen(tome)
     sample_names <- h5read(root,"/sample_names")
     sample_index <- match(samples, sample_names)
