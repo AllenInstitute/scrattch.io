@@ -4,7 +4,7 @@
 \alias{write_tome_dend_desc}
 \title{Write a dend descriptions table to a tome file.}
 \usage{
-write_tome_dend_desc(dend_desc, tome)
+write_tome_dend_desc(dend_desc, tome, overwrite = NULL)
 }
 \arguments{
 \item{dend_desc}{The desc data.frame to write.}

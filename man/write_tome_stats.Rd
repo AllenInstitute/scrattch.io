@@ -4,7 +4,7 @@
 \alias{write_tome_stats}
 \title{Write a stats table (e.g. median expression per cluster) to a tome file.}
 \usage{
-write_tome_stats(stats, stats_name = NULL, tome)
+write_tome_stats(stats, stats_name = NULL, tome, overwrite = NULL)
 }
 \arguments{
 \item{stats}{The stats data.frame to write.}

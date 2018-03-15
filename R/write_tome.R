@@ -1,4 +1,3 @@
-
 #' Save a both exon and intron counts to an HDF5 file (tome)
 #'
 #' @param exon_mat The exon matrix to store in dgCMatrix format
@@ -259,156 +258,14 @@ write_tome_data <- function(exon_mat = NULL,
 
 }
 
-
-#' Generalized write for data.frames to a tome file
-#'
-#' This function currently only works in an overwrite mode. Anything at the target
-#' location will be removed, and the new df will be written.
-#'
-#' @param df The data.frame to store
-#' @param tome Path to the target tome file
-#' @param target The target location within the tome file
-#' @param store_as Either "data.frame", which will store as a compound object; or
-#' "vectors", which stores each column as a separate object.
-#'
-write_tome_data.frame <- function(df,
-                                  tome,
-                                  target,
-                                  store_as = "vectors") {
-
-  library(rhdf5)
-  library(purrr)
-  library(h5)
-
-  H5close()
-
-  if(!file.exists(tome)) {
-    print(paste0(tome," doesn't exist. Creating new file."))
-    h5createFile(tome)
-    H5close()
-  }
-
-  target_path <- sub("/$","",target)
-
-  if(store_as == "vectors") {
-    target_path <- target_path
-  } else if(store_as == "data.frame") {
-    target_path <- sub("(/.+/).+","\\1",target_path)
-  }
-
-  target_path <- sub("/$","",target_path)
-
-  target_groups <- collapse_along(unlist(strsplit(target_path,"/"))[-1])
-  target_groups <- paste0("/",target_groups)
-
-  ## Now, need to check for existing vectors (for vector write)
-  ## or existing frame (for data.frame write)
-  #
-  #   existing_anno <- ls %>% filter(group == "/sample_meta/anno")
-  #   anno_cols <- names(anno)
-
-  # If overwrite, remove everything
-  #if(mode == "overwrite") {
-
-  ls <- h5ls(tome) %>%
-    mutate(full_name = ifelse(group == "/",
-                              paste0(group, name),
-                              paste(group, name, sep = "/")))
-
-  existing_objects <- ls %>%
-    filter(group == target | full_name == target)
-
-  if(length(existing_objects$full_name) > 0) {
-    print(paste0("Removing existing ", target))
-
-    walk(existing_objects$full_name,
-         function(x) {
-           suppressWarnings(
-             h5_delete(tome, x)
-           )
-         }
-    )
-  }
-
-  # check for group structure
-  for(target_group in target_groups) {
-    ls <- h5ls(tome) %>%
-      mutate(full_name = ifelse(group == "/",
-                                paste0(group, name),
-                                paste(group, name, sep = "/")))
-
-    if(!target_group %in% ls$full_name) {
-      print(paste0("Creating Group ",target_group))
-      h5createGroup(tome, target_group)
-    }
-  }
-
-  print(paste0("Writing ", target))
-
-  if(store_as == "vectors") {
-    walk(names(df), function(x) {
-      vec_target <- paste(target,x,sep = "/")
-      h5write(df[[x]],
-              tome,
-              vec_target)
-    })
-
-  } else if(store_as == "data.frame") {
-    h5write(df,
-            tome,
-            target)
-  }
-
-  # }
-  # alternate modes for future use.
-  # else if(mode == "add") {
-  #
-  #   if(nrow(existing_anno) > 0) {
-  #     anno_cols <- anno_cols[!anno_cols %in% existing_anno$name]
-  #
-  #     if(length(anno_cols) > 0) {
-  #       print(paste0("Adding columns ", paste(anno_cols, collapse = ", "), " to /sample_meta/anno."))
-  #
-  #       # Order to match existing annotations
-  #       existing_sample_names <- h5read(tome, "/sample_meta/anno/sample_name")
-  #
-  #       anno <- anno %>%
-  #         select(one_of("sample_name", anno_cols))
-  #
-  #       anno <- anno[match(anno$sample_name, existing_sample_names),]
-  #
-  #       # Write the new columns
-  #       walk(anno_cols, function(x) {
-  #         target <- paste0("/sample_meta/anno/",x)
-  #         h5write(anno[[x]],
-  #                 tome,
-  #                 target)
-  #       })
-  #     } else {
-  #       print("No new columns to add. If you want to replace values, try mode = 'replace' to replace the whole anno table.")
-  #     }
-  #   } else {
-  #     print("Writing /sample_meta/anno")
-  #     anno_cols <- names(anno)
-  #     walk(anno_cols, function(x) {
-  #       target <- paste0("/sample_meta/anno/",x)
-  #       h5write(anno[[x]],
-  #               tome,
-  #               target)
-  #     })
-  #   }
-  # }
-
-}
-
-
 #' Write an annotations table to a tome file.
 #'
 #' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
 #' @param tome Path to the target tome file.
 #'
 write_tome_anno <- function(anno,
-                            tome) {
+                            tome,
+                            overwrite = NULL) {
 
   if(names(anno)[1] == "sample_id") {
     names(anno)[1] <- "sample_name"
@@ -417,7 +274,8 @@ write_tome_anno <- function(anno,
   write_tome_data.frame(df = anno,
                         tome = tome,
                         target = "/sample_meta/anno",
-                        store_as = "vectors")
+                        store_as = "vectors",
+                        overwrite = overwrite)
 
 }
 
@@ -427,12 +285,14 @@ write_tome_anno <- function(anno,
 #' @param tome Path to the target tome file.
 #'
 write_tome_anno_desc <- function(anno_desc,
-                                 tome) {
+                                 tome,
+                                 overwrite = NULL) {
 
   write_tome_data.frame(df = anno_desc,
                         tome = tome,
                         target = "/sample_meta/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
@@ -445,7 +305,8 @@ write_tome_anno_desc <- function(anno_desc,
 #'
 write_tome_projection <- function(proj,
                                   proj_name = NULL,
-                                  tome) {
+                                  tome,
+                                  overwrite = NULL) {
   if(!is.null(proj_name)) {
     if(names(proj)[1] == "sample_id") {
       names(proj)[1] <- "sample_name"
@@ -454,7 +315,8 @@ write_tome_projection <- function(proj,
     write_tome_data.frame(df = proj,
                           tome = tome,
                           target = paste0("/projection/",proj_name),
-                          store_as = "data.frame")
+                          store_as = "data.frame",
+                          overwrite = overwrite)
   } else {
     stop("A name for the projection (proj_name) is required.")
   }
@@ -467,11 +329,14 @@ write_tome_projection <- function(proj,
 #' @param tome Path to the target tome file.
 #'
 write_tome_projection_desc <- function(proj_desc,
-                                       tome) {
+                                       tome,
+                                       overwrite = NULL) {
+
   write_tome_data.frame(df = proj_desc,
                         tome = tome,
                         target = "/projection/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
@@ -482,14 +347,16 @@ write_tome_projection_desc <- function(proj_desc,
 #'
 write_tome_stats <- function(stats,
                              stats_name = NULL,
-                             tome) {
+                             tome,
+                             overwrite = NULL) {
 
   if(!is.null(stats_name)) {
 
     write_tome_data.frame(df = stats,
                           tome = tome,
                           target = paste0("/stats/",stats_name),
-                          store_as = "vectors")
+                          store_as = "vectors",
+                          overwrite = overwrite)
   } else {
     stop("A name for the stats table (stats_name) is required.")
   }
@@ -502,12 +369,14 @@ write_tome_stats <- function(stats,
 #' @param tome Path to the target tome file.
 #'
 write_tome_stats_desc <- function(stats_desc,
-                                       tome) {
+                                  tome,
+                                  overwrite = NULL) {
 
   write_tome_data.frame(df = stats_desc,
                         tome = tome,
                         target = "/stats/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
 
 }
 
@@ -519,35 +388,16 @@ write_tome_stats_desc <- function(stats_desc,
 #'
 write_tome_dend <- function(dend,
                             dend_name,
-                            tome) {
+                            tome,
+                            overwrite = NULL) {
 
   if(!is.null(dend_name)) {
+    dend_target <- paste0("/dend/",dend_name)
 
-    ls <- h5ls(tome) %>%
-      mutate(full_name = ifelse(group == "/",
-                                paste0(group, name),
-                                paste(group, name, sep = "/")))
-
-    if(!"/dend" %in% ls$full_name) {
-      print("Creating group /dend")
-      h5createGroup(tome,
-                    "/dend")
-    }
-
-    dend_target <- paste0("/dend/", dend_name)
-
-    if(dend_target %in% ls$full_name) {
-      print(paste0("Removing existing ",dend_target))
-      h5_delete(tome, dend_target)
-    }
-
-    print(paste0("Writing ",dend_target))
-
-    serial_dend <- rawToChar(serialize(dend, NULL, ascii = T))
-
-    h5write(serial_dend,
-            tome,
-            dend_target)
+    write_tome_serialized(dend,
+                          tome,
+                          dend_target,
+                          overwrite = overwrite)
 
   } else {
     stop("A name for the dendrogram (dend_name) is required.")
@@ -561,11 +411,119 @@ write_tome_dend <- function(dend,
 #' @param tome Path to the target tome file.
 #'
 write_tome_dend_desc <- function(dend_desc,
-                                  tome) {
+                                 tome,
+                                 overwrite = NULL) {
 
   write_tome_data.frame(df = dend_desc,
                         tome = tome,
                         target = "/dend/desc",
-                        store_as = "data.frame")
+                        store_as = "data.frame",
+                        overwrite = overwrite)
+
+}
+
+#' Write exon lengths to a tome file.
+#'
+#' @param exon_lengths A data.frame containing the columns "gene_name" and "exon_length".
+#' @param tome Path to the target tome file.
+#'
+write_tome_exon_lengths <- function(exon_lengths,
+                                    tome,
+                                    overwrite = NULL) {
+
+  if(sum(c("gene_name","exon_length") %in% names(exon_lengths)) == 2) {
+    gene_names <- read_tome_gene_names(tome)
+
+    exon_df <- exon_lengths[match(gene_names, exon_lengths$gene_name),]
+
+    write_tome_vector(vec = exon_df$exon_length,
+                      tome = tome,
+                      target = "/data/exon_lengths",
+                      overwrite = overwrite)
+  } else {
+    stop("exon_lengths must be a data.frame containing the columns gene_name and exon_length")
+  }
+
+}
+
+#' Write intron lengths to a tome file.
+#'
+#' @param intron_lengths A data.frame containing the columns "gene_name" and "intron_length".
+#' @param tome Path to the target tome file.
+#'
+write_tome_intron_lengths <- function(intron_lengths,
+                                      tome,
+                                      overwrite = NULL) {
+
+  if(sum(c("gene_name","intron_length") %in% names(intron_lengths)) == 2) {
+    gene_names <- read_tome_gene_names(tome)
+
+    intron_df <- intron_lengths[match(gene_names, intron_lengths$gene_name),]
+
+    write_tome_vector(vec = intron_df$intron_length,
+                      tome = tome,
+                      target = "/data/intron_lengths",
+                      overwrite = overwrite)
+  } else {
+    stop("intron_lengths must be a data.frame containing the columns gene_name and intron_length")
+  }
+
+}
+
+#' Write gene info table to a tome file.
+#'
+#' @param genes The genes data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_gene_meta <- function(genes,
+                                 tome,
+                                 overwrite = NULL) {
+
+    write_tome_data.frame(df = genes,
+                          tome = tome,
+                          target = "/gene_meta/genes",
+                          store_as = "vectors",
+                          overwrite = overwrite)
+
+}
+
+#' Write a gene metadata descriptions table to a tome file.
+#'
+#' @param genes_desc The desc data.frame to write.
+#' @param tome Path to the target tome file.
+#'
+write_tome_gene_meta_desc <- function(genes_desc,
+                                      tome,
+                                      overwrite = NULL) {
+
+  write_tome_data.frame(df = genes_desc,
+                        tome = tome,
+                        target = "/gene_meta/desc",
+                        store_as = "data.frame",
+                        overwrite = overwrite)
+
+}
+
+#' Write a mapping frequencies table to a tome file.
+#'
+#' @param mapping A data.frame with mapping results to write.
+#' @param mapping_name The base name of the mapping Should match the mapping description table
+#' @param tome Path to the target tome file.
+#'
+write_tome_mapping <- function(mapping,
+                               mapping_name = NULL,
+                               tome,
+                               overwrite = NULL) {
+
+  if(!is.null(mapping_name)) {
+
+    write_tome_data.frame(df = mapping,
+                          tome = tome,
+                          target = paste0("/mapping/",mapping_name),
+                          store_as = "vectors",
+                          overwrite = overwrite)
+  } else {
+    stop("A name for the mapping (mapping_name) is required.")
+  }
 
 }

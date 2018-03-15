@@ -5,7 +5,11 @@
 \title{Read a data.frame from a tome file}
 \usage{
 read_tome_data.frame(tome, df_name, stored_as = "data.frame",
+<<<<<<< HEAD
   columns = NULL, get_all = FALSE)
+=======
+  columns = NULL, match_type = "exact", get_all = FALSE)
+>>>>>>> 671967780e5aa1cf6e6f548dca3a2d6d438a9809
 }
 \arguments{
 \item{tome}{tome file to read}
