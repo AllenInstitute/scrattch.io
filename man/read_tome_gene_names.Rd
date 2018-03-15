@@ -7,7 +7,7 @@
 read_tome_gene_names(tome)
 }
 \arguments{
-\item{tome}{Tome file to read.}
+\item{tome}{tome file to read.}
 }
 \description{
 Get all gene names in a tome file

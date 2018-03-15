@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_tome.R
 \name{read_tome_anno_desc}
 \alias{read_tome_anno_desc}
-\title{Read desc table from a tome file}
+\title{Read annotation descriptions table from a tome file}
 \usage{
 read_tome_anno_desc(tome)
 }
@@ -10,5 +10,5 @@ read_tome_anno_desc(tome)
 \item{tome}{The location of the tome file to read.}
 }
 \description{
-Read desc table from a tome file
+Read annotation descriptions table from a tome file
 }
