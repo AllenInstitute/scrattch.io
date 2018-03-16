@@ -412,3 +412,41 @@ jagged_to_dgCMatrix <- function(jagged,
                                jagged[[cols]]))
 
 }
+
+#' Read a whole sparse matrix directly from a tome file
+#'
+#' @param tome
+#' @param target
+#'
+read_tome_dgCMatrix <- function(tome,
+                                target) {
+  library(rhdf5)
+  library(purrr)
+  library(dplyr)
+  library(Matrix)
+
+  H5close()
+
+  root <- H5Fopen(tome)
+
+  i_path <- paste0(target,"/i")
+  p_path <- paste0(target,"/p")
+  x_path <- paste0(target,"/x")
+  dims_path <- paste0(target,"/dims")
+
+  i <- as.vector(h5read(root, i_path))
+  p <- h5read(root, p_path)
+  x <- as.vector(h5read(root, x_path))
+  dims <- h5read(root, dims_path)
+
+  H5Fclose(root)
+  H5close()
+
+  sparseMatrix(i = i,
+               p = p,
+               x = x,
+               index1 = FALSE,
+               dims = dims)
+
+}
+
