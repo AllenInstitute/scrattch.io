@@ -49,15 +49,6 @@ write_tome_data.frame <- function(df,
   target_groups <- collapse_along(unlist(strsplit(target_path,"/"))[-1])
   target_groups <- paste0("/",target_groups)
 
-  ## Now, need to check for existing vectors (for vector write)
-  ## or existing frame (for data.frame write)
-  #
-  #   existing_anno <- ls %>% filter(group == "/sample_meta/anno")
-  #   anno_cols <- names(anno)
-
-  # If overwrite, remove everything
-  #if(mode == "overwrite") {
-
   ls <- h5ls(tome) %>%
     mutate(full_name = ifelse(group == "/",
                               paste0(group, name),
@@ -91,19 +82,8 @@ write_tome_data.frame <- function(df,
   }
 
   # check for group structure
-  for(target_group in target_groups) {
-    ls <- h5ls(tome) %>%
-      mutate(full_name = ifelse(group == "/",
-                                paste0(group, name),
-                                paste(group, name, sep = "/")))
-
-    if(!target_group %in% ls$full_name) {
-      if(verbosity == 2) {
-        print(paste0("Creating Group ",target_group))
-      }
-      h5createGroup(tome, target_group)
-    }
-  }
+  write_tome_group(tome,
+                   target_path)
 
   if(verbosity == 2) {
     print(paste0("Writing ", target))
@@ -123,51 +103,53 @@ write_tome_data.frame <- function(df,
             target)
   }
 
-  # }
-  # alternate modes for future use.
-  # else if(mode == "add") {
-  #
-  #   if(nrow(existing_anno) > 0) {
-  #     anno_cols <- anno_cols[!anno_cols %in% existing_anno$name]
-  #
-  #     if(length(anno_cols) > 0) {
-  #       print(paste0("Adding columns ", paste(anno_cols, collapse = ", "), " to /sample_meta/anno."))
-  #
-  #       # Order to match existing annotations
-  #       existing_sample_names <- h5read(tome, "/sample_meta/anno/sample_name")
-  #
-  #       anno <- anno %>%
-  #         select(one_of("sample_name", anno_cols))
-  #
-  #       anno <- anno[match(anno$sample_name, existing_sample_names),]
-  #
-  #       # Write the new columns
-  #       walk(anno_cols, function(x) {
-  #         target <- paste0("/sample_meta/anno/",x)
-  #         h5write(anno[[x]],
-  #                 tome,
-  #                 target)
-  #       })
-  #     } else {
-  #       print("No new columns to add. If you want to replace values, try mode = 'replace' to replace the whole anno table.")
-  #     }
-  #   } else {
-  #     print("Writing /sample_meta/anno")
-  #     anno_cols <- names(anno)
-  #     walk(anno_cols, function(x) {
-  #       target <- paste0("/sample_meta/anno/",x)
-  #       h5write(anno[[x]],
-  #               tome,
-  #               target)
-  #     })
-  #   }
-  # }
   H5close()
 
   if(verbosity == 1) {
     return(TRUE)
   }
 
+}
+
+write_tome_group <- function(tome,
+                             target_path) {
+
+  library(dplyr)
+  library(rhdf5)
+
+  verbosity <- .scrattch.io_env$verbosity
+
+  H5close()
+
+  ls <- h5ls(tome)
+
+  target_path <- sub("/$","",target_path)
+
+  target_groups <- collapse_along(unlist(strsplit(target_path,"/"))[-1])
+  if(target_groups[1] == "") {
+    target_groups <- target_groups[-1]
+  }
+  target_groups <- paste0("/",target_groups)
+
+  # check for group structure
+  for(target_group in target_groups) {
+    ls <- h5ls(tome) %>%
+      mutate(full_name = ifelse(group == "/",
+                                paste0(group, name),
+                                paste(group, name, sep = "/")))
+
+    # If the group doesn't exist, create it
+    if(!target_group %in% ls$full_name) {
+      if(verbosity == 2) {
+        print(paste0("Creating Group ",target_group))
+      }
+      h5createGroup(tome, target_group)
+    } else {
+      if(verbosity == 2) {
+        print(paste0(target_group," already exists. Skipping."))
+      }
+    }
+  }
 }
 
 #' Generalized write for individual vector objects to a tome file
@@ -234,9 +216,15 @@ write_tome_vector <- function(vec,
 
   vec <- unlist(vec)
 
-    if(verbosity == 2) {
+  if(verbosity == 2) {
     print(paste0("Writing ", target))
   }
+
+  target_path <- sub("/$","",target)
+  target_path <- sub("(/.+/).+","\\1",target_path)
+
+  write_tome_group(tome,
+                   target_path)
 
   h5write(vec,
           tome,
@@ -327,6 +315,12 @@ write_tome_serialized <- function(obj,
     print(paste0("Writing ", target))
   }
 
+  target_path <- sub("/$","",target)
+  target_path <- sub("(/.+/).+","\\1",target_path)
+
+  write_tome_group(tome,
+                   target_path)
+
   h5write(ser_obj,
           tome,
           target)
@@ -337,4 +331,75 @@ write_tome_serialized <- function(obj,
     return(TRUE)
   }
 
+}
+
+#' Generalized write for dgCMatrix objects to a tome file
+#'
+#'
+#' @param mat The dgCMatrix object to store
+#' @param tome Path to the target tome file
+#' @param target The target location within the tome file
+#' @param overwrite logical, whether or not to overwrite existing objects. Default = FALSE.
+#' @param compression_level The compression level to use for long vectors x and i between 0 and 9. Default = 4.
+#'
+write_tome_dgCMatrix <- function(mat,
+                                 tome,
+                                 target,
+                                 overwrite = NULL,
+                                 compression_level = 4) {
+
+  library(rhdf5)
+  library(h5)
+  library(Matrix)
+
+  if(is.null(overwrite)) {
+    overwrite <- .scrattch.io_env$overwrite
+  }
+
+  verbosity <- .scrattch.io_env$verbosity
+
+  H5close()
+
+  target_path <- sub("/$","",target)
+  write_tome_group(tome,
+                   target_path)
+
+  if(verbosity == 2) {
+    print(paste0("Writing ",target,"/x."))
+  }
+  h5createDataset(tome,
+                  dataset = paste0(target,"/x"),
+                  dims = length(mat@x),
+                  chunk = 1000,
+                  level = compression_level)
+  h5write(mat@x,
+          tome,
+          paste0(target,"/x"))
+
+  # data indices
+  if(verbosity == 2) {
+    print(paste0("Writing ",target,"/i."))
+  }
+  h5createDataset(tome,
+                  dataset = paste0(target,"/i"),
+                  dims = length(mat@x),
+                  chunk = 1000,
+                  level = compression_level)
+  h5write(mat@i,
+          tome,
+          paste0(target,"/i"))
+
+  # data index pointers
+  if(verbosity == 2) {
+    print(paste0("Writing ",target,"/p."))
+  }
+  h5write(mat@p,
+          tome,
+          paste0(target,"/p"))
+
+  h5write(c(nrow(mat), ncol(mat)),
+          tome,
+          paste0(target,"/dims"))
+
+  H5close()
 }
