@@ -450,3 +450,22 @@ read_tome_dgCMatrix <- function(tome,
 
 }
 
+#' Check if an object in a tome file exists
+#'
+#' @param tome the tome file to check
+#' @param name the name of the object in the tome file to check
+#'
+#' @return logical. TRUE if exists, FALSE if not.
+#'
+check_tome_existence <- function(tome,
+                                 name) {
+  library(rhdf5)
+  library(dplyr)
+
+  ls <- h5ls(tome)
+  tome_names <- paste(ls$group, ls$name, sep = "/")
+  tome_names <- sub("^//","/",tome_names)
+
+  name %in% tome_names
+
+}
