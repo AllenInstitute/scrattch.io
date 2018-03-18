@@ -415,8 +415,8 @@ jagged_to_dgCMatrix <- function(jagged,
 
 #' Read a whole sparse matrix directly from a tome file
 #'
-#' @param tome
-#' @param target
+#' @param tome Tome file to read.
+#' @param target The sparse matrix to read within the tome file.
 #'
 read_tome_dgCMatrix <- function(tome,
                                 target) {

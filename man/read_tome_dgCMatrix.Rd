@@ -7,7 +7,9 @@
 read_tome_dgCMatrix(tome, target)
 }
 \arguments{
-\item{target}{}
+\item{tome}{Tome file to read.}
+
+\item{target}{The sparse matrix to read within the tome file.}
 }
 \description{
 Read a whole sparse matrix directly from a tome file
