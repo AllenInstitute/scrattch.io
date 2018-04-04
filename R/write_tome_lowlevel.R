@@ -94,7 +94,8 @@ write_tome_data.frame <- function(df,
       vec_target <- paste(target,x,sep = "/")
       h5write(df[[x]],
               tome,
-              vec_target)
+              vec_target,
+              level = 0)
     })
 
   } else if(store_as == "data.frame") {
