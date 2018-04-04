@@ -5,6 +5,8 @@
 #' @param tome The HDF5 file to write to
 #' @param cols_are Specifies whether columns in the matrix are sample_ids or genes
 #' @param overwrite Whether or not to overwrite an existing tome
+#' @param orientations Which data orientations to write. Options are "both","gene_name", and "sample_name". "gene_name" and "sample_name" refer to the indexing of the matrix (i.e. columns in a dgCMatrix).
+#'  Usually, you'll want to use the default, "both", to ensure compatibility with scrattch.
 #' @param compression_level The data compression level for large HDF5 matrix objects. default = 4.
 #'
 write_tome_data <- function(exon_mat = NULL,
@@ -12,6 +14,7 @@ write_tome_data <- function(exon_mat = NULL,
                             tome = "counts.tome",
                             cols_are = "sample_name",
                             overwrite = F,
+                            orientations = "both",
                             compression_level = 4) {
 
   library(Matrix)
@@ -41,22 +44,28 @@ write_tome_data <- function(exon_mat = NULL,
   if(grepl("sample",cols_are) | grepl("cell",cols_are)) {
     print("Columns are samples; Rows are genes. Matrices will be transposed.")
     if(!is.null(exon_mat)) {
-      t_exon_mat <- exon_mat
-      exon_mat <- Matrix::t(exon_mat)
+
+        t_exon_mat <- exon_mat
+        exon_mat <- Matrix::t(exon_mat)
+
     }
 
     if(!is.null(intron_mat)) {
-      t_intron_mat <- intron_mat
-      intron_mat <- Matrix::t(intron_mat)
+
+        t_intron_mat <- intron_mat
+        intron_mat <- Matrix::t(intron_mat)
+
     }
 
   } else {
     print("Columns are genes; Rows are samples. Matrices will be used as-is.")
     if(!is.null(exon_mat)) {
-      t_exon_mat <- Matrix::t(exon_mat)
+        t_exon_mat <- Matrix::t(exon_mat)
+
     }
     if(!is.null(intron_mat)) {
-      t_intron_mat <- Matrix::t(intron_mat)
+        t_intron_mat <- Matrix::t(intron_mat)
+
     }
   }
 
@@ -67,148 +76,164 @@ write_tome_data <- function(exon_mat = NULL,
 
   ## Exon Data
   if(!is.null(exon_mat)) {
-    h5createGroup(tome, "data/exon")
-    h5createGroup(tome, "data/t_exon")
-    suppressWarnings({
-      # Rows = Samples, Columns = Genes (Fast gene retrieval)
-      print("Writing data/exon/x.")
-      # data values
-      h5createDataset(tome,
-                      dataset = "data/exon/x",
-                      dims = length(exon_mat@x),
-                      chunk = 1000,
-                      level = compression_level)
-      h5write(exon_mat@x,
-              tome,
-              "data/exon/x")
 
-      # data indices
-      print("Writing data/exon/i.")
-      h5createDataset(tome,
-                      dataset = "data/exon/i",
-                      dims = length(exon_mat@x),
-                      chunk = 1000, level = compression_level)
-      h5write(exon_mat@i,
-              tome,
-              "data/exon/i")
+    # Rows = Samples, Columns = Genes (Fast gene retrieval)
+    if(orientations %in% c("both","gene_name")) {
+      h5createGroup(tome, "data/exon")
+      suppressWarnings({
+        print("Writing data/exon/x.")
+        # data values
+        h5createDataset(tome,
+                        dataset = "data/exon/x",
+                        dims = length(exon_mat@x),
+                        chunk = 1000,
+                        level = compression_level)
+        h5write(exon_mat@x,
+                tome,
+                "data/exon/x")
 
-      # data index pointers
-      print("Writing data/exon/p.")
-      h5write(exon_mat@p,
-              tome,
-              "data/exon/p")
+        # data indices
+        print("Writing data/exon/i.")
+        h5createDataset(tome,
+                        dataset = "data/exon/i",
+                        dims = length(exon_mat@x),
+                        chunk = 1000, level = compression_level)
+        h5write(exon_mat@i,
+                tome,
+                "data/exon/i")
 
-      h5write(c(nrow(exon_mat), ncol(exon_mat)),
-              tome,
-              "data/exon/dims")
+        # data index pointers
+        print("Writing data/exon/p.")
+        h5write(exon_mat@p,
+                tome,
+                "data/exon/p")
 
-      # Rows = Genes, Columns = Samples (Fast sample retrieval)
+        h5write(c(nrow(exon_mat), ncol(exon_mat)),
+                tome,
+                "data/exon/dims")
+      })
+    }
 
-      # t_data values
-      print("Writing data/t_exon/x.")
-      h5createDataset(tome,
-                      dataset = "data/t_exon/x",
-                      dims = length(t_exon_mat@x),
-                      chunk = 1000,
-                      level = compression_level)
-      h5write(t_exon_mat@x,
-              tome,
-              "data/t_exon/x")
+    # Rows = Genes, Columns = Samples (Fast sample retrieval)
+    if(orientations %in% c("both","sample_name")) {
+      h5createGroup(tome, "data/t_exon")
+      suppressWarnings({
+        # t_data values
+        print("Writing data/t_exon/x.")
+        h5createDataset(tome,
+                        dataset = "data/t_exon/x",
+                        dims = length(t_exon_mat@x),
+                        chunk = 1000,
+                        level = compression_level)
+        h5write(t_exon_mat@x,
+                tome,
+                "data/t_exon/x")
 
-      # t_data indices
-      print("Writing data/t_exon/i.")
-      h5createDataset(tome,
-                      dataset = "data/t_exon/i",
-                      dims = length(t_exon_mat@i),
-                      chunk = 1000,
-                      level = compression_level)
-      h5write(t_exon_mat@i,
-              tome,
-              "data/t_exon/i")
+        # t_data indices
+        print("Writing data/t_exon/i.")
+        h5createDataset(tome,
+                        dataset = "data/t_exon/i",
+                        dims = length(t_exon_mat@i),
+                        chunk = 1000,
+                        level = compression_level)
+        h5write(t_exon_mat@i,
+                tome,
+                "data/t_exon/i")
 
-      # t_data index pointers
-      print("Writing data/t_exon/p.")
-      h5write(t_exon_mat@p,
-              tome,
-              "data/t_exon/p")
-      h5write(c(nrow(t_exon_mat), ncol(t_exon_mat)),
-              tome,
-              "data/t_exon/dims")
-    })
+        # t_data index pointers
+        print("Writing data/t_exon/p.")
+        h5write(t_exon_mat@p,
+                tome,
+                "data/t_exon/p")
+        h5write(c(nrow(t_exon_mat), ncol(t_exon_mat)),
+                tome,
+                "data/t_exon/dims")
+      })
+    }
+
   }
 
   if(!is.null(intron_mat)) {
-    h5createGroup(tome, "data/intron")
-    h5createGroup(tome, "data/t_intron")
 
-    suppressWarnings({
+    if(orientations %in% c("both","gene_name")) {
 
-      ## Intron data
-      # Rows = Samples, Columns = Genes (Fast gene retrieval)
-      print("Writing data/intron/x.")
-      # data values
-      h5createDataset(tome,
-                      dataset = "data/intron/x",
-                      dims = length(intron_mat@x),
-                      chunk = 1000,
-                      level = compression_level)
-      h5write(intron_mat@x,
-              tome,
-              "data/intron/x")
+      h5createGroup(tome, "data/intron")
 
-      # data indices
-      print("Writing data/intron/i.")
-      h5createDataset(tome,
-                      dataset = "data/intron/i",
-                      dims = length(intron_mat@x),
-                      chunk = 1000, level = compression_level)
-      h5write(intron_mat@i,
-              tome,
-              "data/intron/i")
+      suppressWarnings({
 
-      # data index pointers
-      print("Writing data/intron/p.")
-      h5write(intron_mat@p,
-              tome,
-              "data/intron/p")
+        ## Intron data
+        # Rows = Samples, Columns = Genes (Fast gene retrieval)
+        print("Writing data/intron/x.")
+        # data values
+        h5createDataset(tome,
+                        dataset = "data/intron/x",
+                        dims = length(intron_mat@x),
+                        chunk = 1000,
+                        level = compression_level)
+        h5write(intron_mat@x,
+                tome,
+                "data/intron/x")
 
-      h5write(c(nrow(intron_mat), ncol(intron_mat)),
-              tome,
-              "data/intron/dims")
+        # data indices
+        print("Writing data/intron/i.")
+        h5createDataset(tome,
+                        dataset = "data/intron/i",
+                        dims = length(intron_mat@x),
+                        chunk = 1000, level = compression_level)
+        h5write(intron_mat@i,
+                tome,
+                "data/intron/i")
 
-      # Rows = Genes, Columns = Samples (Fast sample retrieval)
+        # data index pointers
+        print("Writing data/intron/p.")
+        h5write(intron_mat@p,
+                tome,
+                "data/intron/p")
 
-      # t_data values
-      print("Writing data/t_intron/x.")
-      h5createDataset(tome,
-                      dataset = "data/t_intron/x",
-                      dims = length(t_intron_mat@x),
-                      chunk = 1000,
-                      level = compression_level)
-      h5write(t_intron_mat@x,
-              tome,
-              "data/t_intron/x")
+        h5write(c(nrow(intron_mat), ncol(intron_mat)),
+                tome,
+                "data/intron/dims")
+      })
+    }
 
-      # t_data indices
-      print("Writing data/t_intron/i.")
-      h5createDataset(tome,
-                      dataset = "data/t_intron/i",
-                      dims = length(t_intron_mat@i),
-                      chunk = 1000,
-                      level = compression_level)
-      h5write(t_intron_mat@i,
-              tome,
-              "data/t_intron/i")
+    # Rows = Genes, Columns = Samples (Fast sample retrieval)
+    if(orientations %in% c("both", "sample_name")) {
 
-      # t_data index pointers
-      print("Writing data/t_intron/p.")
-      h5write(t_intron_mat@p,
-              tome,
-              "data/t_intron/p")
-      h5write(c(nrow(t_intron_mat), ncol(t_intron_mat)),
-              tome,
-              "data/t_intron/dims")
-    })
+      h5createGroup(tome, "data/t_intron")
+      suppressWarnings({
+        # t_data values
+        print("Writing data/t_intron/x.")
+        h5createDataset(tome,
+                        dataset = "data/t_intron/x",
+                        dims = length(t_intron_mat@x),
+                        chunk = 1000,
+                        level = compression_level)
+        h5write(t_intron_mat@x,
+                tome,
+                "data/t_intron/x")
+
+        # t_data indices
+        print("Writing data/t_intron/i.")
+        h5createDataset(tome,
+                        dataset = "data/t_intron/i",
+                        dims = length(t_intron_mat@i),
+                        chunk = 1000,
+                        level = compression_level)
+        h5write(t_intron_mat@i,
+                tome,
+                "data/t_intron/i")
+
+        # t_data index pointers
+        print("Writing data/t_intron/p.")
+        h5write(t_intron_mat@p,
+                tome,
+                "data/t_intron/p")
+        h5write(c(nrow(t_intron_mat), ncol(t_intron_mat)),
+                tome,
+                "data/t_intron/dims")
+      })
+
+    }
   }
 
 
