@@ -101,7 +101,8 @@ write_tome_data.frame <- function(df,
   } else if(store_as == "data.frame") {
     h5write(df,
             tome,
-            target)
+            target,
+            level = 0)
   }
 
   H5close()
