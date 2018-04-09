@@ -25,6 +25,7 @@ read_loom_dgCMatrix <- function(loom_file,
   chunk <- 1
   chunk_start <- 1 + chunk_size * (chunk - 1)
   chunk_end <- chunk_size * chunk
+  print(paste0("Reading samples ",chunk_start," to ", chunk_end))
   chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
   all_sparse <- Matrix(chunk_mat, sparse = T)
 
@@ -47,5 +48,23 @@ read_loom_dgCMatrix <- function(loom_file,
   colnames(all_sparse) <- gene_names
 
   return(all_sparse)
+
+}
+
+read_loom_anno <- function(loom_file) {
+  library(rhdf5)
+
+  # annotations are stored in /col_attrs (Column attributes)
+  anno <- read_tome_data.frame(loom_file, "/col_attrs", stored_as = "vectors")
+
+  # projections are also stored here, and start with X_
+  projection_columns <- names(anno)[grepl("^X_",names(anno))]
+
+  anno <- anno %>%
+    select(-one_of(projection_columns)) %>%
+    rename_("sample_name" = "CellID") %>%
+    select(sample_name, everything())
+
+  return(anno)
 
 }
