@@ -55,7 +55,7 @@ read_tome_data.frame <- function(tome,
               }
     )
     names(df) <- selected_columns
-    df <- as.data.frame(df)
+    df <- as.data.frame(df, stringsAsFactors = F)
   } else if(stored_as == "data.frame") {
     df <- h5read(tome, df_name)
   }
