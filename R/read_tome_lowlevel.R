@@ -49,7 +49,9 @@ read_tome_data.frame <- function(tome,
 
     df <- map(selected_columns,
               function(x) {
-                h5read(tome, paste0(df_name,"/",x))
+                as.vector(unlist(
+                  h5read(tome, paste0(df_name,"/",x))
+                ))
               }
     )
     names(df) <- selected_columns
