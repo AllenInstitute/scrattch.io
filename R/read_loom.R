@@ -25,7 +25,7 @@ read_loom_dgCMatrix <- function(loom_file,
   chunk <- 1
   chunk_start <- 1 + chunk_size * (chunk - 1)
   chunk_end <- chunk_size * chunk
-  chunk_mat <- h5read(loom, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
+  chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
   all_sparse <- Matrix(chunk_mat, sparse = T)
 
   # chunkation over chunks
@@ -33,13 +33,13 @@ read_loom_dgCMatrix <- function(loom_file,
     chunk_start <- 1 + chunk_size * (chunk - 1)
     chunk_end <- chunk_size * chunk
     print(paste0("Reading samples ",chunk_start," to ", chunk_end))
-    chunk_mat <- h5read(loom, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
+    chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
     chunk_sparse <- Matrix(chunk_mat, sparse = T)
     all_sparse <- rbind(all_sparse, chunk_mat)
   }
 
   # Remaining samples
-  chunk_mat <- h5read(loom, "/matrix", index = list((n_chunks*chunk_size + 1):n_samples, 1:n_genes))
+  chunk_mat <- h5read(loom_file, "/matrix", index = list((n_chunks*chunk_size + 1):n_samples, 1:n_genes))
   chunk_sparse <- Matrix(chunk_mat, sparse = T)
   all_sparse <- rbind(all_sparse, chunk_mat)
 
