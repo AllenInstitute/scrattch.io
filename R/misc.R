@@ -39,8 +39,6 @@ flip_table <- function(df,
     names(df_out) <- c(sample_col,genes)
     rownames(df_out) <- NULL
 
-    print("(╯°□°）╯︵ ┻━┻")
-
     df_out
 
   } else if(sample_col %in% names(df)) {
@@ -51,8 +49,6 @@ flip_table <- function(df,
     df_out <- cbind(genes, as.data.frame(df_t))
     names(df_out) <- c(gene_col, samples)
     rownames(df_out) <- NULL
-
-    print("(╯°□°）╯︵ ┻━┻")
 
     df_out
 
