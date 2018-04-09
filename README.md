@@ -27,6 +27,8 @@ is to combine compact storage with reasonably fast random access of both genes a
 
 This is accomplished by storing the main data matrix in a sparse format, based on [dgCMatrix from the R Matrix package](https://stat.ethz.ch/R-manual/R-devel/library/Matrix/html/dgCMatrix-class.html), stored in both orientations. This structure is also chunked and compressed to speed access and reduce file size. The compression level can be changed depending on how quickly you need to read your data (see `?write_tome_data` for details).
 
+The practical upshot of this strategy is that .tome files are ~1/10th the size of .loom files for storage of data from 10X genomics experiments, while providing a way to read gene or sample data for display quickly.
+
 Many additional metadata can be stored in .tome files as well, from sample annotations to precomputed statistics.
 
 The [.tome cheatsheets on Google Docs](https://docs.google.com/spreadsheets/d/1tJUgnfEXUv1IuzGAykDCTIUTsgzEWkT-jfl4UcEUl48/edit?usp=sharing) is a helpful reference for where scrattch.io stores these within the HDF5 file structure, and which functions can be used to read and write these objects.
