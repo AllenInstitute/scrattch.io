@@ -1,4 +1,4 @@
-#' Reads a Loom matrix as a dgCMatrix
+#' Read a Loom matrix as a dgCMatrix
 #'
 #' @param loom_file The loom file to read
 #' @param chunk_size The number of rows to read as a chunk. For ~30k genes, a chunk of 5000 is ~1GB in memory.
@@ -51,6 +51,12 @@ read_loom_dgCMatrix <- function(loom_file,
 
 }
 
+#' Read Loom sample annotations
+#'
+#' @param loom_file The loom file to read
+#'
+#' @return A data.frame with annotations as columns and samples as rows. The Loom CellID becomes the first column, sample_name.
+#'
 read_loom_anno <- function(loom_file) {
   library(rhdf5)
 
@@ -67,4 +73,30 @@ read_loom_anno <- function(loom_file) {
 
   return(anno)
 
+}
+
+#' Read Loom projections
+#'
+#' @param loom_file The loom file to read
+#'
+#' @return A data.frame with projection values as columns and samples as rows. The Loom CellID becomes the first column, sample_name.
+#' Loom doesn't use a prefix to indicate paired coordinates, so you'll have to figure these out on your own.
+#'
+read_loom_projections <- function(loom_file) {
+  library(rhdf5)
+
+  # projtations are stored in /col_attrs (Column attributes)
+  proj <- read_tome_data.frame(loom_file, "/col_attrs", stored_as = "vectors")
+
+  # projections are also stored here, and start with X_
+  projection_columns <- names(proj)[grepl("^X_",names(proj))]
+
+  proj <- proj %>%
+    select(one_of(c("CellID",projection_columns))) %>%
+    rename_("sample_name" = "CellID") %>%
+    select(sample_name, everything())
+
+  names(proj) <- sub("^X_","",names(proj))
+
+  return(proj)
 }
