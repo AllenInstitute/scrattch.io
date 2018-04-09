@@ -263,7 +263,9 @@ write_tome_data <- function(exon_mat = NULL,
 
   if(!is.null(exon_mat)) {
     print("Calculating total exon counts per sample")
-    total_exon_counts <- unname(unlist(apply(t_exon_mat, 2, sum)))
+    #total_exon_counts <- unname(unlist(apply(t_exon_mat, 2, sum)))
+    #apply fails with very large matrices.
+    total_exon_counts <- unname(colSums(t_exon_mat))
     print("Writing data/total_exon_counts.")
     h5write(total_exon_counts,
             tome,
@@ -272,7 +274,7 @@ write_tome_data <- function(exon_mat = NULL,
 
   if(!is.null(intron_mat)) {
     print("Calculating total intron counts per sample")
-    total_intron_counts <- unname(unlist(apply(t_intron_mat, 2, sum)))
+    total_intron_counts <- unname(colSums(t_intron_mat))
     print("Writing data/total_intron_counts.")
     h5write(total_intron_counts,
             tome,
