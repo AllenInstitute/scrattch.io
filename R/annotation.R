@@ -127,7 +127,7 @@ annotate_cat <- function(df,
     mutate(id = 1:n())
 
   if(colorset == "varibow") {
-    colors <- sub("FF$","",varibow(nrow(annotations)))
+    colors <- varibow(nrow(annotations))
   } else if(colorset == "rainbow") {
     colors <- sub("FF$","",rainbow(nrow(annotations)))
   } else if(colorset == "viridis") {
