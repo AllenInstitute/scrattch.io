@@ -5,7 +5,8 @@
 \title{Save a both exon and intron counts to an HDF5 file (tome)}
 \usage{
 write_tome_data(exon_mat = NULL, intron_mat = NULL, tome = "counts.tome",
-  cols_are = "sample_name", overwrite = F, compression_level = 4)
+  cols_are = "sample_name", overwrite = F, orientations = "both",
+  compression_level = 4)
 }
 \arguments{
 \item{exon_mat}{The exon matrix to store in dgCMatrix format}
@@ -17,6 +18,9 @@ write_tome_data(exon_mat = NULL, intron_mat = NULL, tome = "counts.tome",
 \item{cols_are}{Specifies whether columns in the matrix are sample_ids or genes}
 
 \item{overwrite}{Whether or not to overwrite an existing tome}
+
+\item{orientations}{Which data orientations to write. Options are "both","gene_name", and "sample_name". "gene_name" and "sample_name" refer to the indexing of the matrix (i.e. columns in a dgCMatrix).
+Usually, you'll want to use the default, "both", to ensure compatibility with scrattch.}
 
 \item{compression_level}{The data compression level for large HDF5 matrix objects. default = 4.}
 }

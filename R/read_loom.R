@@ -1,7 +1,7 @@
 #' Read a Loom matrix as a dgCMatrix
 #'
 #' @param loom_file The loom file to read
-#' @param chunk_size The number of rows to read as a chunk. For ~30k genes, a chunk of 5000 is ~1GB in memory.
+#' @param chunk_size The number of rows to read as a chunk. For ~30k genes, a chunk of 5000 (the default) is ~1GB in memory.
 #'
 #' @return A dgCMatrix object with genes as columns and samples as rows.
 #'

@@ -34,6 +34,6 @@ head(cars)
 
 cars2 <- mtcars \%>\%
  annotate_num(wt, weight, "linear", colorset = c("#000000","#808080","#FF0000"))
- 
+
 head(cars2)
 }

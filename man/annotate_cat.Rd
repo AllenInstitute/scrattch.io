@@ -5,7 +5,7 @@
 \title{Generate colors and ids for categorical annotations}
 \usage{
 annotate_cat(df, col = NULL, base = NULL, sort_label = T,
-  na_val = "ZZ_Missing", colorset = "rainbow", color_order = "sort")
+  na_val = "ZZ_Missing", colorset = "varibow", color_order = "sort")
 }
 \arguments{
 \item{df}{data frame to annotate}
@@ -36,6 +36,6 @@ head(flowers)
 
 flowers2 <- iris \%>\%
  annotate_num(Species, spp, sort_label = F, colorset = "viridis")
- 
+
 head(flowers2)
 }

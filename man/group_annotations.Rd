@@ -23,7 +23,7 @@ anno <- mtcars \%>\%
  select(sample_id, wt, mpg) \%>\%
  annotate_num(wt) \%>\%
  annotate_num(mpg)
- 
+
 head(anno)
 
 anno2 <- group_annotations(anno)
