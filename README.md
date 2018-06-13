@@ -1,23 +1,18 @@
-# scrattch.io  
-### File format handling for scrattch packages
+# scrattch.io: File format handling for scrattch packages
 
 ## Installation
 
-scrattch.io has several dependencies, including one from BioConductor:
+scrattch.io requires the `rhdf5` package from BioConductor, which can be installed with:
 ```
 source("https://bioconductor.org/biocLite.R")
 biocLite("rhdf5")
-
-install.packages("dplyr")
-install.packages("h5")
-install.packages("Matrix")
-install.packages("purrr")
 ```
 
-Once these are in place, scrattch.io can be installed from github:
+Once `rhdf5` is in place, scrattch.io can be installed from github:
 ```
 devtools::install_github("AllenInstitute/scrattch.io")
 ```
+
 ## .tome files
 A major component of scrattch.io is a set of helpful functions for writing and reading .tome files, which are an HDF5-based format for **t**ranscriptomics in an **o**pen, **m**odular, **e**xtensible format.  
 
@@ -33,7 +28,7 @@ Many additional metadata can be stored in .tome files as well, from sample annot
 
 The [.tome cheatsheets on Google Docs](https://docs.google.com/spreadsheets/d/1tJUgnfEXUv1IuzGAykDCTIUTsgzEWkT-jfl4UcEUl48/edit?usp=sharing) is a helpful reference for where scrattch.io stores these within the HDF5 file structure, and which functions can be used to read and write these objects.
 
-.tome is intended to be extensible. Want to store something that isn't already provided? Check out the Generic functions section of the .tome cheatsheet, above to add your own data however it makes sense to you.
+.tome is intended to be extensible. Want to store something that isn't already provided? Check out the Generic functions section of the [.tome cheatsheet](https://docs.google.com/spreadsheets/d/1tJUgnfEXUv1IuzGAykDCTIUTsgzEWkT-jfl4UcEUl48/edit?usp=sharing), to add your own data however it makes sense to you.
 
 ## .loom files
 scrattch.io also includes simple functions for reading matrices, annotations, and projections from .loom files with `read_loom_dgCMatrix()`, `read_loom_anno()`, and `read_loom_projections()`, respectively.
@@ -42,5 +37,17 @@ You can find out more about the .loom format, developed by the Linnarsson lab, h
 
 A more complete implementation of the .loom format in R is available from the Satija lab's loomR package on Github here: [mojaveazure/loomR](https://github.com/mojaveazure/loomR)
 
-## Contact
-Contact Lucas Graybuck (lucasg@alleninstitute.org) or post an Issue on Github if you find a bug or have a feature request.
+## 10X Genomics files
+scrattch.io includes the ability to read the data matrix from the .h5 files that are output by CellRanger in ([HDF5 Gene-Barcode Matrix Format](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/advanced/h5_matrices)) with `read_h5_dgCMatrix()`.
+
+## The `scrattch` suite
+
+`scrattch.io` is one component of the [scrattch](https://github.com/AllenInstitute/scrattch/) suite of packages for Single Cell RNA-seq Analysis for Transcriptomic Type CHaracterization from the Allen Institute.
+
+## License
+
+The license for this package is available on Github at: https://github.com/AllenInstitute/scrattch.io/blob/master/LICENSE
+
+## Level of Support
+
+We are planning on occasional updating this tool with no fixed schedule. Community involvement is encouraged through both issues and pull requests.
