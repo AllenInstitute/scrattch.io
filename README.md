@@ -1,4 +1,4 @@
-# scrattch.io: File format handling for scrattch packages
+# scrattch.io: scrattch File Input/Output Handling
 
 ## Installation
 
@@ -38,7 +38,7 @@ You can find out more about the .loom format, developed by the Linnarsson lab, h
 A more complete implementation of the .loom format in R is available from the Satija lab's loomR package on Github here: [mojaveazure/loomR](https://github.com/mojaveazure/loomR)
 
 ## 10X Genomics files
-scrattch.io includes the ability to read the data matrix from the .h5 files that are output by CellRanger in ([HDF5 Gene-Barcode Matrix Format](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/advanced/h5_matrices)) with `read_h5_dgCMatrix()`.
+scrattch.io includes the ability to read the data matrix from the .h5 files that are output by CellRanger in [HDF5 Gene-Barcode Matrix Format](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/advanced/h5_matrices) with `read_h5_dgCMatrix()`.
 
 ## The `scrattch` suite
 
