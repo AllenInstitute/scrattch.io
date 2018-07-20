@@ -21,7 +21,7 @@ write_dgCMatrix_h5 <- function(mat,
                                gene_ids = NULL) {
 
   if(grepl("gene",cols_are)) {
-    mat <- t(mat)
+    mat <- Matrix::t(mat)
   }
 
   # Create target file
