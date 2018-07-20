@@ -20,12 +20,14 @@ write_dgCMatrix_h5(mat, cols_are = "gene_names", h5_target,
 }
 \value{
 an .h5 file with these mappings from dgCMatrix -> .h5:
-- colnames(mat) -> /ref_name/barcodes (after transposition if cols_are == "gene_names")
-- rownames(mat) -> /ref_name/gene_names (after transposition if cols_are == "gene_names")
-- mat@x -> /ref_name/data
-- mat@i -> /ref_name/indices
-- mat@p -> /ref_name/indptr
-gene_ids -> /ref_name/gene
+\itemize{
+  \item colnames(mat) -> /ref_name/barcodes (after transposition if cols_are == "gene_names")
+  \item rownames(mat) -> /ref_name/gene_names (after transposition if cols_are == "gene_names")
+  \item mat@x -> /ref_name/data
+  \item mat@i -> /ref_name/indices
+  \item mat@p -> /ref_name/indptr
+  \item gene_ids -> /ref_name/gene
+}
 }
 \description{
 Write a dgCMatrix to an h5 file similar to cellRanger format

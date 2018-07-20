@@ -7,12 +7,14 @@
 #' @param gene_ids If available, ENSEMBL IDs for each gene
 #'
 #' @return an .h5 file with these mappings from dgCMatrix -> .h5:
-#' - colnames(mat) -> /ref_name/barcodes (after transposition if cols_are == "gene_names")
-#' - rownames(mat) -> /ref_name/gene_names (after transposition if cols_are == "gene_names")
-#' - mat@x -> /ref_name/data
-#' - mat@i -> /ref_name/indices
-#' - mat@p -> /ref_name/indptr
-#' gene_ids -> /ref_name/gene
+#' \itemize{
+#'   \item colnames(mat) -> /ref_name/barcodes (after transposition if cols_are == "gene_names")
+#'   \item rownames(mat) -> /ref_name/gene_names (after transposition if cols_are == "gene_names")
+#'   \item mat@x -> /ref_name/data
+#'   \item mat@i -> /ref_name/indices
+#'   \item mat@p -> /ref_name/indptr
+#'   \item gene_ids -> /ref_name/gene
+#' }
 #'
 write_dgCMatrix_h5 <- function(mat,
                                cols_are = "gene_names",
@@ -76,6 +78,6 @@ write_dgCMatrix_h5 <- function(mat,
   # Store column pointers from mat@p as indptr
   h5write(mat@p,
           h5_target,
-          paste0(,ref_name,"/indptr"))
+          paste0("/",ref_name,"/indptr"))
   H5close()
 }
