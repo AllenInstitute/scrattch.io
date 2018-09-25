@@ -76,7 +76,7 @@ test_that(
 )
 
 test_that(
-  "read_tome_data.frame returns an error when non-matching columns are requested",
+  "read_tome_data.frame returns an error when no matching columns are requested",
   {
 
     expect_error(
@@ -122,3 +122,32 @@ test_that(
   }
 )
 
+test_that(
+  "read_tome_data.frame arranges columns as expected when using get_all = TRUE",
+  {
+
+    primary_cols <- names(test_anno)[grepl("primary_type", names(test_anno))]
+
+    tome_anno_expect <- test_anno[,c(primary_cols, setdiff(names(test_anno), primary_cols))]
+
+    tome_anno_exact <- read_tome_data.frame(tome = tome_file,
+                           df_name = "/sample_meta/anno",
+                           columns = primary_cols,
+                           stored_as = "vectors",
+                           match_type = "exact",
+                           get_all = TRUE)
+
+    expect_equal(tome_anno_exact, tome_anno_expect)
+
+    tome_anno_grep <- read_tome_data.frame(tome = tome_file,
+                           df_name = "/sample_meta/anno",
+                           columns = "primary",
+                           stored_as = "vectors",
+                           match_type = "grep",
+                           get_all = TRUE)
+
+    expect_equal(tome_anno_grep, tome_anno_expect)
+
+
+  }
+)
