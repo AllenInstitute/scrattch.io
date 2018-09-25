@@ -35,6 +35,8 @@ datavar <- apply(data, 1, var)
 keepdata <- names(datavar[order(-datavar)][1:2000])
 data <- data[keepdata,]
 
+sparse_data <- as(data, "dgCMatrix")
+
 # desc will be used by tome and feather
 desc <- data.frame(base = c("primary_type","secondary_type","core_intermediate","broad_type",
                             "mouse_line","cre_driver_1","cre_driver_2","cre_reporter",
@@ -43,6 +45,12 @@ desc <- data.frame(base = c("primary_type","secondary_type","core_intermediate",
                             "Donor Line","Donor Driver 1","Donor Driver 2","Donor Reporter Line",
                             "Dissected Layers","tdTomato expression","Passes QC Checks"),
                    type = rep("cat",11))
+
+# Save as rda so that we know what to expect
+save(data, file = "rda/data.rda")
+save(anno, file = "rda/anno.rda")
+save(desc, file = "rda/desc.rda")
+save(sparse_data, file = "rda/data_dgCMatrix.rda")
 
 ## Write feather files
 library(feather)
@@ -62,4 +70,3 @@ write_tome_data(exon_mat = as(data,"dgCMatrix"),
                 overwrite = TRUE)
 write_tome_anno(anno, "tome/transcrip.tome")
 write_tome_anno_desc(desc, "tome/transcrip.tome")
-
