@@ -1,4 +1,4 @@
-context("Read Tome Files")
+context("Read .tome data.frame")
 library(scrattch.io)
 
 # Test data are available in inst/testdata/
@@ -150,4 +150,23 @@ test_that(
 
 
   }
+)
+
+
+context("Read .tome serialized")
+
+test_that(
+  "read_tome_serialized retrieves and unserializes an object.",
+  {
+
+    tome_serial <- read_tome_serialized(tome = tome_file,
+                                        "/dend/primary_type")
+
+    expect_equal_to_reference(tome_serial,
+                              system.file("testdata/rds",
+                                          "dend.RData",
+                                          package = "scrattch.io"))
+
+  }
+
 )
