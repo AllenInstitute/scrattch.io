@@ -27,16 +27,47 @@ read_tome_data.frame <- function(tome,
     # Filter cols if columns are provided.
     if(!is.null(columns)) {
       if(match_type == "grep") {
+
         if(length(columns) > 1) {
-          column_pattern <- paste(columns, collapse = "|")
+          selected_columns <- map(columns,
+                                      function(x) {
+                                        all_columns[grepl(x, all_columns)]
+                                      })
+
+          unmatched_columns <- columns[map_int(selected_columns, length) == 0]
+
+          if(length(unmatched_columns) > 0) {
+            warning(paste("Warning: no match found for columns:",
+                          paste(unmatched_columns, collapse = ", ")))
+          }
+
+          selected_columns <- unique(unlist(selected_columns))
+
         } else {
-          column_pattern <- columns
+          selected_columns <- all_columns[grepl(columns, all_columns)]
         }
-        selected_columns <- all_columns[grepl(column_pattern, all_columns)]
+
+        # Stop if no matches found
+        if(length(selected_columns) == 0) {
+          stop("Error: No columns match the columns argument.")
+        }
+
       } else if(match_type == "exact") {
         selected_columns <- all_columns[all_columns %in% columns]
-      }
 
+        # Stop if no matches found
+        if(length(selected_columns) == 0) {
+          stop("Error: No columns match the columns argument.")
+        }
+
+        # Warn if some columns aren't matched
+        unmatched_columns <- setdiff(columns, all_columns)
+        if(length(unmatched_columns) > 0) {
+          warning(paste("Warning: no match found for columns:",
+                        paste(unmatched_columns, collapse = ", ")))
+        }
+
+      }
 
       # If get_all, get the selected columns first, then all of the others
       if(get_all) {
@@ -47,15 +78,18 @@ read_tome_data.frame <- function(tome,
       selected_columns <- all_columns
     }
 
-    df <- map(selected_columns,
-              function(x) {
-                as.vector(unlist(
-                  h5read(tome, paste0(df_name,"/",x))
-                ))
-              }
+    df <- map_dfc(selected_columns,
+                  function(x) {
+                    # Must unlist and use as.vector to convert from a 1D array object to a vector.
+                    as.vector(
+                      unlist(
+                        h5read(tome, paste0(df_name,"/",x))
+                      )
+                    )
+                  }
     )
     names(df) <- selected_columns
-    df <- as.data.frame(df, stringsAsFactors = F)
+
   } else if(stored_as == "data.frame") {
     df <- h5read(tome, df_name)
   }
