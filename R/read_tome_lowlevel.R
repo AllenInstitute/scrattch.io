@@ -23,60 +23,66 @@ read_tome_data.frame <- function(tome,
 
   if(stored_as == "vectors") {
     all_columns <- ls$name[ls$group == df_name]
+  } else if (stored_as == "data.frame") {
+    df <- h5read(tome, df_name)
+    all_columns <- names(df)
+  }
+  # Filter cols if columns are provided.
 
-    # Filter cols if columns are provided.
-    if(!is.null(columns)) {
-      if(match_type == "grep") {
+  if(is.null(columns)) {
+    selected_columns <- all_columns
+  } else {
+    if(match_type == "grep") {
 
-        if(length(columns) > 1) {
-          selected_columns <- map(columns,
-                                      function(x) {
-                                        all_columns[grepl(x, all_columns)]
-                                      })
+      if(length(columns) > 1) {
+        selected_columns <- map(columns,
+                                function(x) {
+                                  all_columns[grepl(x, all_columns)]
+                                })
 
-          unmatched_columns <- columns[map_int(selected_columns, length) == 0]
+        unmatched_columns <- columns[map_int(selected_columns, length) == 0]
 
-          if(length(unmatched_columns) > 0) {
-            warning(paste("Warning: no match found for columns:",
-                          paste(unmatched_columns, collapse = ", ")))
-          }
-
-          selected_columns <- unique(unlist(selected_columns))
-
-        } else {
-          selected_columns <- all_columns[grepl(columns, all_columns)]
-        }
-
-        # Stop if no matches found
-        if(length(selected_columns) == 0) {
-          stop("Error: No columns match the columns argument.")
-        }
-
-      } else if(match_type == "exact") {
-        selected_columns <- all_columns[all_columns %in% columns]
-
-        # Stop if no matches found
-        if(length(selected_columns) == 0) {
-          stop("Error: No columns match the columns argument.")
-        }
-
-        # Warn if some columns aren't matched
-        unmatched_columns <- setdiff(columns, all_columns)
         if(length(unmatched_columns) > 0) {
           warning(paste("Warning: no match found for columns:",
                         paste(unmatched_columns, collapse = ", ")))
         }
 
+        selected_columns <- unique(unlist(selected_columns))
+
+      } else {
+        selected_columns <- all_columns[grepl(columns, all_columns)]
       }
 
-      # If get_all, get the selected columns first, then all of the others
-      if(get_all) {
-        selected_columns <- c(selected_columns, setdiff(all_columns, selected_columns))
+      # Stop if no matches found
+      if(length(selected_columns) == 0) {
+        stop("Error: No columns match the columns argument.")
       }
 
-    } else {
-      selected_columns <- all_columns
+    } else if(match_type == "exact") {
+      selected_columns <- all_columns[all_columns %in% columns]
+
+      # Stop if no matches found
+      if(length(selected_columns) == 0) {
+        stop("Error: No columns match the columns argument.")
+      }
+
+      # Warn if some columns aren't matched
+      unmatched_columns <- setdiff(columns, all_columns)
+      if(length(unmatched_columns) > 0) {
+        warning(paste("Warning: no match found for columns:",
+                      paste(unmatched_columns, collapse = ", ")))
+      }
+
     }
+
+    # If get_all, get the selected columns first, then all of the others
+    if(get_all) {
+      selected_columns <- c(selected_columns, setdiff(all_columns, selected_columns))
+    }
+
+  }
+
+  if(stored_as == "vectors") {
 
     df <- map_dfc(selected_columns,
                   function(x) {
@@ -91,7 +97,7 @@ read_tome_data.frame <- function(tome,
     names(df) <- selected_columns
 
   } else if(stored_as == "data.frame") {
-    df <- h5read(tome, df_name)
+    df <- df[,selected_columns]
   }
 
   H5close()

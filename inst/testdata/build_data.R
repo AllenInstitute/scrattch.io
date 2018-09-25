@@ -1,4 +1,5 @@
 library(dplyr)
+library(purrr)
 library(scrattch.io)
 options(stringsAsFactors = FALSE)
 
@@ -46,11 +47,43 @@ desc <- data.frame(base = c("primary_type","secondary_type","core_intermediate",
                             "Dissected Layers","tdTomato expression","Passes QC Checks"),
                    type = rep("cat",11))
 
+# Make cluster medians
+cluster_ids <- unique(anno$primary_type_id)
+medians <- map_dfc(cluster_ids,
+               function(x) {
+                 samples <- anno$sample_id[anno$primary_type_id == x]
+                 apply(data[,samples], 1, median)
+               })
+names(medians) <- paste0("primary_type_",cluster_ids)
+
+# hclust the clusters
+
+cluster_dist <- dist(t(as.matrix(medians)))
+cluster_hc <- hclust(cluster_dist)
+cluster_hc$height <- cluster_hc$height/max(cluster_hc$height)
+
+# make a dendrogram
+library(dendextend)
+
+cluster_anno <- anno %>%
+  select(primary_type_id, primary_type_label, primary_type_color) %>%
+  unique()
+
+dend <- as.dendrogram(cluster_hc)
+dend_cluster_ids <- as.numeric(sub("primary_type_","",labels(dend)))
+labels(dend) <- cluster_anno$primary_type_label[match(dend_cluster_ids, cluster_anno$primary_type_id)]
+labels_colors(dend) <- cluster_anno$primary_type_color[match(dend_cluster_ids, cluster_anno$primary_type_id)]
+
+dend_desc <- data.frame(base = "primary_type",
+                        name = "Primary Type Hierarchy",
+                        links_to = "primary_type_label")
+
 # Save as rda so that we know what to expect
-save(data, file = "rda/data.rda")
-save(anno, file = "rda/anno.rda")
-save(desc, file = "rda/desc.rda")
-save(sparse_data, file = "rda/data_dgCMatrix.rda")
+saveRDS(data, file = "rds/data.RData")
+saveRDS(anno, file = "rds/anno.RData")
+saveRDS(desc, file = "rds/desc.RData")
+saveRDS(sparse_data, file = "rds/data_dgCMatrix.RData")
+saveRDS(dend, file = "rds/dend.RData")
 
 ## Write feather files
 library(feather)
@@ -70,3 +103,5 @@ write_tome_data(exon_mat = as(data,"dgCMatrix"),
                 overwrite = TRUE)
 write_tome_anno(anno, "tome/transcrip.tome")
 write_tome_anno_desc(desc, "tome/transcrip.tome")
+write_tome_dend(dend, "primary_type" ,"tome/transcrip.tome")
+write_tome_dend_desc(dend_desc, "tome/transcrip.tome")
