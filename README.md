@@ -15,6 +15,11 @@ Once `rhdf5` is in place, scrattch.io can be installed from github:
 devtools::install_github("AllenInstitute/scrattch.io")
 ```
 
+If you'd like to use the developer branch where we're testing out new code, it can be installed using:
+```
+devtools::install_github("AllenInstitute/scrattch.io", ref = "dev")
+```
+
 ## .tome files
 A major component of scrattch.io is a set of helpful functions for writing and reading .tome files, which are an HDF5-based format for **t**ranscriptomics in an **o**pen, **m**odular, **e**xtensible format.  
 
