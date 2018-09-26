@@ -10,5 +10,6 @@ addons:
   apt:
     packages:
       - libhdf5-dev
+      - libhdf5-serial-dev
 
 bioc_packages: rhdf5
