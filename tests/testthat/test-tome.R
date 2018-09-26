@@ -152,6 +152,30 @@ test_that(
   }
 )
 
+context("Read .tome dgCMatrix")
+
+test_that(
+  "read_tome_dgCMatrix retrieves the entire matrix as a sparse matrix object",
+  {
+    tome_dgC <- read_tome_dgCMatrix(tome = tome_file,
+                                    "/data/exon/")
+
+    expect_equal_to_reference(tome_dgC,
+                              system.file("testdata/rds",
+                                          "data_dgCMatrix.RData",
+                                          package = "scrattch.io"))
+
+    tome_dgC_t <- read_tome_dgCMatrix(tome = tome_file,
+                                      "/data/t_exon/")
+
+    tome_dgC_t <- Matrix::t(tome_dgC_t)
+
+    expect_equal_to_reference(tome_dgC_t,
+                              system.file("testdata/rds",
+                                          "data_dgCMatrix.RData",
+                                          package = "scrattch.io"))
+  }
+)
 
 context("Read .tome serialized")
 
