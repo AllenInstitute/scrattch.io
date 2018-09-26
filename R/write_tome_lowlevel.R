@@ -18,7 +18,6 @@ write_tome_data.frame <- function(df,
 
   library(rhdf5)
   library(purrr)
-  library(h5)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -67,7 +66,7 @@ write_tome_data.frame <- function(df,
       walk(existing_objects$full_name,
            function(x) {
              suppressWarnings(
-               h5_delete(tome, x)
+               h5delete(tome, x)
              )
            }
       )
@@ -167,7 +166,6 @@ write_tome_vector <- function(vec,
                               overwrite = NULL) {
   library(rhdf5)
   library(purrr)
-  library(h5)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -201,7 +199,7 @@ write_tome_vector <- function(vec,
       walk(existing_objects$full_name,
            function(x) {
              suppressWarnings(
-               h5_delete(tome, x)
+               h5delete(tome, x)
              )
            }
       )
@@ -257,7 +255,6 @@ write_tome_serialized <- function(obj,
 
   library(rhdf5)
   library(purrr)
-  library(h5)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -293,7 +290,7 @@ write_tome_serialized <- function(obj,
       walk(existing_objects$full_name,
            function(x) {
              suppressWarnings(
-               h5_delete(tome, x)
+               h5delete(tome, x)
              )
            }
       )
@@ -351,7 +348,6 @@ write_tome_dgCMatrix <- function(mat,
                                  compression_level = 4) {
 
   library(rhdf5)
-  library(h5)
   library(Matrix)
 
   if(is.null(overwrite)) {

@@ -12,7 +12,7 @@ Imports:
     dplyr (>= 0.4.3),
     Matrix (>= 1.2-12),
     purrr (>= 0.2.4),
-    h5 (>= 0.9.9)
+    rhdf5 (>= 2.24.0)
 RoxygenNote: 6.0.1
 Suggests: 
     testthat
