@@ -2,8 +2,8 @@
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Kitten_reading_a_book.jpg" alt="scrattching a tome"/>
 
-master: [![Build Status](https://travis-ci.org/user/pkg.svg?branch=master)](https://travis-ci.org/user/pkg)  
-dev: [![Build Status](https://travis-ci.org/user/pkg.svg?branch=dev)](https://travis-ci.org/user/pkg)  
+master: [![Build Status](https://travis-ci.org/AllenInstitute/scrattch.io.svg?branch=master)](https://travis-ci.org/AllenInstitute/scrattch.io)  
+dev: [![Build Status](https://travis-ci.org/AllenInstitute/scrattch.io.svg?branch=dev)](https://travis-ci.org/AllenInstitute/scrattch.io)  
 
 ## Installation
 
