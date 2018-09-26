@@ -25,7 +25,7 @@ write_tome_data.frame <- function(df,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
+  #H5close()
 
   if(!file.exists(tome)) {
     if(verbosity == 2) {
@@ -104,7 +104,7 @@ write_tome_data.frame <- function(df,
             level = 0)
   }
 
-  H5close()
+  #H5close()
 
   if(verbosity == 1) {
     return(TRUE)
@@ -120,7 +120,7 @@ write_tome_group <- function(tome,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
+  #H5close()
 
   ls <- h5ls(tome)
 
@@ -173,7 +173,7 @@ write_tome_vector <- function(vec,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
+  #H5close()
 
   if(!file.exists(tome)) {
     if(verbosity == 2) {
@@ -230,7 +230,7 @@ write_tome_vector <- function(vec,
           tome,
           target)
 
-  H5close()
+  #H5close()
 
   if(verbosity == 1) {
     return(TRUE)
@@ -262,7 +262,7 @@ write_tome_serialized <- function(obj,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
+  #H5close()
 
   if(!file.exists(tome)) {
     if(verbosity == 2) {
@@ -324,7 +324,7 @@ write_tome_serialized <- function(obj,
           tome,
           target)
 
-  H5close()
+  #H5close()
 
   if(verbosity == 1) {
     return(TRUE)
@@ -356,7 +356,7 @@ write_tome_dgCMatrix <- function(mat,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
+  #H5close()
 
   target_path <- sub("/$","",target)
   write_tome_group(tome,
@@ -399,5 +399,5 @@ write_tome_dgCMatrix <- function(mat,
           tome,
           paste0(target,"/dims"))
 
-  H5close()
+  #H5close()
 }

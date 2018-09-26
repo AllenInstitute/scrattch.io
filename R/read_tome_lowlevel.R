@@ -17,7 +17,7 @@ read_tome_data.frame <- function(tome,
   library(rhdf5)
   library(purrr)
 
-  H5close()
+  #H5close()
 
   ls <- h5ls(tome)
 
@@ -100,7 +100,7 @@ read_tome_data.frame <- function(tome,
     df <- df[,selected_columns]
   }
 
-  H5close()
+  #H5close()
 
   df
 
@@ -114,14 +114,14 @@ read_tome_data.frame <- function(tome,
 read_tome_serialized <- function(tome,
                                  target) {
 
-  H5close()
+  #H5close()
 
   serial_obj <- h5read(tome,
                        target)
 
   obj <- unserialize(charToRaw(serial_obj))
 
-  H5close()
+  #H5close()
 
   obj
 }
@@ -141,7 +141,7 @@ read_tome_genes_jagged <- function(tome,
   library(dplyr)
   library(Matrix)
 
-  H5close()
+  #H5close()
 
   root <- H5Fopen(tome)
   gene_names <- h5read(root,"/gene_names")
@@ -245,7 +245,7 @@ read_tome_genes_jagged <- function(tome,
   out$dims <- read_tome_data_dims(tome)
   out$dims[2] <- length(genes)
 
-  H5close()
+  #H5close()
 
   out
 
@@ -265,7 +265,7 @@ read_tome_samples_jagged <- function(tome,
   library(dplyr)
   library(Matrix)
 
-  H5close()
+  #H5close()
 
   root <- H5Fopen(tome)
   gene_names <- h5read(root,"/gene_names")
@@ -369,7 +369,7 @@ read_tome_samples_jagged <- function(tome,
   out$dims <- read_tome_data_dims(tome, transpose = TRUE)
   out$dims[2] <- length(samples)
 
-  H5close()
+  #H5close()
 
   out
 
@@ -467,7 +467,7 @@ read_tome_dgCMatrix <- function(tome,
   library(dplyr)
   library(Matrix)
 
-  H5close()
+  #H5close()
 
   root <- H5Fopen(tome)
 
@@ -482,7 +482,7 @@ read_tome_dgCMatrix <- function(tome,
   dims <- h5read(root, dims_path)
 
   H5Fclose(root)
-  H5close()
+  #H5close()
 
   sparseMatrix(i = i,
                p = p,
