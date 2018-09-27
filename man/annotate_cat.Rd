@@ -28,14 +28,3 @@ A modified data frame: the annotated column will be renamed base_label, and base
 \description{
 Generate colors and ids for categorical annotations
 }
-\examples{
-flowers <- iris \%>\%
-  annotate_cat(Species)
-
-head(flowers)
-
-flowers2 <- iris \%>\%
- annotate_num(Species, spp, sort_label = F, colorset = "viridis")
-
-head(flowers2)
-}

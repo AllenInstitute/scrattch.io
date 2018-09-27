@@ -9,10 +9,15 @@ License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
+    data.table,
     dplyr (>= 0.4.3),
+    feather,
     Matrix (>= 1.2-12),
+    lazyeval,
     purrr (>= 0.2.4),
-    h5 (>= 0.9.9)
-RoxygenNote: 6.0.1
+    viridisLite
+Depends:
+    rhdf5 (>= 2.24.0)
+RoxygenNote: 6.1.0
 Suggests: 
     testthat

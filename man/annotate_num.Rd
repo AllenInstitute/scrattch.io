@@ -4,8 +4,8 @@
 \alias{annotate_num}
 \title{Generate colors and ids for numeric annotations}
 \usage{
-annotate_num(df, col = NULL, base = NULL, scale = "log10", na_val = 0,
-  colorset = c("darkblue", "white", "red"))
+annotate_num(df, col = NULL, base = NULL, scale = "log10",
+  na_val = 0, colorset = c("darkblue", "white", "red"))
 }
 \arguments{
 \item{df}{data frame to annotate}
@@ -25,15 +25,4 @@ A modified data frame: the annotated column will be renamed base_label, and base
 }
 \description{
 Generate colors and ids for numeric annotations
-}
-\examples{
-cars <- mtcars \%>\%
-  annotate_num(wt)
-
-head(cars)
-
-cars2 <- mtcars \%>\%
- annotate_num(wt, weight, "linear", colorset = c("#000000","#808080","#FF0000"))
-
-head(cars2)
 }

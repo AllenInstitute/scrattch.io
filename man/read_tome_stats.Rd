@@ -4,7 +4,8 @@
 \alias{read_tome_stats}
 \title{Read stats table from a tome file}
 \usage{
-read_tome_stats(tome, stats_name = NULL, columns = NULL, get_all = FALSE)
+read_tome_stats(tome, stats_name = NULL, columns = NULL,
+  get_all = FALSE)
 }
 \arguments{
 \item{tome}{the location of the tome file to read.}

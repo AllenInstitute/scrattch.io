@@ -4,7 +4,8 @@
 \alias{write_tome_mapping}
 \title{Write a mapping frequencies table to a tome file.}
 \usage{
-write_tome_mapping(mapping, mapping_name = NULL, tome, overwrite = NULL)
+write_tome_mapping(mapping, mapping_name = NULL, tome,
+  overwrite = NULL)
 }
 \arguments{
 \item{mapping}{A data.frame with mapping results to write.}

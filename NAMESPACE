@@ -1,1 +1,10 @@
 exportPattern("^[[:alpha:]]+")
+import(dplyr)
+import(purrr)
+import(rhdf5)
+import(Matrix)
+import(viridisLite)
+importFrom("grDevices", "col2rgb", "colorRampPalette", "rainbow",
+           "rgb", "terrain.colors")
+importFrom("stats", "var")
+importFrom("utils", "installed.packages")

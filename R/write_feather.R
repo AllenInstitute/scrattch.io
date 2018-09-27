@@ -30,15 +30,15 @@ build_feather <- function(anno = NULL, data = NULL, desc = NULL, feather_dir = N
 
     datafile <- paste0(feather_dir,"/data.feather")
     cat("Writing data table to",datafile,"\n")
-    write_feather(data, datafile)
+    feather::write_feather(data, datafile)
 
     annofile <- paste0(feather_dir,"/anno.feather")
     cat("Writing anno table to",annofile,"\n")
-    write_feather(anno, annofile)
+    feather::write_feather(anno, annofile)
 
     descfile <- paste0(feather_dir,"/desc.feather")
     cat("Writing desc table to",descfile,"\n")
-    write_feather(desc, descfile)
+    feather::write_feather(desc, descfile)
 
   }
 }
