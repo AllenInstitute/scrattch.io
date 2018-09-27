@@ -61,7 +61,7 @@ flip_table <- function(df,
 varibow <- function(n_colors) {
   sats <- rep_len(c(0.55,0.7,0.85,1),length.out = n_colors)
   vals <- rep_len(c(1,0.8,0.6),length.out = n_colors)
-  sub("FF$","",rainbow(n_colors, s = sats, v = vals))
+  sub("FF$","",grDevices::rainbow(n_colors, s = sats, v = vals))
 }
 
 #' Convert values to colors along a color ramp
@@ -81,7 +81,7 @@ values_to_colors <- function(x,
                              colorset = c("darkblue","dodgerblue","gray80","orange","orangered"),
                              missing_color = "black") {
 
-  heat_colors <- colorRampPalette(colorset)(1001)
+  heat_colors <- grDevices::colorRampPalette(colorset)(1001)
 
   if(is.null(max_val)) {
     max_val <- max(x, na.rm = T)
@@ -111,7 +111,7 @@ values_to_colors <- function(x,
   }
 
   if(!is.null(missing_color)) {
-    colors[is.na(colors)] <- rgb(t(col2rgb(missing_color)/255))
+    colors[is.na(colors)] <- grDevices::rgb(t(grDevices::col2rgb(missing_color)/255))
   }
 
   colors

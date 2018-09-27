@@ -33,8 +33,8 @@ read_loom_dgCMatrix <- function(loom_file,
   chunk_start <- 1 + chunk_size * (chunk - 1)
   chunk_end <- chunk_size * chunk
   cat(paste0("Reading samples ",chunk_start," to ", chunk_end))
-  chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
-  all_sparse <- Matrix(chunk_mat, sparse = T)
+  chunk_mat <- rhdf5::h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
+  all_sparse <- Matrix::Matrix(chunk_mat, sparse = T)
 
   if(n_chunks > 1) {
 
@@ -43,14 +43,14 @@ read_loom_dgCMatrix <- function(loom_file,
       chunk_start <- 1 + chunk_size * (chunk - 1)
       chunk_end <- chunk_size * chunk
       cat(paste0("Reading samples ",chunk_start," to ", chunk_end))
-      chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
-      chunk_sparse <- Matrix(chunk_mat, sparse = T)
+      chunk_mat <- rhdf5::h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
+      chunk_sparse <- Matrix::Matrix(chunk_mat, sparse = T)
       all_sparse <- rbind(all_sparse, chunk_mat)
     }
 
     # Remaining samples
-    chunk_mat <- h5read(loom_file, "/matrix", index = list((n_chunks*chunk_size + 1):n_samples, 1:n_genes))
-    chunk_sparse <- Matrix(chunk_mat, sparse = T)
+    chunk_mat <- rhdf5::h5read(loom_file, "/matrix", index = list((n_chunks*chunk_size + 1):n_samples, 1:n_genes))
+    chunk_sparse <- Matrix::Matrix(chunk_mat, sparse = T)
     all_sparse <- rbind(all_sparse, chunk_mat)
   }
 
@@ -67,7 +67,8 @@ read_loom_dgCMatrix <- function(loom_file,
 #'
 #' @return A data.frame with annotations as columns and samples as rows. The Loom CellID becomes the first column, sample_name.
 #'
-read_loom_anno <- function(loom_file) {
+read_loom_anno <- function(loom_file,
+                           sample_col = "CellID") {
   library(rhdf5)
 
   # annotations are stored in /col_attrs (Column attributes)
@@ -77,9 +78,9 @@ read_loom_anno <- function(loom_file) {
   projection_columns <- names(anno)[grepl("^X_",names(anno))]
 
   anno <- anno %>%
-    select(-one_of(projection_columns)) %>%
-    rename_("sample_name" = "CellID") %>%
-    select(sample_name, everything())
+    dplyr::select(-one_of(projection_columns)) %>%
+    dplyr::rename_("sample_name" = sample_col) %>%
+    dplyr::select(sample_name, dplyr::everything())
 
   return(anno)
 
@@ -92,7 +93,8 @@ read_loom_anno <- function(loom_file) {
 #' @return A data.frame with projection values as columns and samples as rows. The Loom CellID becomes the first column, sample_name.
 #' Loom doesn't use a prefix to indicate paired coordinates, so you'll have to figure these out on your own.
 #'
-read_loom_projections <- function(loom_file) {
+read_loom_projections <- function(loom_file,
+                                  sample_col = "CellID") {
   library(rhdf5)
 
   # projtations are stored in /col_attrs (Column attributes)
@@ -102,9 +104,9 @@ read_loom_projections <- function(loom_file) {
   projection_columns <- names(proj)[grepl("^X_",names(proj))]
 
   proj <- proj %>%
-    select(one_of(c("CellID",projection_columns))) %>%
-    rename_("sample_name" = "CellID") %>%
-    select(sample_name, everything())
+    dplyr::select(one_of(c(sample_col, projection_columns))) %>%
+    dplyr::rename_("sample_name" = sample_col) %>%
+    dplyr::select(sample_name, dplyr::everything())
 
   names(proj) <- sub("^X_","",names(proj))
 

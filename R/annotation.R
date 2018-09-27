@@ -14,6 +14,7 @@ annotate_num <- function (df,
                           scale = "log10", na_val = 0,
                           colorset = c("darkblue", "white", "red")) {
 
+  library(lazyeval)
   library(dplyr)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
@@ -37,8 +38,8 @@ annotate_num <- function (df,
   x <- df[[col]]
 
   annotations <- data.frame(label = unique(x)) %>%
-    arrange(label) %>%
-    mutate(id = 1:n())
+    dplyr::arrange(label) %>%
+    dplyr::mutate(id = 1:dplyr::n())
 
   if (scale == "log10") {
     colors <- values_to_colors(log10(annotations$label + 1), colorset = colorset)
@@ -53,7 +54,7 @@ annotate_num <- function (df,
   names(annotations) <- paste0(base, c("_label", "_id", "_color"))
 
   names(df)[names(df) == col] <- paste0(base,"_label")
-  df <- left_join(df, annotations, by = paste0(base,"_label"))
+  df <- dplyr::left_join(df, annotations, by = paste0(base,"_label"))
   df
 }
 
@@ -75,6 +76,7 @@ annotate_cat <- function(df,
                          colorset = "varibow", color_order = "sort") {
 
   library(dplyr)
+  library(lazyeval)
   library(viridisLite)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
@@ -100,28 +102,28 @@ annotate_cat <- function(df,
   annotations <- data.frame(label = unique(x), stringsAsFactors = F)
 
   if(sort_label) {
-    annotations <- annotations %>% arrange(label)
+    annotations <- annotations %>% dplyr::arrange(label)
   }
 
   annotations <- annotations %>%
-    mutate(id = 1:n())
+    dplyr::mutate(id = 1:n())
 
   if(colorset == "varibow") {
     colors <- varibow(nrow(annotations))
   } else if(colorset == "rainbow") {
-    colors <- sub("FF$","",rainbow(nrow(annotations)))
+    colors <- sub("FF$","",grDevices::rainbow(nrow(annotations)))
   } else if(colorset == "viridis") {
-    colors <- sub("FF$","",viridis(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::viridis(nrow(annotations)))
   } else if(colorset == "magma") {
-    colors <- sub("FF$","",magma(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::magma(nrow(annotations)))
   } else if(colorset == "inferno") {
-    colors <- sub("FF$","",inferno(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::inferno(nrow(annotations)))
   } else if(colorset == "plasma") {
-    colors <- sub("FF$","",plasma(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::plasma(nrow(annotations)))
   } else if(colorset == "terrain") {
-    colors <- sub("FF$","",terrain.colors(nrow(annotations)))
+    colors <- sub("FF$","",grDevices::terrain.colors(nrow(annotations)))
   } else if(is.character(colorset)) {
-    colors <- colorRampPalette(colorset)(nrow(annotations))
+    colors <- grDevices::colorRampPalette(colorset)(nrow(annotations))
   }
 
   if(color_order == "random") {
@@ -130,13 +132,13 @@ annotate_cat <- function(df,
 
   }
 
-  annotations <- mutate(annotations, color = colors)
+  annotations <- dplyr::mutate(annotations, color = colors)
 
   names(annotations) <- paste0(base, c("_label","_id","_color"))
 
   names(df)[names(df) == col] <- paste0(base,"_label")
 
-  df <- left_join(df, annotations, by = paste0(base, "_label"))
+  df <- dplyr::left_join(df, annotations, by = paste0(base, "_label"))
 
   df
 }
