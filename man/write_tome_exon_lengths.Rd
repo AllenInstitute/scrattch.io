@@ -10,6 +10,8 @@ write_tome_exon_lengths(exon_lengths, tome, overwrite = NULL)
 \item{exon_lengths}{A data.frame containing the columns "gene_name" and "exon_length".}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write exon lengths to a tome file.

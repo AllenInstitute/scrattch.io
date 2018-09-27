@@ -22,7 +22,7 @@ write_dgCMatrix_h5 <- function(mat,
                                ref_name = "mm10-1.2.0_premrna",
                                gene_ids = NULL) {
 
-  library(Matrix)
+  #library(Matrix)
 
   if(grepl("gene",cols_are)) {
     mat <- Matrix::t(mat)

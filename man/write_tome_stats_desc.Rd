@@ -10,6 +10,8 @@ write_tome_stats_desc(stats_desc, tome, overwrite = NULL)
 \item{stats_desc}{The desc data.frame to write.}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write a stats descriptions table to a tome file.

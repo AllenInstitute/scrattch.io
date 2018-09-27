@@ -2,6 +2,8 @@
 #'
 #' @param loom_file The loom file to read
 #' @param chunk_size The number of rows to read as a chunk. For ~30k genes, a chunk of 5000 (the default) is ~1GB in memory.
+#' @param row_names The name of the Loom row_attr to use for rownames of the matrix. Default is "Gene".
+#' @param col_names The name of the Loom col_attr to use for colnames of the matrix. Default is "CellID".
 #'
 #' @return A dgCMatrix object with genes as columns and samples as rows.
 #'
@@ -9,8 +11,7 @@ read_loom_dgCMatrix <- function(loom_file,
                                 chunk_size = 5000,
                                 row_names = "Gene",
                                 col_names = "CellID") {
-  library(rhdf5)
-  library(Matrix)
+  #library(Matrix)
 
   # Gene names are in /row_attrs/Gene
   gene_names <- read_tome_vector(loom_file, paste0("/row_attrs/", row_names))
@@ -64,12 +65,12 @@ read_loom_dgCMatrix <- function(loom_file,
 #' Read Loom sample annotations
 #'
 #' @param loom_file The loom file to read
+#' @param sample_col The name of the col_attr to use for sample_names. Default is "CellID".
 #'
 #' @return A data.frame with annotations as columns and samples as rows. The Loom CellID becomes the first column, sample_name.
 #'
 read_loom_anno <- function(loom_file,
                            sample_col = "CellID") {
-  library(rhdf5)
 
   # annotations are stored in /col_attrs (Column attributes)
   anno <- read_tome_data.frame(loom_file, "/col_attrs", stored_as = "vectors")
@@ -89,13 +90,13 @@ read_loom_anno <- function(loom_file,
 #' Read Loom projections
 #'
 #' @param loom_file The loom file to read
+#' @param sample_col The name of the col_attr to use for sample_names. Default is "CellID".
 #'
 #' @return A data.frame with projection values as columns and samples as rows. The Loom CellID becomes the first column, sample_name.
 #' Loom doesn't use a prefix to indicate paired coordinates, so you'll have to figure these out on your own.
 #'
 read_loom_projections <- function(loom_file,
                                   sample_col = "CellID") {
-  library(rhdf5)
 
   # projtations are stored in /col_attrs (Column attributes)
   proj <- read_tome_data.frame(loom_file, "/col_attrs", stored_as = "vectors")

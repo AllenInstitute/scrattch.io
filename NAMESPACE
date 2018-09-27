@@ -6,5 +6,6 @@ import(Matrix)
 import(viridisLite)
 importFrom("grDevices", "col2rgb", "colorRampPalette", "rainbow",
            "rgb", "terrain.colors")
+importFrom("lazyeval", "expr_text")
 importFrom("stats", "var")
 importFrom("utils", "installed.packages")

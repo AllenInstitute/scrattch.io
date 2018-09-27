@@ -10,6 +10,8 @@ read_gene_data_hdf5(hdf5_file, genes, type = c("counts", "cpm"))
 \item{hdf5_file}{HDF5 file to read}
 
 \item{genes}{A vector of gene names to read}
+
+\item{type}{Whether to return "counts" or normalize to "cpm". Default is "counts".}
 }
 \value{
 A data.frame with sample_id as the first column and each subsequent column

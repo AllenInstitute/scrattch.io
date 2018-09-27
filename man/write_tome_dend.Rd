@@ -12,6 +12,8 @@ write_tome_dend(dend, dend_name, tome, overwrite = NULL)
 \item{dend_name}{The name of the dendrogram to store.}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write a dendrogram object as serialized ASCII to a tome file.

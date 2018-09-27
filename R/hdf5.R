@@ -12,8 +12,6 @@ save_sparse_matrix_h5 <- function(mat,
                                   overwrite = F,
                                   compression_level = 0) {
 
-  library(rhdf5)
-
   # Modified from cellrangerRkit
 
   if (file.exists(out_file) & overwrite) {
@@ -137,6 +135,7 @@ save_sparse_matrix_h5 <- function(mat,
 #'
 #' @param hdf5_file HDF5 file to read
 #' @param genes A vector of gene names to read
+#' @param type Whether to return "counts" or normalize to "cpm". Default is "counts".
 #'
 #' @return A data.frame with sample_id as the first column and each subsequent column
 #' containing gene expression values and named for the genes.

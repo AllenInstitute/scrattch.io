@@ -7,8 +7,8 @@
 #'
 get_feather_data <- function(feather_dir, genes, group_by, group_ids) {
 
-  library(dplyr)
-  library(feather)
+  #library(dplyr)
+  #library(feather)
 
   data_file <- paste0(feather_dir, "/data.feather")
   anno_file <- paste0(feather_dir, "/anno.feather")
@@ -69,9 +69,16 @@ get_feather_data <- function(feather_dir, genes, group_by, group_ids) {
   return(data)
 }
 
+#' Read a feather directory to a list of data.frames
+#'
+#' This is likely to be deprecated soon.
+#'
+#' @param feather_dir The directory containing .feather files.
+#' @param oldformat Whether the new or old format are used
+#'
 feather_to_list <- function(feather_dir = NULL, oldformat = F) {
 
-  library(feather)
+  #library(feather)
 
   if(is.null(feather_dir)) {
     stop("feather directory required.")

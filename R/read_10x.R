@@ -5,8 +5,7 @@
 #'
 read_10x_dgCMatrix <- function(h5,
                                target) {
-  library(rhdf5)
-  library(Matrix)
+  #library(Matrix)
 
   root <- rhdf5::H5Fopen(h5)
 

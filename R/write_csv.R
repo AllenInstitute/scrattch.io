@@ -13,8 +13,8 @@ write_dgCMatrix_csv <- function(mat,
                                 col1_name = "gene",
                                 chunk_size = 1000) {
 
-  library(Matrix)
-  library(data.table)
+  #library(Matrix)
+  #library(data.table)
 
   # Transpose so retrieval of "rows" is much faster
   mat <- Matrix::t(mat)

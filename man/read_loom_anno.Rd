@@ -4,10 +4,12 @@
 \alias{read_loom_anno}
 \title{Read Loom sample annotations}
 \usage{
-read_loom_anno(loom_file)
+read_loom_anno(loom_file, sample_col = "CellID")
 }
 \arguments{
 \item{loom_file}{The loom file to read}
+
+\item{sample_col}{The name of the col_attr to use for sample_names. Default is "CellID".}
 }
 \value{
 A data.frame with annotations as columns and samples as rows. The Loom CellID becomes the first column, sample_name.

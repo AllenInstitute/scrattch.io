@@ -16,8 +16,7 @@ write_tome_data.frame <- function(df,
                                   store_as = "vectors",
                                   overwrite = NULL) {
 
-  library(rhdf5)
-  library(purrr)
+  #library(purrr)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -109,11 +108,15 @@ write_tome_data.frame <- function(df,
 
 }
 
+#' Generate a new group in a tome file
+#'
+#' @param tome Path to the target tome file
+#' @param target_path The target location within the tome file
+#'
 write_tome_group <- function(tome,
                              target_path) {
 
-  library(dplyr)
-  library(rhdf5)
+  #library(dplyr)
 
   verbosity <- .scrattch.io_env$verbosity
 
@@ -159,8 +162,7 @@ write_tome_vector <- function(vec,
                               tome,
                               target,
                               overwrite = NULL) {
-  library(rhdf5)
-  library(purrr)
+  #library(purrr)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -329,8 +331,7 @@ write_tome_dgCMatrix <- function(mat,
                                  overwrite = NULL,
                                  compression_level = 4) {
 
-  library(rhdf5)
-  library(Matrix)
+  #library(Matrix)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite

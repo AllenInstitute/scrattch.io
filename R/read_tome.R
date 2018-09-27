@@ -16,10 +16,9 @@ read_tome_gene_data <- function(tome,
                                 units = "counts",
                                 transform = "none",
                                 format = "data.frame") {
-  library(rhdf5)
-  library(purrr)
-  library(dplyr)
-  library(Matrix)
+  #library(purrr)
+  #library(dplyr)
+  #library(Matrix)
 
   jagged <- read_tome_genes_jagged(tome,
                                      genes,
@@ -82,9 +81,8 @@ read_tome_sample_data <- function(tome,
                                   units = "counts",
                                   transform = "none",
                                   format = "data.frame") {
-  library(rhdf5)
-  library(purrr)
-  library(dplyr)
+  #library(purrr)
+  #library(dplyr)
 
   jagged <- read_tome_samples_jagged(tome,
                                      samples,

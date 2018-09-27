@@ -17,6 +17,8 @@ If "data.frame", will read the df_name as a compound object. If "vectors" will r
 
 \item{columns}{character vector, specific columns to read (only if the object was stored as vectors).}
 
+\item{match_type}{Whether to match column names exactly ("exact") or using grep ("grep"). Default is "exact".}
+
 \item{get_all}{logical, whether or not to append all other columns after the specified columns (only if the object was stored as vectors).}
 }
 \description{

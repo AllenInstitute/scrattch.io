@@ -1,6 +1,8 @@
 library(dplyr)
 library(purrr)
-library(scrattch.io)
+library(Matrix)
+devtools::load_all()
+#library(scrattch.io)
 options(stringsAsFactors = FALSE)
 
 # Get dataset from tasic2016data
@@ -9,12 +11,12 @@ library(tasic2016data)
 select_cells <- tasic_2016_anno %>%
   filter(primary_type != "unclassified") %>%
   filter(grepl("Sst",primary_type)) %>%
-  select(sample_id) %>%
+  select(sample_name) %>%
   unlist()
 
 # raw_anno will be used by formats like loom
 raw_anno <- tasic_2016_anno %>%
-  filter(sample_id %in% select_cells)
+  filter(sample_name %in% select_cells)
 
 # anno will be used for tome and feather
 anno <- raw_anno %>%
@@ -51,7 +53,7 @@ desc <- data.frame(base = c("primary_type","secondary_type","core_intermediate",
 cluster_ids <- unique(anno$primary_type_id)
 medians <- map_dfc(cluster_ids,
                function(x) {
-                 samples <- anno$sample_id[anno$primary_type_id == x]
+                 samples <- anno$sample_name[anno$primary_type_id == x]
                  apply(data[,samples], 1, median)
                })
 names(medians) <- paste0("primary_type_",cluster_ids)
@@ -88,15 +90,13 @@ saveRDS(dend, file = "rds/dend.RData")
 ## Write feather files
 library(feather)
 
-fdata <- cbind(sample_id = colnames(data), as.data.frame(t(data)))
+fdata <- cbind(sample_name = colnames(data), as.data.frame(t(data)))
 
 write_feather(fdata, "feather/data.feather")
 write_feather(anno, "feather/anno.feather")
 write_feather(desc, "feather/desc.feather")
 
 # Write tome file
-library(Matrix)
-
 write_tome_data(exon_mat = as(data,"dgCMatrix"),
                 tome = "tome/transcrip.tome",
                 cols_are = "sample",
@@ -105,3 +105,8 @@ write_tome_anno(anno, "tome/transcrip.tome")
 write_tome_anno_desc(desc, "tome/transcrip.tome")
 write_tome_dend(dend, "primary_type" ,"tome/transcrip.tome")
 write_tome_dend_desc(dend_desc, "tome/transcrip.tome")
+
+# Fetch a small Loom file from loom.linnarssonlab.org
+
+download.file("http://loom.linnarssonlab.org/dataset/cellmetadata/Mousebrain.org.level1/L1_Olfactory.agg.loom",
+              destfile = "loom/L1_Olfactory.agg.loom")

@@ -14,8 +14,8 @@ annotate_num <- function (df,
                           scale = "log10", na_val = 0,
                           colorset = c("darkblue", "white", "red")) {
 
-  library(lazyeval)
-  library(dplyr)
+  #library(lazyeval)
+  #library(dplyr)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
     col <- lazyeval::expr_text(col)
@@ -75,9 +75,9 @@ annotate_cat <- function(df,
                          sort_label = T, na_val = "ZZ_Missing",
                          colorset = "varibow", color_order = "sort") {
 
-  library(dplyr)
-  library(lazyeval)
-  library(viridisLite)
+  #library(dplyr)
+  #library(lazyeval)
+  #library(viridisLite)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
     col <- lazyeval::expr_text(col)
