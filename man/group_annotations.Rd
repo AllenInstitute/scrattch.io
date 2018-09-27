@@ -17,17 +17,3 @@ an annotation data frame with reordered columns
 \description{
 Group annotation columns
 }
-\examples{
-anno <- mtcars \%>\%
- mutate(sample_id = paste0("car",1:n())) \%>\%
- select(sample_id, wt, mpg) \%>\%
- annotate_num(wt) \%>\%
- annotate_num(mpg)
-
-head(anno)
-
-anno2 <- group_annotations(anno)
-
-head(anno2)
-
-}

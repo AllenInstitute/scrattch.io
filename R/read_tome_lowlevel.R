@@ -1,3 +1,20 @@
+#' Read a vector from a tome (or other HDF5 object)
+#'
+#' The h5read function sticks close to the actual object stored in an HDF5 file - that is,
+#' it will return a 1d array instead of a true vector object. This function is a simple
+#' wrapper around h5read that will apply unlist and as.vector to the output of h5read so that
+#' the result is a standard R vector.
+#'
+#' @param tome A tome file (other HDF5 files will work as well).
+#' @param name The name of the object in the HDF5 hierarchy.
+#'
+#' @return A vector of the same type as the object in the HDF5 file.
+#'
+read_tome_vector <- function(tome,
+                             name) {
+  as.vector(unlist(h5read(tome, name)))
+}
+
 #' Read a data.frame from a tome file
 #'
 #' @param tome tome file to read

@@ -6,43 +6,53 @@
 #' @return A dgCMatrix object with genes as columns and samples as rows.
 #'
 read_loom_dgCMatrix <- function(loom_file,
-                                chunk_size = 5000) {
+                                chunk_size = 5000,
+                                row_names = "Gene",
+                                col_names = "CellID") {
   library(rhdf5)
   library(Matrix)
 
   # Gene names are in /row_attrs/Gene
-  gene_names <- as.vector(unlist(h5read(loom_file, "/row_attrs/Gene")))
+  gene_names <- read_tome_vector(loom_file, paste0("/row_attrs/", row_names))
 
   # Sample names are in col_attrs/CellID
-  sample_names <- as.vector(unlist(h5read(loom_file, "/col_attrs/CellID")))
+  sample_names <- read_tome_vector(loom_file, paste0("/col_attrs/", col_names))
 
   n_samples <- length(sample_names)
   n_genes <- length(gene_names)
 
-  n_chunks <- floor(n_samples/chunk_size)
+  if(n_samples < chunk_size) {
+    chunk_size <- n_samples
+    n_chunks <- 1
+  } else {
+    n_chunks <- floor(n_samples/chunk_size)
+  }
 
   # Initial chunk
   chunk <- 1
   chunk_start <- 1 + chunk_size * (chunk - 1)
   chunk_end <- chunk_size * chunk
-  print(paste0("Reading samples ",chunk_start," to ", chunk_end))
+  cat(paste0("Reading samples ",chunk_start," to ", chunk_end))
   chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
   all_sparse <- Matrix(chunk_mat, sparse = T)
 
-  # chunkation over chunks
-  for(chunk in 2:n_chunks) {
-    chunk_start <- 1 + chunk_size * (chunk - 1)
-    chunk_end <- chunk_size * chunk
-    print(paste0("Reading samples ",chunk_start," to ", chunk_end))
-    chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
+  if(n_chunks > 1) {
+
+    # chunkation over chunks
+    for(chunk in 2:n_chunks) {
+      chunk_start <- 1 + chunk_size * (chunk - 1)
+      chunk_end <- chunk_size * chunk
+      cat(paste0("Reading samples ",chunk_start," to ", chunk_end))
+      chunk_mat <- h5read(loom_file, "/matrix", index = list(chunk_start:chunk_end, 1:n_genes))
+      chunk_sparse <- Matrix(chunk_mat, sparse = T)
+      all_sparse <- rbind(all_sparse, chunk_mat)
+    }
+
+    # Remaining samples
+    chunk_mat <- h5read(loom_file, "/matrix", index = list((n_chunks*chunk_size + 1):n_samples, 1:n_genes))
     chunk_sparse <- Matrix(chunk_mat, sparse = T)
     all_sparse <- rbind(all_sparse, chunk_mat)
   }
-
-  # Remaining samples
-  chunk_mat <- h5read(loom_file, "/matrix", index = list((n_chunks*chunk_size + 1):n_samples, 1:n_genes))
-  chunk_sparse <- Matrix(chunk_mat, sparse = T)
-  all_sparse <- rbind(all_sparse, chunk_mat)
 
   rownames(all_sparse) <- sample_names
   colnames(all_sparse) <- gene_names

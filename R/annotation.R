@@ -9,16 +9,6 @@
 #'
 #' @return A modified data frame: the annotated column will be renamed base_label, and base_id and base_color columns will be appended
 #'
-#' @examples
-#' cars <- mtcars %>%
-#'   annotate_num(wt)
-#'
-#'head(cars)
-#'
-#'cars2 <- mtcars %>%
-#'  annotate_num(wt, weight, "linear", colorset = c("#000000","#808080","#FF0000"))
-#'
-#'head(cars2)
 annotate_num <- function (df,
                           col = NULL, base = NULL,
                           scale = "log10", na_val = 0,
@@ -79,23 +69,13 @@ annotate_num <- function (df,
 #'
 #' @return A modified data frame: the annotated column will be renamed base_label, and base_id and base_color columns will be appended
 #'
-#' @examples
-#' flowers <- iris %>%
-#'   annotate_cat(Species)
-#'
-#'head(flowers)
-#'
-#'flowers2 <- iris %>%
-#'  annotate_num(Species, spp, sort_label = F, colorset = "viridis")
-#'
-#'head(flowers2)
 annotate_cat <- function(df,
                          col = NULL, base = NULL,
                          sort_label = T, na_val = "ZZ_Missing",
                          colorset = "varibow", color_order = "sort") {
 
   library(dplyr)
-  library(viridis)
+  library(viridisLite)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
     col <- lazyeval::expr_text(col)
@@ -119,7 +99,7 @@ annotate_cat <- function(df,
 
   annotations <- data.frame(label = unique(x), stringsAsFactors = F)
 
-  if(sort_label == T) {
+  if(sort_label) {
     annotations <- annotations %>% arrange(label)
   }
 
@@ -168,19 +148,6 @@ annotate_cat <- function(df,
 #'
 #'
 #'@return an annotation data frame with reordered columns
-#'
-#'@examples
-#'anno <- mtcars %>%
-#'  mutate(sample_id = paste0("car",1:n())) %>%
-#'  select(sample_id, wt, mpg) %>%
-#'  annotate_num(wt) %>%
-#'  annotate_num(mpg)
-#'
-#'head(anno)
-#'
-#'anno2 <- group_annotations(anno)
-#'
-#'head(anno2)
 #'
 group_annotations <- function(df, keep_order = TRUE) {
   labels <- names(df)[grepl("_label",names(df))]

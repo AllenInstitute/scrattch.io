@@ -4,7 +4,8 @@
 \alias{read_loom_dgCMatrix}
 \title{Read a Loom matrix as a dgCMatrix}
 \usage{
-read_loom_dgCMatrix(loom_file, chunk_size = 5000)
+read_loom_dgCMatrix(loom_file, chunk_size = 5000, row_names = "Gene",
+  col_names = "CellID")
 }
 \arguments{
 \item{loom_file}{The loom file to read}
