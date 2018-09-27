@@ -5,8 +5,7 @@
 #'
 read_h5ad_dgCMatrix <- function(h5ad,
                                 target = "/raw.X") {
-  library(rhdf5)
-  library(Matrix)
+  #library(Matrix)
 
   root <- rhdf5::H5Fopen(h5ad)
 

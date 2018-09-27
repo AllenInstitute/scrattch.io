@@ -10,6 +10,8 @@ write_tome_intron_lengths(intron_lengths, tome, overwrite = NULL)
 \item{intron_lengths}{A data.frame containing the columns "gene_name" and "intron_length".}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write intron lengths to a tome file.

@@ -11,7 +11,7 @@
 #'
 large_matrix_to_dgCMatrix <- function(mat,
                                       chunk_size = 5000) {
-  library(Matrix)
+  #library(Matrix)
 
   # Row names
   row_names <- rownames(mat)

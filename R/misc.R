@@ -1,7 +1,7 @@
 #' Cumulatively collapse along a vector
 #'
 #' @param x The character vector to collapse
-#' @param collaps The character to use for collapsing
+#' @param collapse The character to use for collapsing
 #'
 #' @examples
 #'
@@ -58,6 +58,10 @@ flip_table <- function(df,
 
 }
 
+#' Generate a rainbow palette with variation in saturation and value
+#'
+#' @param n_colors The number of colors to generate
+#'
 varibow <- function(n_colors) {
   sats <- rep_len(c(0.55,0.7,0.85,1),length.out = n_colors)
   vals <- rep_len(c(1,0.8,0.6),length.out = n_colors)

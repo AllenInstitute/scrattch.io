@@ -9,7 +9,7 @@ collapse_along(x, collapse = "/")
 \arguments{
 \item{x}{The character vector to collapse}
 
-\item{collaps}{The character to use for collapsing}
+\item{collapse}{The character to use for collapsing}
 }
 \description{
 Cumulatively collapse along a vector

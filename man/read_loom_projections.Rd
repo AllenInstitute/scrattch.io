@@ -4,10 +4,12 @@
 \alias{read_loom_projections}
 \title{Read Loom projections}
 \usage{
-read_loom_projections(loom_file)
+read_loom_projections(loom_file, sample_col = "CellID")
 }
 \arguments{
 \item{loom_file}{The loom file to read}
+
+\item{sample_col}{The name of the col_attr to use for sample_names. Default is "CellID".}
 }
 \value{
 A data.frame with projection values as columns and samples as rows. The Loom CellID becomes the first column, sample_name.

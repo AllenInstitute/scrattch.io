@@ -13,6 +13,8 @@ Requires columns: sample_name, x, y (, z optional)}
 \item{proj_name}{The base name of the projection. Should match the projection description table}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write projection coordinates (e.g. tSNE or PCA) to a tome file.

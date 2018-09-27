@@ -22,6 +22,7 @@ read_tome_vector <- function(tome,
 #' @param stored_as character, the storage mode of the data.frame used in write_tome_data.frame. Default = "data.frame".
 #' If "data.frame", will read the df_name as a compound object. If "vectors" will read separate column vectors and build a data.frame.
 #' @param columns character vector, specific columns to read (only if the object was stored as vectors).
+#' @param match_type Whether to match column names exactly ("exact") or using grep ("grep"). Default is "exact".
 #' @param get_all logical, whether or not to append all other columns after the specified columns (only if the object was stored as vectors).
 #'
 read_tome_data.frame <- function(tome,

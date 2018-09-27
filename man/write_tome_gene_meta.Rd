@@ -10,6 +10,8 @@ write_tome_gene_meta(genes, tome, overwrite = NULL)
 \item{genes}{The genes data.frame to write.}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write gene info table to a tome file.

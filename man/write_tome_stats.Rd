@@ -9,7 +9,11 @@ write_tome_stats(stats, stats_name = NULL, tome, overwrite = NULL)
 \arguments{
 \item{stats}{The stats data.frame to write.}
 
+\item{stats_name}{The name of the stats table to store.}
+
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write a stats table (e.g. median expression per cluster) to a tome file.

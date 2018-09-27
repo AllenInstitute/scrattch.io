@@ -17,8 +17,6 @@ write_tome_data <- function(exon_mat = NULL,
                             orientations = "both",
                             compression_level = 4) {
 
-  library(Matrix)
-  library(rhdf5)
 
   if(is.null(exon_mat) & is.null(intron_mat)) {
     stop("Provide at least one of exon_mat or intron_mat.")
@@ -284,6 +282,7 @@ write_tome_data <- function(exon_mat = NULL,
 #'
 #' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_anno <- function(anno,
                             tome,
@@ -305,6 +304,7 @@ write_tome_anno <- function(anno,
 #'
 #' @param anno_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_anno_desc <- function(anno_desc,
                                  tome,
@@ -324,6 +324,7 @@ write_tome_anno_desc <- function(anno_desc,
 #' Requires columns: sample_name, x, y (, z optional)
 #' @param proj_name The base name of the projection. Should match the projection description table
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_projection <- function(proj,
                                   proj_name = NULL,
@@ -349,6 +350,7 @@ write_tome_projection <- function(proj,
 #'
 #' @param proj_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_projection_desc <- function(proj_desc,
                                        tome,
@@ -365,7 +367,9 @@ write_tome_projection_desc <- function(proj_desc,
 #' Write a stats table (e.g. median expression per cluster) to a tome file.
 #'
 #' @param stats The stats data.frame to write.
+#' @param stats_name The name of the stats table to store.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_stats <- function(stats,
                              stats_name = NULL,
@@ -389,6 +393,7 @@ write_tome_stats <- function(stats,
 #'
 #' @param stats_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_stats_desc <- function(stats_desc,
                                   tome,
@@ -407,6 +412,7 @@ write_tome_stats_desc <- function(stats_desc,
 #' @param dend The desc data.frame to write.
 #' @param dend_name The name of the dendrogram to store.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_dend <- function(dend,
                             dend_name,
@@ -431,6 +437,7 @@ write_tome_dend <- function(dend,
 #'
 #' @param dend_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_dend_desc <- function(dend_desc,
                                  tome,
@@ -448,6 +455,7 @@ write_tome_dend_desc <- function(dend_desc,
 #'
 #' @param exon_lengths A data.frame containing the columns "gene_name" and "exon_length".
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_exon_lengths <- function(exon_lengths,
                                     tome,
@@ -472,6 +480,7 @@ write_tome_exon_lengths <- function(exon_lengths,
 #'
 #' @param intron_lengths A data.frame containing the columns "gene_name" and "intron_length".
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_intron_lengths <- function(intron_lengths,
                                       tome,
@@ -496,6 +505,7 @@ write_tome_intron_lengths <- function(intron_lengths,
 #'
 #' @param genes The genes data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_gene_meta <- function(genes,
                                  tome,
@@ -513,6 +523,7 @@ write_tome_gene_meta <- function(genes,
 #'
 #' @param genes_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_gene_meta_desc <- function(genes_desc,
                                       tome,
@@ -531,6 +542,7 @@ write_tome_gene_meta_desc <- function(genes_desc,
 #' @param mapping A data.frame with mapping results to write.
 #' @param mapping_name The base name of the mapping Should match the mapping description table
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_mapping <- function(mapping,
                                mapping_name = NULL,
