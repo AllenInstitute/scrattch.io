@@ -4,6 +4,7 @@ import(purrr)
 import(rhdf5)
 import(Matrix)
 import(viridisLite)
+import(tibble)
 importFrom("grDevices", "col2rgb", "colorRampPalette", "rainbow",
            "rgb", "terrain.colors")
 importFrom("lazyeval", "expr_text")

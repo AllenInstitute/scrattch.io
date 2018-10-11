@@ -15,9 +15,11 @@ Imports:
     Matrix (>= 1.2-12),
     lazyeval,
     purrr (>= 0.2.4),
+    tibble,
     viridisLite
 Depends:
     rhdf5 (>= 2.24.0)
 RoxygenNote: 6.1.0
 Suggests: 
-    testthat
+    testthat,
+    Seurat
