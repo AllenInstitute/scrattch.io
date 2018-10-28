@@ -1,7 +1,7 @@
 #' Read Gene Expression Data from a tome file
 #'
 #' @param tome tome file to read. Required.
-#' @param genes A vector of gene names to read. Required.
+#' @param genes A vector of gene names to read. If NULL, will read all genes.
 #' @param regions The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".
 #' @param units The type of values to return. Can be "counts" or "cpm". Default = "counts".
 #' @param transform Transformation to apply to values. Can be "none", "log", "log2", "log10". Log transforms will add 1 to values before transformation. Default = "none".
@@ -11,18 +11,15 @@
 #' containing gene expression values and named for the genes; Or a matrix with columns as genes and rows as samples.
 #'
 read_tome_gene_data <- function(tome,
-                                genes,
+                                genes = NULL,
                                 regions = "exon",
                                 units = "counts",
                                 transform = "none",
                                 format = "data.frame") {
-  #library(purrr)
-  #library(dplyr)
-  #library(Matrix)
 
   jagged <- read_tome_genes_jagged(tome,
-                                     genes,
-                                     regions)
+                                   genes,
+                                   regions)
 
   if(format == "data.frame") {
     out <- jagged_to_data.frame(jagged,
@@ -39,14 +36,13 @@ read_tome_gene_data <- function(tome,
   }
 
   if(units == "cpm") {
-    root <- H5Fopen(tome)
 
     if(regions == "exon") {
-      total_counts <- c(h5read(root, "/data/total_exon_counts"))
+      total_counts <- c(h5read(tome, "/data/total_exon_counts"))
     } else if(regions == "intron") {
-      total_counts <- c(h5read(root, "/data/total_intron_counts"))
+      total_counts <- c(h5read(tome, "/data/total_intron_counts"))
     } else if(regions == "both") {
-      total_counts <- c(h5read(root, "/data/total_exon_counts") + h5read(root, "/data/total_intron_counts"))
+      total_counts <- c(h5read(tome, "/data/total_exon_counts") + h5read(tome, "/data/total_intron_counts"))
     }
     out[,genes] <- out[,genes]/(total_counts/1e6)
   }
@@ -58,6 +54,8 @@ read_tome_gene_data <- function(tome,
   } else if(transform == "log10") {
     out[,genes] <- log10(out[,genes] + 1)
   }
+
+  h5closeAll()
 
   out
 
@@ -167,8 +165,6 @@ read_tome_exon_lengths <- function(tome,
     exon_lengths <- exon_lengths[match(genes,exon_lengths$gene_name),]
   }
 
-  H5close()
-
   if(return_as == "vector") {
     unlist(exon_lengths$exon_length)
   } else if(return_as == "data.frame") {
@@ -199,8 +195,6 @@ read_tome_intron_lengths <- function(tome,
   if(!is.null(genes)) {
     intron_lengths <- intron_lengths[match(genes,intron_lengths$gene_name),]
   }
-
-  H5close()
 
   if(return_as == "vector") {
     unlist(intron_lengths$intron_length)
