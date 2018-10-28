@@ -125,12 +125,14 @@ values_to_colors <- function(x,
 
 
 #' Caculate default stats for sifter and then write to tome
-
-#' @param tome Path to the target tome file.
+#'
+#' In this case, the target tome will need to have exon and intron data matrices, as well as annotations with the base "cluster".
+#'
+#' @param tome Path to the target tome file.1
 #' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
-write_sifter_stats_to_tome <- function(tome,
-                                       overwrite = NULL) {
+write_tome_sifter_stats <- function(tome,
+                                    overwrite = NULL) {
 
 
   ## Read in the relevant data from tome

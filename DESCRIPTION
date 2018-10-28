@@ -2,7 +2,9 @@ Package: scrattch.io
 Type: Package
 Title: scrattch File Input/Output Handling
 Version: 0.1.0
-Author: Lucas Graybuck <lucasg@alleninstitute.org>
+Authors@R: c(
+    person("Lucas", "Graybuck", email = "lucasg@alleninstitute.org", role = c("aut","cre")),
+    person("Jeremy", "Miller", role = "aut"))
 Maintainer: Lucas Graybuck <lucasg@alleninstitute.org>
 Description: Functions for handling RNA-seq files and formats as input and output for scrattch functions.
 License: file LICENSE
@@ -11,7 +13,6 @@ LazyData: true
 Imports:
     data.table,
     dplyr (>= 0.4.3),
-    feather,
     Matrix (>= 1.2-12),
     lazyeval,
     purrr (>= 0.2.4),
@@ -20,4 +21,5 @@ Depends:
     rhdf5 (>= 2.24.0)
 RoxygenNote: 6.1.0
 Suggests: 
-    testthat
+    testthat,
+    feather
