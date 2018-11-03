@@ -24,8 +24,6 @@ write_tome_data.frame <- function(df,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  #H5close()
-
   if(!file.exists(tome)) {
     if(verbosity == 2) {
       print(paste0(tome," doesn't exist. Creating new file."))
@@ -169,8 +167,6 @@ write_tome_vector <- function(vec,
   }
 
   verbosity <- .scrattch.io_env$verbosity
-
-  #H5close()
 
   if(!file.exists(tome)) {
     if(verbosity == 2) {
@@ -338,8 +334,6 @@ write_tome_dgCMatrix <- function(mat,
   }
 
   verbosity <- .scrattch.io_env$verbosity
-
-  #H5close()
 
   target_path <- sub("/$","",target)
   write_tome_group(tome,

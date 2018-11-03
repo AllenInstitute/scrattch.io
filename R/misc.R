@@ -121,3 +121,69 @@ values_to_colors <- function(x,
   colors
 }
 
+
+
+
+#' Caculate default stats for sifter and then write to tome
+#'
+#' In this case, the target tome will need to have exon and intron data matrices, as well as annotations with the base "cluster".
+#'
+#' @param tome Path to the target tome file.1
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
+#'
+write_tome_sifter_stats <- function(tome,
+                                    overwrite = NULL) {
+
+
+  ## Read in the relevant data from tome
+  genes     <- read_tome_gene_names(tome)
+  samples   <- read_tome_sample_names(tome)
+  anno      <- read_tome_anno(tome)
+  exons     <- read_tome_dgCMatrix(tome, "data/t_exon")
+  introns   <- read_tome_dgCMatrix(tome, "data/t_intron")
+  countsIE  <- exons+introns
+  log2cpmIE <- logCPM(countsIE)
+
+  ## Labels for all clusters used in the statistics
+  all_clusters <- unique(anno$cluster_id)
+  all_clusters <- all_clusters[order(all_clusters)]
+  allClust     <- paste0("cluster_",all_clusters)
+
+  ## Generate the count statistics
+  count_gt0 <- matrix(0, ncol = length(all_clusters), nrow = nrow(log2cpmIE))
+  count_gt1 <- sums <- medianmat <- count_gt0
+
+  for(i in 1:length(all_clusters)) {
+    cluster         <- all_clusters[i]
+    cluster_samples <- which(anno$cluster_id == cluster)
+    cluster_data    <- log2cpmIE[,cluster_samples]
+    cluster_counts  <- countsIE[,cluster_samples]
+    count_gt0[,i]   <- Matrix::rowSums(cluster_counts > 0)
+    count_gt1[,i]   <- Matrix::rowSums(cluster_counts > 1)
+    sums[,i]        <- Matrix::rowSums(cluster_counts)
+    medianmat[,i]   <- apply(cluster_data,1,median)
+  }
+  colnames(count_gt0) <- colnames(count_gt1) <- colnames(sums) <-
+    colnames(medianmat) <- allClust
+
+  count_gt0 <- cbind(gene = genes, as.data.frame(count_gt0))
+  count_gt1 <- cbind(gene = genes, as.data.frame(count_gt1))
+  sums      <- cbind(gene = genes, as.data.frame(sums))
+  medianmat <- cbind(gene = genes, as.data.frame(medianmat))
+
+  count_n <- anno %>%
+    arrange(cluster_id) %>%
+    group_by(cluster_id) %>%
+    summarise(n_cells = n())
+
+  ## Write the count statistics
+  try(write_tome_stats(stats = count_gt0, stats_name = "count_gt0", tome = tome, overwrite = overwrite))
+  try(write_tome_stats(stats = count_gt1, stats_name = "count_gt1", tome = tome, overwrite = overwrite))
+  try(write_tome_stats(stats = count_n, stats_name = "count_n", tome = tome, overwrite = overwrite))
+  try(write_tome_stats(stats = sums, stats_name = "sums", tome = tome, overwrite = overwrite))
+  try(write_tome_stats(stats = medianmat, stats_name = "medians", tome = tome, overwrite = overwrite))
+
+
+}
+
+

@@ -194,3 +194,107 @@ test_that(
   }
 
 )
+
+context("Read .tome gene and sample data")
+
+test_that(
+  "read_tome_gene_data retrieves expression values for selected genes.",
+  {
+    tome_one_gene <- read_tome_gene_data(tome = tome_file,
+                                         genes = "Sst",
+                                         region = "exon",
+                                         units = "counts",
+                                         transform = "none",
+                                         format = "data.frame")
+
+    expect_is(tome_one_gene, "data.frame")
+    expect_equal(ncol(tome_one_gene), 2)
+
+    # Missing genes give an error.
+    expect_error(read_tome_gene_data(tome = tome_file,
+                                     genes = "Pvalb"))
+
+    tome_multi_gene <- read_tome_gene_data(tome = tome_file,
+                                           genes = c("Npy","Sst","Snap25"),
+                                           region = "exon",
+                                           units = "counts",
+                                           transform = "none",
+                                           format = "data.frame")
+
+    expect_is(tome_multi_gene, "data.frame")
+    expect_equal(ncol(tome_multi_gene), 4)
+
+    tome_multi_gene_matrix <- read_tome_gene_data(tome = tome_file,
+                                           genes = c("Npy","Sst","Snap25"),
+                                           region = "exon",
+                                           units = "counts",
+                                           transform = "none",
+                                           format = "matrix")
+
+    expect_is(tome_multi_gene_matrix, "matrix")
+    expect_equal(ncol(tome_multi_gene_matrix), 3)
+
+    tome_multi_gene_dgCMatrix <- read_tome_gene_data(tome = tome_file,
+                                                  genes = c("Npy","Sst","Snap25"),
+                                                  region = "exon",
+                                                  units = "counts",
+                                                  transform = "none",
+                                                  format = "dgCMatrix")
+
+    expect_is(tome_multi_gene_dgCMatrix, "dgCMatrix")
+    expect_equal(ncol(tome_multi_gene_dgCMatrix), 3)
+
+  }
+)
+
+test_that(
+  "read_tome_sample_data retrieves expression values for selected samples.",
+  {
+    tome_one_sample <- read_tome_sample_data(tome = tome_file,
+                                         samples = "Gad2_tdTpositive_cell_68",
+                                         region = "exon",
+                                         units = "counts",
+                                         transform = "none",
+                                         format = "data.frame")
+
+    expect_is(tome_one_sample, "data.frame")
+    expect_equal(ncol(tome_one_sample), 2)
+
+    # Missing samples give an error.
+    expect_error(read_tome_sample_data(tome = tome_file,
+                                     samples = "Pvalb"))
+
+    samples_3 <- c("Gad2_tdTpositive_cell_68","Htr3a_tdTpositive_cell_84","Gad2_tdTpositive_cell_17")
+
+    tome_multi_sample <- read_tome_sample_data(tome = tome_file,
+                                           samples = samples_3,
+                                           region = "exon",
+                                           units = "counts",
+                                           transform = "none",
+                                           format = "data.frame")
+
+    expect_is(tome_multi_sample, "data.frame")
+    expect_equal(ncol(tome_multi_sample), 4)
+
+    tome_multi_sample_matrix <- read_tome_sample_data(tome = tome_file,
+                                                  samples = samples_3,
+                                                  region = "exon",
+                                                  units = "counts",
+                                                  transform = "none",
+                                                  format = "matrix")
+
+    expect_is(tome_multi_sample_matrix, "matrix")
+    expect_equal(ncol(tome_multi_sample_matrix), 3)
+
+    tome_multi_sample_dgCMatrix <- read_tome_sample_data(tome = tome_file,
+                                                     samples = samples_3,
+                                                     region = "exon",
+                                                     units = "counts",
+                                                     transform = "none",
+                                                     format = "dgCMatrix")
+
+    expect_is(tome_multi_sample_dgCMatrix, "dgCMatrix")
+    expect_equal(ncol(tome_multi_sample_dgCMatrix), 3)
+
+  }
+)

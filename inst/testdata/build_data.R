@@ -9,8 +9,8 @@ options(stringsAsFactors = FALSE)
 library(tasic2016data)
 
 select_cells <- tasic_2016_anno %>%
-  filter(primary_type != "unclassified") %>%
-  filter(grepl("Sst",primary_type)) %>%
+  filter(primary_type_label != "unclassified") %>%
+  filter(grepl("Sst",primary_type_label)) %>%
   select(sample_name) %>%
   unlist()
 
@@ -28,9 +28,7 @@ anno <- raw_anno %>%
   annotate_cat("tdTomato") %>%
   annotate_cat("pass_qc_checks") %>%
   annotate_cat("broad_type") %>%
-  annotate_cat("core_intermediate") %>%
-  rename("primary_type_label" = "primary_type") %>%
-  rename("secondary_type_label" = "secondary_type")
+  annotate_cat("core_intermediate")
 
 # everything will use the data matrix
 data <- tasic_2016_counts[,select_cells]
@@ -39,6 +37,14 @@ keepdata <- names(datavar[order(-datavar)][1:2000])
 data <- data[keepdata,]
 
 sparse_data <- as(data, "dgCMatrix")
+sparse_data <- floor(sparse_data)
+
+# Simulated intron data by sampling and dividing
+set.seed(42)
+intron_pos <- sample(1:length(sparse_data@x), 5000, replace = FALSE)
+intron_data <- floor(sparse_data / 5)
+intron_data@x[-intron_pos] <- 0L
+intron_data <- as(as.matrix(intron_data), "dgCMatrix")
 
 # desc will be used by tome and feather
 desc <- data.frame(base = c("primary_type","secondary_type","core_intermediate","broad_type",
@@ -97,7 +103,8 @@ write_feather(anno, "feather/anno.feather")
 write_feather(desc, "feather/desc.feather")
 
 # Write tome file
-write_tome_data(exon_mat = as(data,"dgCMatrix"),
+write_tome_data(exon_mat = sparse_data,
+                intron_mat = as(intron_data, "dgCMatrix"),
                 tome = "tome/transcrip.tome",
                 cols_are = "sample",
                 overwrite = TRUE)

@@ -22,7 +22,6 @@ write_tome_data <- function(exon_mat = NULL,
     stop("Provide at least one of exon_mat or intron_mat.")
   }
 
-  ##H5close()
   if (file.exists(tome) & overwrite) {
     # Delete old version and make a new file
     unlink(tome)
