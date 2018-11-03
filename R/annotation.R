@@ -188,6 +188,12 @@ cl_to_anno <- function(cl,
 
   anno_names <- c(paste0(base, "_id"), paste0(base,"_label"), paste0(base, "_color"))
 
+  if(class(cl) != "factor") {
+    cl_names <- names(cl)
+    cl <- as.factor(cl)
+    names(cl) <- cl_names
+  }
+
   if(is.null(cl.df)) {
     color_cl <- cl
     levels(color_cl) <- varibow(length(levels(cl)))
