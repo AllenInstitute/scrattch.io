@@ -1,3 +1,21 @@
+#' Read a vector from a tome (or other HDF5 object)
+#'
+#' The h5read function sticks close to the actual object stored in an HDF5 file - that is,
+#' it will return a 1d array instead of a true vector object. This function is a simple
+#' wrapper around h5read that will apply unlist and as.vector to the output of h5read so that
+#' the result is a standard R vector.
+#'
+#' @param tome A tome file (other HDF5 files will work as well).
+#' @param name The name of the object in the HDF5 hierarchy.
+#'
+#' @return A vector of the same type as the object in the HDF5 file.
+#'
+read_tome_vector <- function(tome,
+                             name) {
+  as.vector(unlist(rhdf5::h5read(tome, name)))
+
+}
+
 #' Read a data.frame from a tome file
 #'
 #' @param tome tome file to read
@@ -5,6 +23,7 @@
 #' @param stored_as character, the storage mode of the data.frame used in write_tome_data.frame. Default = "data.frame".
 #' If "data.frame", will read the df_name as a compound object. If "vectors" will read separate column vectors and build a data.frame.
 #' @param columns character vector, specific columns to read (only if the object was stored as vectors).
+#' @param match_type Whether to match column names exactly ("exact") or using grep ("grep"). Default is "exact".
 #' @param get_all logical, whether or not to append all other columns after the specified columns (only if the object was stored as vectors).
 #'
 read_tome_data.frame <- function(tome,
@@ -14,53 +33,81 @@ read_tome_data.frame <- function(tome,
                                  match_type = "exact",
                                  get_all = FALSE) {
 
-  library(rhdf5)
-  library(purrr)
-
-  H5close()
-
-  ls <- h5ls(tome)
+  ls <- rhdf5::h5ls(tome)
 
   if(stored_as == "vectors") {
     all_columns <- ls$name[ls$group == df_name]
+  } else if (stored_as == "data.frame") {
+    df <- rhdf5::h5read(tome, df_name)
+    all_columns <- names(df)
+  }
+  # Filter cols if columns are provided.
 
-    # Filter cols if columns are provided.
-    if(!is.null(columns)) {
-      if(match_type == "grep") {
-        if(length(columns) > 1) {
-          column_pattern <- paste(columns, collapse = "|")
-        } else {
-          column_pattern <- columns
+  if(is.null(columns)) {
+    selected_columns <- all_columns
+  } else {
+    if(match_type == "grep") {
+
+      if(length(columns) > 1) {
+        selected_columns <- purrr::map(columns,
+                                       function(x) {
+                                         all_columns[grepl(x, all_columns)]
+                                       })
+
+        unmatched_columns <- columns[map_int(selected_columns, length) == 0]
+
+        if(length(unmatched_columns) > 0) {
+          warning(paste("Warning: no match found for columns:",
+                        paste(unmatched_columns, collapse = ", ")))
         }
-        selected_columns <- all_columns[grepl(column_pattern, all_columns)]
-      } else if(match_type == "exact") {
-        selected_columns <- all_columns[all_columns %in% columns]
+
+        selected_columns <- unique(unlist(selected_columns))
+
+      } else {
+        selected_columns <- all_columns[grepl(columns, all_columns)]
       }
 
-
-      # If get_all, get the selected columns first, then all of the others
-      if(get_all) {
-        selected_columns <- c(selected_columns, setdiff(all_columns, selected_columns))
+      # Stop if no matches found
+      if(length(selected_columns) == 0) {
+        stop("Error: No columns match the columns argument.")
       }
 
-    } else {
-      selected_columns <- all_columns
+    } else if(match_type == "exact") {
+      selected_columns <- all_columns[all_columns %in% columns]
+
+      # Stop if no matches found
+      if(length(selected_columns) == 0) {
+        stop("Error: No columns match the columns argument.")
+      }
+
+      # Warn if some columns aren't matched
+      unmatched_columns <- setdiff(columns, all_columns)
+      if(length(unmatched_columns) > 0) {
+        warning(paste("Warning: no match found for columns:",
+                      paste(unmatched_columns, collapse = ", ")))
+      }
+
     }
 
-    df <- map(selected_columns,
-              function(x) {
-                as.vector(unlist(
-                  h5read(tome, paste0(df_name,"/",x))
-                ))
-              }
-    )
-    names(df) <- selected_columns
-    df <- as.data.frame(df, stringsAsFactors = F)
-  } else if(stored_as == "data.frame") {
-    df <- h5read(tome, df_name)
+    # If get_all, get the selected columns first, then all of the others
+    if(get_all) {
+      selected_columns <- c(selected_columns, setdiff(all_columns, selected_columns))
+    }
+
   }
 
-  H5close()
+  if(stored_as == "vectors") {
+
+    df <- purrr::map_dfc(selected_columns,
+                         function(x) {
+                           read_tome_vector(tome, paste0(df_name,"/",x))
+                         }
+    )
+    names(df) <- selected_columns
+
+  } else if(stored_as == "data.frame") {
+    df <- df[,selected_columns]
+  }
 
   df
 
@@ -74,14 +121,10 @@ read_tome_data.frame <- function(tome,
 read_tome_serialized <- function(tome,
                                  target) {
 
-  H5close()
-
-  serial_obj <- h5read(tome,
-                       target)
+  serial_obj <- rhdf5::h5read(tome,
+                              target)
 
   obj <- unserialize(charToRaw(serial_obj))
-
-  H5close()
 
   obj
 }
@@ -96,37 +139,44 @@ read_tome_serialized <- function(tome,
 read_tome_genes_jagged <- function(tome,
                                    genes,
                                    regions = "exon") {
-  library(rhdf5)
-  library(purrr)
-  library(dplyr)
-  library(Matrix)
 
-  H5close()
+  gene_names <- read_tome_vector(tome,"/gene_names")
 
-  root <- H5Fopen(tome)
-  gene_names <- h5read(root,"/gene_names")
-  sample_names <- h5read(root,"/sample_names")
+  if(is.null(genes)) {
+    genes <- gene_names
+  } else {
+
+    # Check for genes not found in the dataset.
+    missing_genes <- setdiff(genes, gene_names)
+
+    if(length(missing_genes) > 0) {
+      stop("Some genes not found in tome: ", paste(missing_genes, collapse = ", "))
+    }
+
+  }
+
+  sample_names <- read_tome_vector(tome,"/sample_names")
 
   gene_index <- match(genes, gene_names)
 
   ## Exon values
   if(regions == "exon" | regions == "both") {
 
-    exon_starts <- h5read(root, "data/exon/p")[gene_index] + 1
-    exon_ends <- h5read(root, "data/exon/p")[(gene_index + 1)]
+    exon_starts <- read_tome_vector(tome, "data/exon/p")[gene_index] + 1
+    exon_ends <- read_tome_vector(tome, "data/exon/p")[(gene_index + 1)]
 
-    exon_values <- map2(exon_starts, exon_ends, function(start, end) {
+    exon_values <- purrr::map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/exon/x", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/exon/x", index = list(start:end))
       } else {
         values <- NA
       }
       values
     })
 
-    exon_sample_indexes <- map2(exon_starts, exon_ends, function(start, end) {
+    exon_sample_indexes <- purrr::map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/exon/i", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/exon/i", index = list(start:end))
       } else {
         values <- NA
       }
@@ -143,21 +193,21 @@ read_tome_genes_jagged <- function(tome,
   ## Intron values
   if(regions == "intron" | regions == "both") {
 
-    intron_starts <- h5read(root, "data/intron/p")[gene_index] + 1
-    intron_ends <- h5read(root, "data/intron/p")[(gene_index + 1)]
+    intron_starts <- read_tome_vector(tome, "data/intron/p")[gene_index] + 1
+    intron_ends <- read_tome_vector(tome, "data/intron/p")[(gene_index + 1)]
 
-    intron_values <- map2(intron_starts, intron_ends, function(start, end) {
+    intron_values <- purrr::map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/intron/x", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/intron/x", index = list(start:end))
       } else {
         values <- NA
       }
       values
     })
 
-    intron_sample_indexes <- map2(intron_starts, intron_ends, function(start, end) {
+    intron_sample_indexes <- purrr::map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/intron/i", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/intron/i", index = list(start:end))
       } else {
         values <- NA
       }
@@ -170,34 +220,32 @@ read_tome_genes_jagged <- function(tome,
 
   }
 
-  H5Fclose(root)
-
   if(regions == "exon") {
     out <- exon
   } else if(regions == "intron") {
     out <- intron
   } else if(regions == "both") {
     out <- exon
-    xi <- pmap(list(exon_x = exon$x,
-                    exon_i = exon$i,
-                    intron_x = intron$x,
-                    intron_i = intron$i),
-               function(exon_x, exon_i,
-                        intron_x, intron_i) {
-                 both_i <- union(exon_i, intron_i)
-                 both_i <- sort(both_i)
-                 both_x <- numeric(length(both_i))
-                 both_x[match(exon_i, both_i)] <- both_x[match(exon_i, both_i)] + exon_x
-                 both_x[match(intron_i, both_i)] <- both_x[match(intron_i, both_i)] + intron_x
+    xi <- purrr::pmap(list(exon_x = exon$x,
+                           exon_i = exon$i,
+                           intron_x = intron$x,
+                           intron_i = intron$i),
+                      function(exon_x, exon_i,
+                               intron_x, intron_i) {
+                        both_i <- union(exon_i, intron_i)
+                        both_i <- sort(both_i)
+                        both_x <- numeric(length(both_i))
+                        both_x[match(exon_i, both_i)] <- both_x[match(exon_i, both_i)] + exon_x
+                        both_x[match(intron_i, both_i)] <- both_x[match(intron_i, both_i)] + intron_x
 
-                 list(x = both_x,
-                      i = both_i)
-               })
+                        list(x = both_x,
+                             i = both_i)
+                      })
     for(j in 1:length(xi)) {
       out$x[[j]] <- xi[[j]]$x
       out$i[[j]] <- xi[[j]]$i
     }
-    out$p <- c(0, cumsum(map_int(out$x, length)))
+    out$p <- c(0, cumsum(purrr::map_int(out$x, length)))
   }
 
   out$gene_names <- genes
@@ -205,7 +253,7 @@ read_tome_genes_jagged <- function(tome,
   out$dims <- read_tome_data_dims(tome)
   out$dims[2] <- length(genes)
 
-  H5close()
+  rhdf5::h5closeAll()
 
   out
 
@@ -220,37 +268,30 @@ read_tome_genes_jagged <- function(tome,
 read_tome_samples_jagged <- function(tome,
                                      samples,
                                      regions = "exon") {
-  library(rhdf5)
-  library(purrr)
-  library(dplyr)
-  library(Matrix)
 
-  H5close()
-
-  root <- H5Fopen(tome)
-  gene_names <- h5read(root,"/gene_names")
-  sample_names <- h5read(root,"/sample_names")
+  gene_names <- read_tome_vector(tome,"/gene_names")
+  sample_names <- read_tome_vector(tome,"/sample_names")
 
   sample_index <- match(samples, sample_names)
 
   ## Exon values
   if(regions == "exon" | regions == "both") {
 
-    exon_starts <- h5read(root, "data/t_exon/p")[sample_index] + 1
-    exon_ends <- h5read(root, "data/t_exon/p")[(sample_index + 1)]
+    exon_starts <- read_tome_vector(tome, "data/t_exon/p")[sample_index] + 1
+    exon_ends <- read_tome_vector(tome, "data/t_exon/p")[(sample_index + 1)]
 
-    exon_values <- map2(exon_starts, exon_ends, function(start, end) {
+    exon_values <- purrr::map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/t_exon/x", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/t_exon/x", index = list(start:end))
       } else {
         values <- NA
       }
       values
     })
 
-    exon_sample_indexes <- map2(exon_starts, exon_ends, function(start, end) {
+    exon_sample_indexes <- purrr::map2(exon_starts, exon_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/t_exon/i", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/t_exon/i", index = list(start:end))
       } else {
         values <- NA
       }
@@ -267,21 +308,21 @@ read_tome_samples_jagged <- function(tome,
   ## Intron values
   if(regions == "intron" | regions == "both") {
 
-    intron_starts <- h5read(root, "data/t_intron/p")[sample_index] + 1
-    intron_ends <- h5read(root, "data/t_intron/p")[(sample_index + 1)]
+    intron_starts <- read_tome_vector(tome, "data/t_intron/p")[sample_index] + 1
+    intron_ends <- read_tome_vector(tome, "data/t_intron/p")[(sample_index + 1)]
 
-    intron_values <- map2(intron_starts, intron_ends, function(start, end) {
+    intron_values <- purrr::map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/t_intron/x", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/t_intron/x", index = list(start:end))
       } else {
         values <- NA
       }
       values
     })
 
-    intron_sample_indexes <- map2(intron_starts, intron_ends, function(start, end) {
+    intron_sample_indexes <- purrr::map2(intron_starts, intron_ends, function(start, end) {
       if(end > start) {
-        values <- h5read(root, "data/t_intron/i", index = list(start:end))
+        values <- rhdf5::h5read(tome, "data/t_intron/i", index = list(start:end))
       } else {
         values <- NA
       }
@@ -294,34 +335,32 @@ read_tome_samples_jagged <- function(tome,
 
   }
 
-  H5Fclose(root)
-
   if(regions == "exon") {
     out <- exon
   } else if(regions == "intron") {
     out <- intron
   } else if(regions == "both") {
     out <- exon
-    xi <- pmap(list(exon_x = exon$x,
-                    exon_i = exon$i,
-                    intron_x = intron$x,
-                    intron_i = intron$i),
-               function(exon_x, exon_i,
-                        intron_x, intron_i) {
-                 both_i <- union(exon_i, intron_i)
-                 both_i <- sort(both_i)
-                 both_x <- numeric(length(both_i))
-                 both_x[match(exon_i, both_i)] <- both_x[match(exon_i, both_i)] + exon_x
-                 both_x[match(intron_i, both_i)] <- both_x[match(intron_i, both_i)] + intron_x
+    xi <- purrr::pmap(list(exon_x = exon$x,
+                           exon_i = exon$i,
+                           intron_x = intron$x,
+                           intron_i = intron$i),
+                      function(exon_x, exon_i,
+                               intron_x, intron_i) {
+                        both_i <- union(exon_i, intron_i)
+                        both_i <- sort(both_i)
+                        both_x <- numeric(length(both_i))
+                        both_x[match(exon_i, both_i)] <- both_x[match(exon_i, both_i)] + exon_x
+                        both_x[match(intron_i, both_i)] <- both_x[match(intron_i, both_i)] + intron_x
 
-                 list(x = both_x,
-                      i = both_i)
-               })
+                        list(x = both_x,
+                             i = both_i)
+                      })
     for(j in 1:length(xi)) {
       out$x[[j]] <- xi[[j]]$x
       out$i[[j]] <- xi[[j]]$i
     }
-    out$p <- c(0, cumsum(map_int(out$x, length)))
+    out$p <- c(0, cumsum(purrr::map_int(out$x, length)))
   }
 
   out$gene_names <- read_tome_gene_names(tome)
@@ -329,7 +368,7 @@ read_tome_samples_jagged <- function(tome,
   out$dims <- read_tome_data_dims(tome, transpose = TRUE)
   out$dims[2] <- length(samples)
 
-  H5close()
+  rhdf5::h5closeAll()
 
   out
 
@@ -405,13 +444,13 @@ jagged_to_dgCMatrix <- function(jagged,
                                 rows = c("sample_names","gene_names"),
                                 cols = c("gene_names", "sample_names")) {
 
-  sparseMatrix(i = unlist(jagged$i),
-               p = jagged$p,
-               x = unlist(jagged$x),
-               index1 = FALSE,
-               dims = jagged$dims,
-               dimnames = list(jagged[[rows]],
-                               jagged[[cols]]))
+  Matrix::sparseMatrix(i = unlist(jagged$i),
+                       p = jagged$p,
+                       x = unlist(jagged$x),
+                       index1 = FALSE,
+                       dims = jagged$dims,
+                       dimnames = list(jagged[[rows]],
+                                       jagged[[cols]]))
 
 }
 
@@ -422,33 +461,28 @@ jagged_to_dgCMatrix <- function(jagged,
 #'
 read_tome_dgCMatrix <- function(tome,
                                 target) {
-  library(rhdf5)
-  library(purrr)
-  library(dplyr)
-  library(Matrix)
 
-  H5close()
-
-  root <- H5Fopen(tome)
+  root <- rhdf5::H5Fopen(tome)
 
   i_path <- paste0(target,"/i")
   p_path <- paste0(target,"/p")
   x_path <- paste0(target,"/x")
   dims_path <- paste0(target,"/dims")
 
-  i <- as.vector(h5read(root, i_path))
-  p <- h5read(root, p_path)
-  x <- as.vector(h5read(root, x_path))
-  dims <- h5read(root, dims_path)
+  i <- read_tome_vector(root, i_path)
+  p <- read_tome_vector(root, p_path)
+  x <- read_tome_vector(root, x_path)
+  dims <- read_tome_vector(root, dims_path)
 
   H5Fclose(root)
-  H5close()
 
-  sparseMatrix(i = i,
-               p = p,
-               x = x,
-               index1 = FALSE,
-               dims = dims)
+  h5closeAll()
+
+  Matrix::sparseMatrix(i = i,
+                       p = p,
+                       x = x,
+                       index1 = FALSE,
+                       dims = dims)
 
 }
 
@@ -461,10 +495,9 @@ read_tome_dgCMatrix <- function(tome,
 #'
 check_tome_existence <- function(tome,
                                  name) {
-  library(rhdf5)
-  library(dplyr)
 
-  ls <- h5ls(tome)
+  ls <- rhdf5::h5ls(tome)
+  h5closeAll()
   tome_names <- paste(ls$group, ls$name, sep = "/")
   tome_names <- sub("^//","/",tome_names)
 

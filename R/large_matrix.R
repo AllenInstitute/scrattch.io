@@ -11,7 +11,7 @@
 #'
 large_matrix_to_dgCMatrix <- function(mat,
                                       chunk_size = 5000) {
-  library(Matrix)
+  #library(Matrix)
 
   # Row names
   row_names <- rownames(mat)
@@ -30,7 +30,7 @@ large_matrix_to_dgCMatrix <- function(mat,
   chunk_end <- chunk_size * chunk
   print(paste0("Adding rows ",chunk_start," to ", chunk_end))
   chunk_mat <- mat[,chunk_start:chunk_end]
-  all_sparse <- Matrix(chunk_mat, sparse = T)
+  all_sparse <- Matrix::Matrix(chunk_mat, sparse = T)
 
   # chunkation over chunks
   for(chunk in 2:n_chunks) {
@@ -38,13 +38,13 @@ large_matrix_to_dgCMatrix <- function(mat,
     chunk_end <- chunk_size * chunk
     print(paste0("Adding rows ",chunk_start," to ", chunk_end))
     chunk_mat <- mat[,chunk_start:chunk_end]
-    chunk_sparse <- Matrix(chunk_mat, sparse = T)
+    chunk_sparse <- Matrix::Matrix(chunk_mat, sparse = T)
     all_sparse <- cbind(all_sparse, chunk_mat)
   }
 
   # Remaining samples
   chunk_mat <- mat[,(n_chunks*chunk_size + 1):n_col]
-  chunk_sparse <- Matrix(chunk_mat, sparse = T)
+  chunk_sparse <- Matrix::Matrix(chunk_mat, sparse = T)
   all_sparse <- cbind(all_sparse, chunk_mat)
 
   rownames(all_sparse) <- row_names

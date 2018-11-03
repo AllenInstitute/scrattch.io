@@ -4,9 +4,9 @@
 \alias{write_tome_data}
 \title{Save a both exon and intron counts to an HDF5 file (tome)}
 \usage{
-write_tome_data(exon_mat = NULL, intron_mat = NULL, tome = "counts.tome",
-  cols_are = "sample_name", overwrite = F, orientations = "both",
-  compression_level = 4)
+write_tome_data(exon_mat = NULL, intron_mat = NULL,
+  tome = "counts.tome", cols_are = "sample_name", overwrite = F,
+  orientations = "both", compression_level = 4)
 }
 \arguments{
 \item{exon_mat}{The exon matrix to store in dgCMatrix format}

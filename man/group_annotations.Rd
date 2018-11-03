@@ -4,10 +4,12 @@
 \alias{group_annotations}
 \title{Group annotation columns}
 \usage{
-group_annotations(df, keep_order = TRUE)
+group_annotations(df, sample_col = "sample_name", keep_order = TRUE)
 }
 \arguments{
 \item{df}{the annotation dataframe to arrange}
+
+\item{sample_col}{the column with unique sample ids. Default is "sample_name".}
 
 \item{keep_order}{a logical value. If FALSE, will sort the annotations alphanumerically by base.}
 }
@@ -16,18 +18,4 @@ an annotation data frame with reordered columns
 }
 \description{
 Group annotation columns
-}
-\examples{
-anno <- mtcars \%>\%
- mutate(sample_id = paste0("car",1:n())) \%>\%
- select(sample_id, wt, mpg) \%>\%
- annotate_num(wt) \%>\%
- annotate_num(mpg)
-
-head(anno)
-
-anno2 <- group_annotations(anno)
-
-head(anno2)
-
 }

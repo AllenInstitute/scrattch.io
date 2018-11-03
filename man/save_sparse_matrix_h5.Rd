@@ -4,8 +4,8 @@
 \alias{save_sparse_matrix_h5}
 \title{Save a dgCMatrix to HDF5 format}
 \usage{
-save_sparse_matrix_h5(mat, out_file, cols_are = "sample_id", overwrite = F,
-  compression_level = 0)
+save_sparse_matrix_h5(mat, out_file, cols_are = "sample_id",
+  overwrite = F, compression_level = 0)
 }
 \arguments{
 \item{mat}{The matrix to be written}

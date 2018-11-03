@@ -17,18 +17,15 @@ write_tome_data <- function(exon_mat = NULL,
                             orientations = "both",
                             compression_level = 4) {
 
-  library(Matrix)
-  library(rhdf5)
 
   if(is.null(exon_mat) & is.null(intron_mat)) {
     stop("Provide at least one of exon_mat or intron_mat.")
   }
 
-  H5close()
   if (file.exists(tome) & overwrite) {
     # Delete old version and make a new file
     unlink(tome)
-    h5createFile(tome)
+    rhdf5::h5createFile(tome)
 
   } else if (file.exists(tome) & !overwrite) {
     # Stop if overwrite = F
@@ -37,7 +34,7 @@ write_tome_data <- function(exon_mat = NULL,
 
   } else if(!file.exists(tome)) {
     # If the file doesn't exist, make a new file
-    h5createFile(tome)
+    rhdf5::h5createFile(tome)
 
   }
 
@@ -45,109 +42,106 @@ write_tome_data <- function(exon_mat = NULL,
     print("Columns are samples; Rows are genes. Matrices will be transposed.")
     if(!is.null(exon_mat)) {
 
-        t_exon_mat <- exon_mat
-        exon_mat <- Matrix::t(exon_mat)
+      t_exon_mat <- exon_mat
+      exon_mat <- Matrix::t(exon_mat)
 
     }
 
     if(!is.null(intron_mat)) {
 
-        t_intron_mat <- intron_mat
-        intron_mat <- Matrix::t(intron_mat)
+      t_intron_mat <- intron_mat
+      intron_mat <- Matrix::t(intron_mat)
 
     }
 
   } else {
     print("Columns are genes; Rows are samples. Matrices will be used as-is.")
     if(!is.null(exon_mat)) {
-        t_exon_mat <- Matrix::t(exon_mat)
+      t_exon_mat <- Matrix::t(exon_mat)
 
     }
     if(!is.null(intron_mat)) {
-        t_intron_mat <- Matrix::t(intron_mat)
+      t_intron_mat <- Matrix::t(intron_mat)
 
     }
   }
 
-  root <- H5Fopen(tome, flags = "H5F_ACC_RDWR")
-  H5Fclose(root)
-
-  h5createGroup(tome, "data")
+  rhdf5::h5createGroup(tome, "data")
 
   ## Exon Data
   if(!is.null(exon_mat)) {
 
     # Rows = Samples, Columns = Genes (Fast gene retrieval)
     if(orientations %in% c("both","gene_name")) {
-      h5createGroup(tome, "data/exon")
+      rhdf5::h5createGroup(tome, "data/exon")
       suppressWarnings({
         print("Writing data/exon/x.")
         # data values
-        h5createDataset(tome,
-                        dataset = "data/exon/x",
-                        dims = length(exon_mat@x),
-                        chunk = 1000,
-                        level = compression_level)
-        h5write(exon_mat@x,
-                tome,
-                "data/exon/x")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/exon/x",
+                               dims = length(exon_mat@x),
+                               chunk = 1000,
+                               level = compression_level)
+        rhdf5::h5write(exon_mat@x,
+                       tome,
+                       "data/exon/x")
 
         # data indices
         print("Writing data/exon/i.")
-        h5createDataset(tome,
-                        dataset = "data/exon/i",
-                        dims = length(exon_mat@x),
-                        chunk = 1000, level = compression_level)
-        h5write(exon_mat@i,
-                tome,
-                "data/exon/i")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/exon/i",
+                               dims = length(exon_mat@x),
+                               chunk = 1000, level = compression_level)
+        rhdf5::h5write(exon_mat@i,
+                       tome,
+                       "data/exon/i")
 
         # data index pointers
         print("Writing data/exon/p.")
-        h5write(exon_mat@p,
-                tome,
-                "data/exon/p")
+        rhdf5::h5write(exon_mat@p,
+                       tome,
+                       "data/exon/p")
 
-        h5write(c(nrow(exon_mat), ncol(exon_mat)),
-                tome,
-                "data/exon/dims")
+        rhdf5::h5write(c(nrow(exon_mat), ncol(exon_mat)),
+                       tome,
+                       "data/exon/dims")
       })
     }
 
     # Rows = Genes, Columns = Samples (Fast sample retrieval)
     if(orientations %in% c("both","sample_name")) {
-      h5createGroup(tome, "data/t_exon")
+      rhdf5::h5createGroup(tome, "data/t_exon")
       suppressWarnings({
         # t_data values
         print("Writing data/t_exon/x.")
-        h5createDataset(tome,
-                        dataset = "data/t_exon/x",
-                        dims = length(t_exon_mat@x),
-                        chunk = 1000,
-                        level = compression_level)
-        h5write(t_exon_mat@x,
-                tome,
-                "data/t_exon/x")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/t_exon/x",
+                               dims = length(t_exon_mat@x),
+                               chunk = 1000,
+                               level = compression_level)
+        rhdf5::h5write(t_exon_mat@x,
+                       tome,
+                       "data/t_exon/x")
 
         # t_data indices
         print("Writing data/t_exon/i.")
-        h5createDataset(tome,
-                        dataset = "data/t_exon/i",
-                        dims = length(t_exon_mat@i),
-                        chunk = 1000,
-                        level = compression_level)
-        h5write(t_exon_mat@i,
-                tome,
-                "data/t_exon/i")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/t_exon/i",
+                               dims = length(t_exon_mat@i),
+                               chunk = 1000,
+                               level = compression_level)
+        rhdf5::h5write(t_exon_mat@i,
+                       tome,
+                       "data/t_exon/i")
 
         # t_data index pointers
         print("Writing data/t_exon/p.")
-        h5write(t_exon_mat@p,
-                tome,
-                "data/t_exon/p")
-        h5write(c(nrow(t_exon_mat), ncol(t_exon_mat)),
-                tome,
-                "data/t_exon/dims")
+        rhdf5::h5write(t_exon_mat@p,
+                       tome,
+                       "data/t_exon/p")
+        rhdf5::h5write(c(nrow(t_exon_mat), ncol(t_exon_mat)),
+                       tome,
+                       "data/t_exon/dims")
       })
     }
 
@@ -157,7 +151,7 @@ write_tome_data <- function(exon_mat = NULL,
 
     if(orientations %in% c("both","gene_name")) {
 
-      h5createGroup(tome, "data/intron")
+      rhdf5::h5createGroup(tome, "data/intron")
 
       suppressWarnings({
 
@@ -165,72 +159,72 @@ write_tome_data <- function(exon_mat = NULL,
         # Rows = Samples, Columns = Genes (Fast gene retrieval)
         print("Writing data/intron/x.")
         # data values
-        h5createDataset(tome,
-                        dataset = "data/intron/x",
-                        dims = length(intron_mat@x),
-                        chunk = 1000,
-                        level = compression_level)
-        h5write(intron_mat@x,
-                tome,
-                "data/intron/x")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/intron/x",
+                               dims = length(intron_mat@x),
+                               chunk = 1000,
+                               level = compression_level)
+        rhdf5::h5write(intron_mat@x,
+                       tome,
+                       "data/intron/x")
 
         # data indices
         print("Writing data/intron/i.")
-        h5createDataset(tome,
-                        dataset = "data/intron/i",
-                        dims = length(intron_mat@x),
-                        chunk = 1000, level = compression_level)
-        h5write(intron_mat@i,
-                tome,
-                "data/intron/i")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/intron/i",
+                               dims = length(intron_mat@x),
+                               chunk = 1000, level = compression_level)
+        rhdf5::h5write(intron_mat@i,
+                       tome,
+                       "data/intron/i")
 
         # data index pointers
         print("Writing data/intron/p.")
-        h5write(intron_mat@p,
-                tome,
-                "data/intron/p")
+        rhdf5::h5write(intron_mat@p,
+                       tome,
+                       "data/intron/p")
 
-        h5write(c(nrow(intron_mat), ncol(intron_mat)),
-                tome,
-                "data/intron/dims")
+        rhdf5::h5write(c(nrow(intron_mat), ncol(intron_mat)),
+                       tome,
+                       "data/intron/dims")
       })
     }
 
     # Rows = Genes, Columns = Samples (Fast sample retrieval)
     if(orientations %in% c("both", "sample_name")) {
 
-      h5createGroup(tome, "data/t_intron")
+      rhdf5::h5createGroup(tome, "data/t_intron")
       suppressWarnings({
         # t_data values
         print("Writing data/t_intron/x.")
-        h5createDataset(tome,
-                        dataset = "data/t_intron/x",
-                        dims = length(t_intron_mat@x),
-                        chunk = 1000,
-                        level = compression_level)
-        h5write(t_intron_mat@x,
-                tome,
-                "data/t_intron/x")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/t_intron/x",
+                               dims = length(t_intron_mat@x),
+                               chunk = 1000,
+                               level = compression_level)
+        rhdf5::h5write(t_intron_mat@x,
+                       tome,
+                       "data/t_intron/x")
 
         # t_data indices
         print("Writing data/t_intron/i.")
-        h5createDataset(tome,
-                        dataset = "data/t_intron/i",
-                        dims = length(t_intron_mat@i),
-                        chunk = 1000,
-                        level = compression_level)
-        h5write(t_intron_mat@i,
-                tome,
-                "data/t_intron/i")
+        rhdf5::h5createDataset(tome,
+                               dataset = "data/t_intron/i",
+                               dims = length(t_intron_mat@i),
+                               chunk = 1000,
+                               level = compression_level)
+        rhdf5::h5write(t_intron_mat@i,
+                       tome,
+                       "data/t_intron/i")
 
         # t_data index pointers
         print("Writing data/t_intron/p.")
-        h5write(t_intron_mat@p,
-                tome,
-                "data/t_intron/p")
-        h5write(c(nrow(t_intron_mat), ncol(t_intron_mat)),
-                tome,
-                "data/t_intron/dims")
+        rhdf5::h5write(t_intron_mat@p,
+                       tome,
+                       "data/t_intron/p")
+        rhdf5::h5write(c(nrow(t_intron_mat), ncol(t_intron_mat)),
+                       tome,
+                       "data/t_intron/dims")
       })
 
     }
@@ -240,25 +234,25 @@ write_tome_data <- function(exon_mat = NULL,
   # genes and sample_ids
   print("Writing gene_names.")
   if(!is.null(exon_mat)) {
-    h5write(colnames(exon_mat),
-            tome,
-            "gene_names")
+    rhdf5::h5write(colnames(exon_mat),
+                   tome,
+                   "gene_names")
   } else {
-    h5write(colnames(intron_mat),
-            tome,
-            "gene_names")
+    rhdf5::h5write(colnames(intron_mat),
+                   tome,
+                   "gene_names")
   }
 
 
   print("Writing sample_names.")
   if(!is.null(exon_mat)) {
-    h5write(rownames(exon_mat),
-            tome,
-            "sample_names")
+    rhdf5::h5write(rownames(exon_mat),
+                   tome,
+                   "sample_names")
   } else {
-    h5write(rownames(intron_mat),
-            tome,
-            "sample_names")
+    rhdf5::h5write(rownames(intron_mat),
+                   tome,
+                   "sample_names")
   }
 
   if(!is.null(exon_mat)) {
@@ -267,21 +261,19 @@ write_tome_data <- function(exon_mat = NULL,
     #apply fails with very large matrices.
     total_exon_counts <- unname(Matrix::colSums(t_exon_mat))
     print("Writing data/total_exon_counts.")
-    h5write(total_exon_counts,
-            tome,
-            "data/total_exon_counts")
+    rhdf5::h5write(total_exon_counts,
+                   tome,
+                   "data/total_exon_counts")
   }
 
   if(!is.null(intron_mat)) {
     print("Calculating total intron counts per sample")
     total_intron_counts <- unname(Matrix::colSums(t_intron_mat))
     print("Writing data/total_intron_counts.")
-    h5write(total_intron_counts,
-            tome,
-            "data/total_intron_counts")
+    rhdf5::h5write(total_intron_counts,
+                   tome,
+                   "data/total_intron_counts")
   }
-
-  H5close()
 
 }
 
@@ -289,6 +281,7 @@ write_tome_data <- function(exon_mat = NULL,
 #'
 #' @param anno The annotations data.frame to write. The first column must be "sample_id" or "sample_name".
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_anno <- function(anno,
                             tome,
@@ -310,6 +303,7 @@ write_tome_anno <- function(anno,
 #'
 #' @param anno_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_anno_desc <- function(anno_desc,
                                  tome,
@@ -329,6 +323,7 @@ write_tome_anno_desc <- function(anno_desc,
 #' Requires columns: sample_name, x, y (, z optional)
 #' @param proj_name The base name of the projection. Should match the projection description table
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_projection <- function(proj,
                                   proj_name = NULL,
@@ -354,6 +349,7 @@ write_tome_projection <- function(proj,
 #'
 #' @param proj_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_projection_desc <- function(proj_desc,
                                        tome,
@@ -370,7 +366,9 @@ write_tome_projection_desc <- function(proj_desc,
 #' Write a stats table (e.g. median expression per cluster) to a tome file.
 #'
 #' @param stats The stats data.frame to write.
+#' @param stats_name The name of the stats table to store.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_stats <- function(stats,
                              stats_name = NULL,
@@ -394,6 +392,7 @@ write_tome_stats <- function(stats,
 #'
 #' @param stats_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_stats_desc <- function(stats_desc,
                                   tome,
@@ -412,6 +411,7 @@ write_tome_stats_desc <- function(stats_desc,
 #' @param dend The desc data.frame to write.
 #' @param dend_name The name of the dendrogram to store.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_dend <- function(dend,
                             dend_name,
@@ -436,6 +436,7 @@ write_tome_dend <- function(dend,
 #'
 #' @param dend_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_dend_desc <- function(dend_desc,
                                  tome,
@@ -453,6 +454,7 @@ write_tome_dend_desc <- function(dend_desc,
 #'
 #' @param exon_lengths A data.frame containing the columns "gene_name" and "exon_length".
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_exon_lengths <- function(exon_lengths,
                                     tome,
@@ -477,6 +479,7 @@ write_tome_exon_lengths <- function(exon_lengths,
 #'
 #' @param intron_lengths A data.frame containing the columns "gene_name" and "intron_length".
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_intron_lengths <- function(intron_lengths,
                                       tome,
@@ -501,16 +504,17 @@ write_tome_intron_lengths <- function(intron_lengths,
 #'
 #' @param genes The genes data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_gene_meta <- function(genes,
                                  tome,
                                  overwrite = NULL) {
 
-    write_tome_data.frame(df = genes,
-                          tome = tome,
-                          target = "/gene_meta/genes",
-                          store_as = "vectors",
-                          overwrite = overwrite)
+  write_tome_data.frame(df = genes,
+                        tome = tome,
+                        target = "/gene_meta/genes",
+                        store_as = "vectors",
+                        overwrite = overwrite)
 
 }
 
@@ -518,6 +522,7 @@ write_tome_gene_meta <- function(genes,
 #'
 #' @param genes_desc The desc data.frame to write.
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_gene_meta_desc <- function(genes_desc,
                                       tome,
@@ -536,6 +541,7 @@ write_tome_gene_meta_desc <- function(genes_desc,
 #' @param mapping A data.frame with mapping results to write.
 #' @param mapping_name The base name of the mapping Should match the mapping description table
 #' @param tome Path to the target tome file.
+#' @param overwrite Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().
 #'
 write_tome_mapping <- function(mapping,
                                mapping_name = NULL,

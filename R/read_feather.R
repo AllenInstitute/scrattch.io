@@ -7,17 +7,17 @@
 #'
 get_feather_data <- function(feather_dir, genes, group_by, group_ids) {
 
-  library(dplyr)
-  library(feather)
+  #library(dplyr)
+  #library(feather)
 
   data_file <- paste0(feather_dir, "/data.feather")
   anno_file <- paste0(feather_dir, "/anno.feather")
 
-  data <- feather(data_file)
+  data <- feather::feather(data_file)
 
   # Read annotations and convert factors
-  anno <- read_feather(anno_file) %>%
-    mutate_if(is.factor, as.character)
+  anno <- feather::read_feather(anno_file) %>%
+    dplyr::mutate_if(is.factor, as.character)
 
   # If an _id column was a factor, it's now a character. Convert to numeric for sorting.
   id_cols <- names(anno)[grepl("_id$", names(anno)) & names(anno) != "sample_id"]
@@ -49,29 +49,36 @@ get_feather_data <- function(feather_dir, genes, group_by, group_ids) {
 
   # rename the _id, _label, and _color for the group_by values for use in plotting
   all_anno <- anno %>%
-    rename_("plot_id" = paste0(group_by,"_id"),
+    dplyr::rename_("plot_id" = paste0(group_by,"_id"),
             "plot_label" = paste0(group_by,"_label"),
             "plot_color" = paste0(group_by,"_color"))
 
   # use the group_ids to retain the order provided by the group_ids argument
   cluster_order <- data.frame(group_ids = group_ids) %>%
-    mutate(cluster_x = 1:n())
+    dplyr::mutate(cluster_x = 1:n())
 
   # Filter and order the rows
-  data <- left_join(all_anno, gene_data, by = "sample_id") %>%
-    filter(plot_id %in% group_ids) %>%
-    left_join(cluster_order, by = c("plot_id" = "group_ids")) %>%
-    arrange(cluster_x) %>%
-    mutate(xpos = 1:n()) %>%
-    select(-plot_id) %>%
-    rename_("plot_id" = "cluster_x")
+  data <- dplyr::left_join(all_anno, gene_data, by = "sample_id") %>%
+    dplyr::filter(plot_id %in% group_ids) %>%
+    dplyr::left_join(cluster_order, by = c("plot_id" = "group_ids")) %>%
+    dplyr::arrange(cluster_x) %>%
+    dplyr::mutate(xpos = 1:n()) %>%
+    dplyr::select(-plot_id) %>%
+    dplyr::rename_("plot_id" = "cluster_x")
 
   return(data)
 }
 
+#' Read a feather directory to a list of data.frames
+#'
+#' This is likely to be deprecated soon.
+#'
+#' @param feather_dir The directory containing .feather files.
+#' @param oldformat Whether the new or old format are used
+#'
 feather_to_list <- function(feather_dir = NULL, oldformat = F) {
 
-  library(feather)
+  #library(feather)
 
   if(is.null(feather_dir)) {
     stop("feather directory required.")
@@ -94,13 +101,13 @@ feather_to_list <- function(feather_dir = NULL, oldformat = F) {
   }
 
   cat("Reading ",descfile,"\n")
-  desc <- read_feather(descfile)
+  desc <- feather::read_feather(descfile)
 
   cat("Reading ",annofile,"\n")
-  desc <- read_feather(annofile)
+  anno <- feather::read_feather(annofile)
 
   cat("Reading ",datafile,"\n")
-  main <- read_feather(datafile)
+  main <- feather::read_feather(datafile)
 
   if(oldformat == T) {
     # Transforming for compatibility with get_list_data

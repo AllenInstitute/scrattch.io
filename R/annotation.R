@@ -9,22 +9,13 @@
 #'
 #' @return A modified data frame: the annotated column will be renamed base_label, and base_id and base_color columns will be appended
 #'
-#' @examples
-#' cars <- mtcars %>%
-#'   annotate_num(wt)
-#'
-#'head(cars)
-#'
-#'cars2 <- mtcars %>%
-#'  annotate_num(wt, weight, "linear", colorset = c("#000000","#808080","#FF0000"))
-#'
-#'head(cars2)
 annotate_num <- function (df,
                           col = NULL, base = NULL,
                           scale = "log10", na_val = 0,
                           colorset = c("darkblue", "white", "red")) {
 
-  library(dplyr)
+  #library(lazyeval)
+  #library(dplyr)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
     col <- lazyeval::expr_text(col)
@@ -47,8 +38,8 @@ annotate_num <- function (df,
   x <- df[[col]]
 
   annotations <- data.frame(label = unique(x)) %>%
-    arrange(label) %>%
-    mutate(id = 1:n())
+    dplyr::arrange(label) %>%
+    dplyr::mutate(id = 1:dplyr::n())
 
   if (scale == "log10") {
     colors <- values_to_colors(log10(annotations$label + 1), colorset = colorset)
@@ -63,7 +54,7 @@ annotate_num <- function (df,
   names(annotations) <- paste0(base, c("_label", "_id", "_color"))
 
   names(df)[names(df) == col] <- paste0(base,"_label")
-  df <- left_join(df, annotations, by = paste0(base,"_label"))
+  df <- dplyr::left_join(df, annotations, by = paste0(base,"_label"))
   df
 }
 
@@ -71,36 +62,33 @@ annotate_num <- function (df,
 #'
 #' @param df data frame to annotate
 #' @param col name of the character column to annotate
-#' @param base base name for the annotation, which wil be used in the desc table. If not provided, will use col as base.
-#' @param sort_label a logical value to determine if the data in col should be arranged alphanumerically before ids are assigned. default = T.
+#' @param base base name for the annotation, which wil be used in the desc
+#'   table. If not provided, will use col as base.
+#' @param sort_label a logical value to determine if the data in col should be
+#'   arranged alphanumerically before ids are assigned. default = T.
 #' @param na_val The value to use to replace NAs. default = "ZZ_Missing".
-#' @param colorset The colorset to use for assigning category colors. Options are "rainbow","viridis","inferno","magma", and "terrain"
-#' @param color_order The order in which colors should be assigned. Options are "sort" and "random". "sort" assigns colors in order; "random" will randomly assign colors.
+#' @param colorset The colorset to use for assigning category colors. Options
+#'   are "rainbow","viridis","inferno","magma", and "terrain"
+#' @param color_order The order in which colors should be assigned. Options are
+#'   "sort" and "random". "sort" assigns colors in order; "random" will randomly
+#'   assign colors.
 #'
-#' @return A modified data frame: the annotated column will be renamed base_label, and base_id and base_color columns will be appended
+#' @return A modified data frame: the annotated column will be renamed
+#'   base_label, and base_id and base_color columns will be appended
 #'
-#' @examples
-#' flowers <- iris %>%
-#'   annotate_cat(Species)
-#'
-#'head(flowers)
-#'
-#'flowers2 <- iris %>%
-#'  annotate_num(Species, spp, sort_label = F, colorset = "viridis")
-#'
-#'head(flowers2)
 annotate_cat <- function(df,
                          col = NULL, base = NULL,
                          sort_label = T, na_val = "ZZ_Missing",
                          colorset = "varibow", color_order = "sort") {
 
-  library(dplyr)
-  library(viridis)
+  #library(dplyr)
+  #library(lazyeval)
+  #library(viridisLite)
 
   if(class(try(is.character(col), silent = T)) == "try-error") {
     col <- lazyeval::expr_text(col)
   } else if(class(col) == "NULL") {
-      stop("Specify a column (col) to annotate.")
+    stop("Specify a column (col) to annotate.")
   }
 
   if(class(try(is.character(base), silent = T)) == "try-error") {
@@ -119,29 +107,29 @@ annotate_cat <- function(df,
 
   annotations <- data.frame(label = unique(x), stringsAsFactors = F)
 
-  if(sort_label == T) {
-    annotations <- annotations %>% arrange(label)
+  if(sort_label) {
+    annotations <- annotations %>% dplyr::arrange(label)
   }
 
   annotations <- annotations %>%
-    mutate(id = 1:n())
+    dplyr::mutate(id = 1:n())
 
   if(colorset == "varibow") {
     colors <- varibow(nrow(annotations))
   } else if(colorset == "rainbow") {
-    colors <- sub("FF$","",rainbow(nrow(annotations)))
+    colors <- sub("FF$","",grDevices::rainbow(nrow(annotations)))
   } else if(colorset == "viridis") {
-    colors <- sub("FF$","",viridis(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::viridis(nrow(annotations)))
   } else if(colorset == "magma") {
-    colors <- sub("FF$","",magma(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::magma(nrow(annotations)))
   } else if(colorset == "inferno") {
-    colors <- sub("FF$","",inferno(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::inferno(nrow(annotations)))
   } else if(colorset == "plasma") {
-    colors <- sub("FF$","",plasma(nrow(annotations)))
+    colors <- sub("FF$","",viridisLite::plasma(nrow(annotations)))
   } else if(colorset == "terrain") {
-    colors <- sub("FF$","",terrain.colors(nrow(annotations)))
+    colors <- sub("FF$","",grDevices::terrain.colors(nrow(annotations)))
   } else if(is.character(colorset)) {
-    colors <- colorRampPalette(colorset)(nrow(annotations))
+    colors <- grDevices::colorRampPalette(colorset)(nrow(annotations))
   }
 
   if(color_order == "random") {
@@ -150,13 +138,13 @@ annotate_cat <- function(df,
 
   }
 
-  annotations <- mutate(annotations, color = colors)
+  annotations <- dplyr::mutate(annotations, color = colors)
 
   names(annotations) <- paste0(base, c("_label","_id","_color"))
 
   names(df)[names(df) == col] <- paste0(base,"_label")
 
-  df <- left_join(df, annotations, by = paste0(base, "_label"))
+  df <- dplyr::left_join(df, annotations, by = paste0(base, "_label"))
 
   df
 }
@@ -164,25 +152,13 @@ annotate_cat <- function(df,
 #'Group annotation columns
 #'
 #'@param df the annotation dataframe to arrange
+#'@param sample_col the column with unique sample ids. Default is "sample_name".
 #'@param keep_order a logical value. If FALSE, will sort the annotations alphanumerically by base.
 #'
 #'
 #'@return an annotation data frame with reordered columns
 #'
-#'@examples
-#'anno <- mtcars %>%
-#'  mutate(sample_id = paste0("car",1:n())) %>%
-#'  select(sample_id, wt, mpg) %>%
-#'  annotate_num(wt) %>%
-#'  annotate_num(mpg)
-#'
-#'head(anno)
-#'
-#'anno2 <- group_annotations(anno)
-#'
-#'head(anno2)
-#'
-group_annotations <- function(df, keep_order = TRUE) {
+group_annotations <- function(df, sample_col = "sample_name", keep_order = TRUE) {
   labels <- names(df)[grepl("_label",names(df))]
   if(!keep_order) {
     labels <- labels[order(labels)]
@@ -192,6 +168,79 @@ group_annotations <- function(df, keep_order = TRUE) {
   anno_cols <- c(paste0(rep(bases,each=3),c("_id","_label","_color")))
   extras <- setdiff(names(df),anno_cols)
 
-  anno <- select(df,one_of(c("sample_id",anno_cols,extras)))
+  anno <- select(df,one_of(c(sample_col,anno_cols,extras)))
 
+}
+
+#' Convert a cl factor object to an annotation data.frame
+#'
+#' @param cl The cl factor object generated by clustering with scrattch.hicat
+#' @param cl.df Optional: A cluster annotation data.frame.
+#' @param cl_col The column to use to match cl.df to cl. Default is "cl", but if not found, will try to match using rownames(cl.df).
+#' @param base The base of the cluster annotation. Default is "cluster", which will result in "cluster_id","cluster_label", and "cluster_color" columns.
+#'
+#' @return a data.frame with columns "sample_name", base"_id", base"_label", and base"_color"
+#'
+cl_to_anno <- function(cl,
+                       cl.df = NULL,
+                       cl_col = "cl",
+                       base = "cluster") {
+
+  anno_names <- c(paste0(base, "_id"), paste0(base,"_label"), paste0(base, "_color"))
+
+  if(is.null(cl.df)) {
+    color_cl <- cl
+    levels(color_cl) <- varibow(length(levels(cl)))
+
+    anno <- data.frame(sample_name = names(cl),
+                       id = match(cl, levels(cl)),
+                       label = as.character(cl),
+                       color = as.character(color_cl),
+                       stringsAsFactors = FALSE)
+
+    names(anno) <- c("sample_name", anno_names)
+
+  } else {
+
+    # Check to see if there's a cl column in cl.df
+    if(!cl_col %in% names(cl.df)) {
+
+      # If not, check to see if levels are stored in the rownames of the df
+      unique_rownames <- unique(rownames(cl.df))
+      if(sum(unique_rownames %in% levels(cl)) == length(levels(cl))) {
+        cl.df[[cl_col]] <- rownames(cl.df)
+      } else {
+        stop(paste0("No '",cl_col,"' column and rownames don't match levels(cl)."))
+      }
+
+    }
+
+    anno_df <- cl.df[, names(cl.df) %in% c(cl_col, anno_names), drop = FALSE]
+
+    anno <- data.frame(sample_name = names(cl),
+                       cl = as.character(cl),
+                       stringsAsFactors = FALSE)
+    names(anno)[2] <- cl_col
+
+    anno <- dplyr::left_join(anno, anno_df, by = cl_col)
+    anno <- anno[,!names(anno) == cl_col]
+
+    # Check and fix missing columns
+    if(!paste0(base,"_id") %in% names(anno)) {
+      anno[[paste0(base,"_id")]] <- match(cl, levels(cl))
+    }
+
+    if(!paste0(base,"_label") %in% names(anno)) {
+      anno[[paste0(base,"_label")]] <- as.character(cl)
+    }
+
+    if(!paste0(base,"_color") %in% names(anno)) {
+      color_cl <- cl
+      levels(color_cl) <- varibow(length(levels(cl)))
+      anno[[paste0(base,"_color")]] <- as.character(color_cl)
+    }
+
+  }
+
+  group_annotations(anno)
 }

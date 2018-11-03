@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_tome_lowlevel.R
 \name{write_tome_serialized}
 \alias{write_tome_serialized}
-\title{Generalized write for individual vector objects to a tome file}
+\title{Generalized write for individual serialized objects to a tome file}
 \usage{
 write_tome_serialized(obj, tome, target, overwrite = NULL)
 }

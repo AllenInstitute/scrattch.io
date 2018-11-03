@@ -4,7 +4,8 @@
 \alias{write_dgCMatrix_csv}
 \title{Write a dgCMatrix to CSV in reasonable chunks}
 \usage{
-write_dgCMatrix_csv(mat, filename, col1_name = "gene", chunk_size = 1000)
+write_dgCMatrix_csv(mat, filename, col1_name = "gene",
+  chunk_size = 1000)
 }
 \arguments{
 \item{mat}{the dgCMatrix to write}

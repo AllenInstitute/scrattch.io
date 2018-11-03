@@ -4,13 +4,13 @@
 \alias{read_tome_gene_data}
 \title{Read Gene Expression Data from a tome file}
 \usage{
-read_tome_gene_data(tome, genes, regions = "exon", units = "counts",
-  transform = "none", format = "data.frame")
+read_tome_gene_data(tome, genes = NULL, regions = "exon",
+  units = "counts", transform = "none", format = "data.frame")
 }
 \arguments{
 \item{tome}{tome file to read. Required.}
 
-\item{genes}{A vector of gene names to read. Required.}
+\item{genes}{A vector of gene names to read. If NULL, will read all genes.}
 
 \item{regions}{The gene regions to use. Can be "exon", "intron", or "both". Default = "exon".}
 

@@ -4,8 +4,8 @@
 \alias{read_tome_sample_data}
 \title{Read Sample Expression Data from a tome file}
 \usage{
-read_tome_sample_data(tome, samples, regions = "exon", units = "counts",
-  transform = "none", format = "data.frame")
+read_tome_sample_data(tome, samples, regions = "exon",
+  units = "counts", transform = "none", format = "data.frame")
 }
 \arguments{
 \item{tome}{tome file to read. Required.}

@@ -13,11 +13,11 @@ write_dgCMatrix_csv <- function(mat,
                                 col1_name = "gene",
                                 chunk_size = 1000) {
 
-  library(Matrix)
-  library(data.table)
+  #library(Matrix)
+  #library(data.table)
 
   # Transpose so retrieval of "rows" is much faster
-  mat <- t(mat)
+  mat <- Matrix::t(mat)
 
   # Row names
   row_names <- colnames(mat)
@@ -38,7 +38,7 @@ write_dgCMatrix_csv <- function(mat,
   chunk_mat <- t(as.matrix(mat[,chunk_start:chunk_end]))
   chunk_df <- cbind(data.frame(col1 = row_names[chunk_start:chunk_end]),as.data.frame(chunk_mat))
   names(chunk_df)[1] <- col1_name
-  fwrite(chunk_df, file = filename, append = F)
+  data.table::fwrite(chunk_df, file = filename, append = F)
 
   # chunkation over chunks
   for(chunk in 2:n_chunks) {
@@ -47,7 +47,7 @@ write_dgCMatrix_csv <- function(mat,
     print(paste0("Writing rows ",chunk_start," to ", chunk_end))
     chunk_mat <- t(as.matrix(mat[,chunk_start:chunk_end]))
     chunk_df <- cbind(data.frame(col1 = row_names[chunk_start:chunk_end]),as.data.frame(chunk_mat))
-    fwrite(chunk_df, file = filename, append = T)
+    data.table::fwrite(chunk_df, file = filename, append = T)
   }
 
   # Remaining samples
@@ -56,6 +56,6 @@ write_dgCMatrix_csv <- function(mat,
   print(paste0("Writing rows ",chunk_start," to ", chunk_end))
   chunk_mat <- t(as.matrix(mat[,chunk_start:chunk_end]))
   chunk_df <- cbind(data.frame(col1 = row_names[chunk_start:chunk_end]),as.data.frame(chunk_mat))
-  fwrite(chunk_df, file = filename, append = T)
+  data.table::fwrite(chunk_df, file = filename, append = T)
 
 }

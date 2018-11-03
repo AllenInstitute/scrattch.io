@@ -1,8 +1,16 @@
 #' Write scrattch data to feather files
+#'
+#' This is likely to be deprecated soon.
+#'
+#' @param anno An annotations data.frame
+#' @param data A data-containing data.frame
+#' @param desc Descriptions of annotations in a data.frame
+#' @param feather_dir The directory to write feather files to.
+#'
 build_feather <- function(anno = NULL, data = NULL, desc = NULL, feather_dir = NULL) {
 
-  library(dplyr)
-  library(feather)
+  #library(dplyr)
+  #library(feather)
 
   if(is.null(anno)) {
     stop("anno table required.")
@@ -30,15 +38,15 @@ build_feather <- function(anno = NULL, data = NULL, desc = NULL, feather_dir = N
 
     datafile <- paste0(feather_dir,"/data.feather")
     cat("Writing data table to",datafile,"\n")
-    write_feather(data, datafile)
+    feather::write_feather(data, datafile)
 
     annofile <- paste0(feather_dir,"/anno.feather")
     cat("Writing anno table to",annofile,"\n")
-    write_feather(anno, annofile)
+    feather::write_feather(anno, annofile)
 
     descfile <- paste0(feather_dir,"/desc.feather")
     cat("Writing desc table to",descfile,"\n")
-    write_feather(desc, descfile)
+    feather::write_feather(desc, descfile)
 
   }
 }

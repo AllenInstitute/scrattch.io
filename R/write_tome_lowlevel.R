@@ -16,9 +16,7 @@ write_tome_data.frame <- function(df,
                                   store_as = "vectors",
                                   overwrite = NULL) {
 
-  library(rhdf5)
-  library(purrr)
-  library(h5)
+  #library(purrr)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -26,14 +24,11 @@ write_tome_data.frame <- function(df,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
-
   if(!file.exists(tome)) {
     if(verbosity == 2) {
       print(paste0(tome," doesn't exist. Creating new file."))
     }
-    h5createFile(tome)
-    H5close()
+    rhdf5::h5createFile(tome)
   }
 
   target_path <- sub("/$","",target)
@@ -50,12 +45,12 @@ write_tome_data.frame <- function(df,
   target_groups <- paste0("/",target_groups)
 
   ls <- h5ls(tome) %>%
-    mutate(full_name = ifelse(group == "/",
-                              paste0(group, name),
-                              paste(group, name, sep = "/")))
+    dplyr::mutate(full_name = ifelse(group == "/",
+                                     paste0(group, name),
+                                     paste(group, name, sep = "/")))
 
   existing_objects <- ls %>%
-    filter(group == target | full_name == target)
+    dplyr::filter(group == target | full_name == target)
 
   if(length(existing_objects$full_name) > 0) {
     if(overwrite) {
@@ -64,12 +59,12 @@ write_tome_data.frame <- function(df,
         print(paste0("Removing existing ", target))
       }
 
-      walk(existing_objects$full_name,
-           function(x) {
-             suppressWarnings(
-               h5_delete(tome, x)
-             )
-           }
+      purrr::walk(existing_objects$full_name,
+                  function(x) {
+                    suppressWarnings(
+                      rhdf5::h5delete(tome, x)
+                    )
+                  }
       )
     } else {
       if(verbosity == 2) {
@@ -90,22 +85,20 @@ write_tome_data.frame <- function(df,
   }
 
   if(store_as == "vectors") {
-    walk(names(df), function(x) {
+    purrr::walk(names(df), function(x) {
       vec_target <- paste(target,x,sep = "/")
-      h5write(df[[x]],
-              tome,
-              vec_target,
-              level = 0)
+      rhdf5::h5write(df[[x]],
+                     tome,
+                     vec_target,
+                     level = 0)
     })
 
   } else if(store_as == "data.frame") {
-    h5write(df,
-            tome,
-            target,
-            level = 0)
+    rhdf5::h5write(df,
+                   tome,
+                   target,
+                   level = 0)
   }
-
-  H5close()
 
   if(verbosity == 1) {
     return(TRUE)
@@ -113,17 +106,19 @@ write_tome_data.frame <- function(df,
 
 }
 
+#' Generate a new group in a tome file
+#'
+#' @param tome Path to the target tome file
+#' @param target_path The target location within the tome file
+#'
 write_tome_group <- function(tome,
                              target_path) {
 
-  library(dplyr)
-  library(rhdf5)
+  #library(dplyr)
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
-
-  ls <- h5ls(tome)
+  ls <- rhdf5::h5ls(tome)
 
   target_path <- sub("/$","",target_path)
 
@@ -135,17 +130,17 @@ write_tome_group <- function(tome,
 
   # check for group structure
   for(target_group in target_groups) {
-    ls <- h5ls(tome) %>%
-      mutate(full_name = ifelse(group == "/",
-                                paste0(group, name),
-                                paste(group, name, sep = "/")))
+    ls <- rhdf5::h5ls(tome) %>%
+      dplyr::mutate(full_name = ifelse(group == "/",
+                                       paste0(group, name),
+                                       paste(group, name, sep = "/")))
 
     # If the group doesn't exist, create it
     if(!target_group %in% ls$full_name) {
       if(verbosity == 2) {
         print(paste0("Creating Group ",target_group))
       }
-      h5createGroup(tome, target_group)
+      rhdf5::h5createGroup(tome, target_group)
     } else {
       if(verbosity == 2) {
         print(paste0(target_group," already exists. Skipping."))
@@ -165,9 +160,7 @@ write_tome_vector <- function(vec,
                               tome,
                               target,
                               overwrite = NULL) {
-  library(rhdf5)
-  library(purrr)
-  library(h5)
+  #library(purrr)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
@@ -175,38 +168,34 @@ write_tome_vector <- function(vec,
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
-
   if(!file.exists(tome)) {
     if(verbosity == 2) {
       print(paste0(tome," doesn't exist. Creating new file."))
     }
-    h5createFile(tome)
-    H5close()
+    rhdf5::h5createFile(tome)
   }
 
-  ls <- h5ls(tome) %>%
-    mutate(full_name = ifelse(group == "/",
-                              paste0(group, name),
-                              paste(group, name, sep = "/")))
+  ls <- rhdf5::h5ls(tome) %>%
+    dplyr::mutate(full_name = ifelse(group == "/",
+                                     paste0(group, name),
+                                     paste(group, name, sep = "/")))
 
   existing_objects <- ls %>%
-    filter(group == target | full_name == target)
+    dplyr::filter(group == target | full_name == target)
 
   if(length(existing_objects$full_name) > 0) {
     if(overwrite) {
       if(verbosity == 2) {
         print(paste0("Removing existing ", target))
       }
-      walk(existing_objects$full_name,
-           function(x) {
-             suppressWarnings(
-               h5_delete(tome, x)
-             )
-           }
+      purrr::walk(existing_objects$full_name,
+                  function(x) {
+                    suppressWarnings(
+                      rhdf5::h5delete(tome, x)
+                    )
+                  }
       )
     } else {
-      H5close()
 
       if(verbosity == 2) {
         stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
@@ -228,11 +217,9 @@ write_tome_vector <- function(vec,
   write_tome_group(tome,
                    target_path)
 
-  h5write(vec,
-          tome,
-          target)
-
-  H5close()
+  rhdf5::h5write(vec,
+                 tome,
+                 target)
 
   if(verbosity == 1) {
     return(TRUE)
@@ -240,7 +227,7 @@ write_tome_vector <- function(vec,
 }
 
 
-#' Generalized write for individual vector objects to a tome file
+#' Generalized write for individual serialized objects to a tome file
 #'
 #' Useful for R objects that can't easily be coerced to a data.frame or a vector, like lists or S3 classes.
 #' Think of it like saveRDS() for HDF5 files.
@@ -255,33 +242,26 @@ write_tome_serialized <- function(obj,
                                   target,
                                   overwrite = NULL) {
 
-  library(rhdf5)
-  library(purrr)
-  library(h5)
-
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
   }
 
   verbosity <- .scrattch.io_env$verbosity
 
-  H5close()
-
   if(!file.exists(tome)) {
     if(verbosity == 2) {
       print(paste0(tome," doesn't exist. Creating new file."))
     }
-    h5createFile(tome)
-    H5close()
+    rhdf5::h5createFile(tome)
   }
 
-  ls <- h5ls(tome) %>%
-    mutate(full_name = ifelse(group == "/",
-                              paste0(group, name),
-                              paste(group, name, sep = "/")))
+  ls <- rhdf5::h5ls(tome) %>%
+    dplyr::mutate(full_name = ifelse(group == "/",
+                                     paste0(group, name),
+                                     paste(group, name, sep = "/")))
 
   existing_objects <- ls %>%
-    filter(group == target | full_name == target)
+    dplyr::filter(group == target | full_name == target)
 
   if(length(existing_objects$full_name) > 0) {
     if(overwrite) {
@@ -290,15 +270,14 @@ write_tome_serialized <- function(obj,
 
       }
 
-      walk(existing_objects$full_name,
-           function(x) {
-             suppressWarnings(
-               h5_delete(tome, x)
-             )
-           }
+      purrr::walk(existing_objects$full_name,
+                  function(x) {
+                    suppressWarnings(
+                      rhdf5::h5delete(tome, x)
+                    )
+                  }
       )
     } else {
-      H5close()
 
       if(verbosity == 2) {
         stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
@@ -323,11 +302,9 @@ write_tome_serialized <- function(obj,
   write_tome_group(tome,
                    target_path)
 
-  h5write(ser_obj,
-          tome,
-          target)
-
-  H5close()
+  rhdf5::h5write(ser_obj,
+                 tome,
+                 target)
 
   if(verbosity == 1) {
     return(TRUE)
@@ -350,17 +327,13 @@ write_tome_dgCMatrix <- function(mat,
                                  overwrite = NULL,
                                  compression_level = 4) {
 
-  library(rhdf5)
-  library(h5)
-  library(Matrix)
+  #library(Matrix)
 
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
   }
 
   verbosity <- .scrattch.io_env$verbosity
-
-  H5close()
 
   target_path <- sub("/$","",target)
   write_tome_group(tome,
@@ -369,39 +342,37 @@ write_tome_dgCMatrix <- function(mat,
   if(verbosity == 2) {
     print(paste0("Writing ",target,"/x."))
   }
-  h5createDataset(tome,
-                  dataset = paste0(target,"/x"),
-                  dims = length(mat@x),
-                  chunk = 1000,
-                  level = compression_level)
-  h5write(mat@x,
-          tome,
-          paste0(target,"/x"))
+  rhdf5::h5createDataset(tome,
+                         dataset = paste0(target,"/x"),
+                         dims = length(mat@x),
+                         chunk = 1000,
+                         level = compression_level)
+  rhdf5::h5write(mat@x,
+                 tome,
+                 paste0(target,"/x"))
 
   # data indices
   if(verbosity == 2) {
     print(paste0("Writing ",target,"/i."))
   }
-  h5createDataset(tome,
-                  dataset = paste0(target,"/i"),
-                  dims = length(mat@x),
-                  chunk = 1000,
-                  level = compression_level)
-  h5write(mat@i,
-          tome,
-          paste0(target,"/i"))
+  rhdf5::h5createDataset(tome,
+                         dataset = paste0(target,"/i"),
+                         dims = length(mat@x),
+                         chunk = 1000,
+                         level = compression_level)
+  rhdf5::h5write(mat@i,
+                 tome,
+                 paste0(target,"/i"))
 
   # data index pointers
   if(verbosity == 2) {
     print(paste0("Writing ",target,"/p."))
   }
-  h5write(mat@p,
-          tome,
-          paste0(target,"/p"))
+  rhdf5::h5write(mat@p,
+                 tome,
+                 paste0(target,"/p"))
 
-  h5write(c(nrow(mat), ncol(mat)),
-          tome,
-          paste0(target,"/dims"))
-
-  H5close()
+  rhdf5::h5write(c(nrow(mat), ncol(mat)),
+                 tome,
+                 paste0(target,"/dims"))
 }

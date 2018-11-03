@@ -4,7 +4,8 @@
 \alias{write_tome_mapping}
 \title{Write a mapping frequencies table to a tome file.}
 \usage{
-write_tome_mapping(mapping, mapping_name = NULL, tome, overwrite = NULL)
+write_tome_mapping(mapping, mapping_name = NULL, tome,
+  overwrite = NULL)
 }
 \arguments{
 \item{mapping}{A data.frame with mapping results to write.}
@@ -12,6 +13,8 @@ write_tome_mapping(mapping, mapping_name = NULL, tome, overwrite = NULL)
 \item{mapping_name}{The base name of the mapping Should match the mapping description table}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write a mapping frequencies table to a tome file.

@@ -10,6 +10,8 @@ write_tome_anno(anno, tome, overwrite = NULL)
 \item{anno}{The annotations data.frame to write. The first column must be "sample_id" or "sample_name".}
 
 \item{tome}{Path to the target tome file.}
+
+\item{overwrite}{Whether or not to overwrite existing annotations. Default is NULL, which will use the global settings defined with set_scrattch.io_global_overwrite().}
 }
 \description{
 Write an annotations table to a tome file.
