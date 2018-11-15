@@ -284,10 +284,12 @@ create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE) {
 #'
 #' @param anno an existing annotation data frame
 #' @param remove_factors should factors be converted to character (currently, should be kept as TRUE)
+#' @param scale should color scaling of numeric values be "predicted" (default and highly recommended;
+#'   will return either "linear" or "log10" depending on scaling), "linear","log10","log2", or "zscore".
 #'
 #' @return an updated data frame that has been automatically annotated properly
 #'
-auto_annotate <- function(anno, remove_factors = TRUE) {
+auto_annotate <- function(anno, remove_factors = TRUE, scale = "predicted") {
 
   ## Convert sample_id to sample_name, if needed
   anno_out <- anno
@@ -307,8 +309,20 @@ auto_annotate <- function(anno, remove_factors = TRUE) {
 
   ## Automatically annotate the columns
   for (cc in convertColumns) {
-    if (is.numeric(anno_out[, cc])) {
-      anno_out <- annotate_num(anno_out, cc)
+    value = anno_out[, cc]
+    if (is.numeric(value)) {
+      if (!is.element(scale,c("linear","log10","log2","zscore"))){
+        # If scale is pre-set for all numeric values...
+        anno_out <- annotate_num(anno_out, cc, scale = scale)
+      } else {
+        # If scale is predicted...
+        scalePred = ifelse(min(value)<0,"linear","log10") # Avoid NA values for log scale
+        if((max(value+1) / min(value+1)) < 100)
+          scalePred = "linear"   # Use log scale if large range
+        if(mean((value-min(value))/diff(range(value)))<0.01)
+          scalePred = "log10"    # Use log scale if large skew towards high end
+        anno_out <- annotate_num(anno_out, cc, scale = scalePred)
+      }
     } else {
       anno_out <- annotate_cat(anno_out, cc)
     }

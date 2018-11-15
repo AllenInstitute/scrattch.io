@@ -4,12 +4,15 @@
 \alias{auto_annotate}
 \title{Automatically format an annotation file}
 \usage{
-auto_annotate(anno, remove_factors = TRUE)
+auto_annotate(anno, remove_factors = TRUE, scale = "predicted")
 }
 \arguments{
 \item{anno}{an existing annotation data frame}
 
 \item{remove_factors}{should factors be converted to character (currently, should be kept as TRUE)}
+
+\item{scale}{should color scaling of numeric values be "predicted" (default and highly recommended;
+will return either "linear" or "log10" depending on scaling), "linear","log10","log2", or "zscore".}
 }
 \value{
 an updated data frame that has been automatically annotated properly
