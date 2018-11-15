@@ -4,15 +4,34 @@
 \alias{auto_annotate}
 \title{Automatically format an annotation file}
 \usage{
-auto_annotate(anno, remove_factors = TRUE, scale = "predicted")
+auto_annotate(anno, scale_num = "predicted", na_val_num = 0,
+  colorset_num = c("darkblue", "white", "red"), sort_label_cat = TRUE,
+  na_val_cat = "ZZ_Missing", colorset_cat = "varibow",
+  color_order_cat = "sort")
 }
 \arguments{
 \item{anno}{an existing annotation data frame}
 
-\item{remove_factors}{should factors be converted to character (currently, should be kept as TRUE)}
-
-\item{scale}{should color scaling of numeric values be "predicted" (default and highly recommended;
+\item{scale_num}{should color scaling of numeric values be "predicted" (default and highly recommended;
 will return either "linear" or "log10" depending on scaling), "linear","log10","log2", or "zscore".}
+
+\item{na_val_num}{The value to use to replace NAs for numeric columns. default = 0.}
+
+\item{colorset_num}{A vector of colors to use for the color gradient.
+default = c("darkblue","white","red")}
+
+\item{sort_label_cat}{a logical value to determine if the data in category columns
+should be arranged alphanumerically before ids are assigned. default = T.}
+
+\item{na_val_cat}{The value to use to replace NAs in category and factor variables.
+default = "ZZ_Missing".}
+
+\item{colorset_cat}{The colorset to use for assigning category and factor colors.
+Options are "varibow" (default), "rainbow","viridis","inferno","magma", and "terrain"}
+
+\item{color_order_cat}{The order in which colors should be assigned for cat and
+factor variables. Options are "sort" and "random". "sort" (default) assigns colors
+in order; "random" will randomly assign colors.}
 }
 \value{
 an updated data frame that has been automatically annotated properly
