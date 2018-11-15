@@ -250,3 +250,70 @@ cl_to_anno <- function(cl,
 
   group_annotations(anno)
 }
+
+
+#' Create a generic description file
+#'
+#' @param dat any data frame that you would like to create a description file for
+#' @param names desired names of each element in the description file (default is the column names)
+#' @param use_label_columns should only columns containing "_label" be included (default = FALSE)
+#'
+#' @return a data.frame with columns "base", "name", and "type" for writing to tome
+#'
+create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE) {
+
+  if (use_label_columns) {
+    dat <- dat[, grepl("_label", colnames(dat))]
+    colnames(dat) <- gsub("_label", "", colnames(dat))
+  }
+
+  desc <- data.frame(base = colnames(dat), name = name, type = "cat")
+  for (i in 1:dim(dat)[2]) if (is.element(class(dat[, i]), c("numeric", "integer"))) {
+      desc[i, 3] <- "num"
+    }
+  desc
+}
+
+
+#' Automatically format an annotation file
+#'
+#' This takes an anno file as input at any stage and properly annotates it for compatability with
+#'   shiny and other scrattch functions.  In particular, it ensures that columns have a label,
+#'   an id, and a color, and that there are no factors.  It won't overwrite columns that have
+#'   already been properly process.
+#'
+#' @param anno an existing annotation data frame
+#' @param remove_factors should factors be converted to character (currently, should be kept as TRUE)
+#'
+#' @return an updated data frame that has been automatically annotated properly
+#'
+auto_annotate <- function(anno, remove_factors = TRUE) {
+
+  ## Convert sample_id to sample_name, if needed
+  anno_out <- anno
+  colnames(anno_out) <- gsub("sample_id", "sample_name", colnames(anno_out))
+
+  ## Determine which columns are not already formatted?
+  cn <- colnames(anno_out)
+  convertColumns <- cn[(!grepl("_label", cn)) & (!grepl("_id", cn)) & (!grepl("_color", cn))]
+  convertColumns <- setdiff(convertColumns, "sample_name")
+
+  ## Remove all factors
+  if (remove_factors) {
+    for (cc in convertColumns) if (is.factor(anno_out[, cc])) {
+        anno_out[, cc] <- as.character(anno_out[, cc])
+      }
+  }
+
+  ## Automatically annotate the columns
+  for (cc in convertColumns) {
+    if (is.numeric(anno_out[, cc])) {
+      anno_out <- annotate_num(anno_out, cc)
+    } else {
+      anno_out <- annotate_cat(anno_out, cc)
+    }
+  }
+
+  ## Reorganize the anno file (MIGHT NEED TO BE UPDATED)
+  anno_out <- group_annotations(anno_out)
+}
