@@ -9,9 +9,9 @@ create_desc(dat, name = colnames(dat), use_label_columns = FALSE)
 \arguments{
 \item{dat}{any data frame that you would like to create a description file for}
 
-\item{use_label_columns}{should only columns containing "_label" be included (default = FALSE)}
+\item{name}{desired names of each element in the description file (default is the column names)}
 
-\item{names}{desired names of each element in the description file (default is the column names)}
+\item{use_label_columns}{should only columns containing "_label" be included (default = FALSE)}
 }
 \value{
 a data.frame with columns "base", "name", and "type" for writing to tome

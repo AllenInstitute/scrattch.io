@@ -255,7 +255,7 @@ cl_to_anno <- function(cl,
 #' Create a generic description file
 #'
 #' @param dat any data frame that you would like to create a description file for
-#' @param names desired names of each element in the description file (default is the column names)
+#' @param name desired names of each element in the description file (default is the column names)
 #' @param use_label_columns should only columns containing "_label" be included (default = FALSE)
 #'
 #' @return a data.frame with columns "base", "name", and "type" for writing to tome
