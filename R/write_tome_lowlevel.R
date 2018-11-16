@@ -59,14 +59,11 @@ write_tome_data.frame <- function(df,
         print(paste0("Removing existing ", target))
       }
 
-      purrr::walk(existing_objects$full_name,
-                  function(x) {
-                    suppressWarnings(
-                      rhdf5::h5delete(tome, x)
-                    )
-                  }
-      )
+      h5delete(tome, target_path)
+
     } else {
+      h5closeAll()
+
       if(verbosity == 2) {
         stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
       } else if(verbosity == 1) {
