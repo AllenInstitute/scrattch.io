@@ -1,6 +1,8 @@
 context("Read .tome data.frame")
 library(scrattch.io)
 
+set_scrattch.io_global_verbosity(0)
+
 # Test data are available in inst/testdata/
 # A tome file for testing is at inst/testdata/tome/transcrip.tome
 # Reference files as .RData are in inst/testdata/rds/
@@ -322,7 +324,7 @@ test_that(
   }
 )
 
-context("Write tome annotations")
+context("Write tome functions")
 test_that(
   "write_tome_anno() writes annotations to a .tome file",
   {
@@ -361,5 +363,32 @@ test_that(
     expect_true("anno" %in% temp_ls$name)
     expect_equal(sum(temp_ls$group == "/sample_meta/anno"), ncol(anno))
 
+    file.remove(temp_file)
+
   }
 )
+
+context("Append tome functions")
+test_that(
+  "append_tome_vector() appends values to an existing vector",
+  {
+    temp_file <- tempfile(fileext = ".tome")
+
+    vec1 <- 1:100
+    vec2 <- 500:625
+
+    write_tome_vector(vec1,
+                      tome = temp_file,
+                      target = "/test_vector")
+
+    append_tome_vector(vec2,
+                       tome = temp_file,
+                       target = "/test_vector")
+
+    vec_in <- read_tome_vector(tome = temp_file,
+                               name = "/test_vector")
+
+    expect_equal(length(c(vec1,vec2)),length(vec_in))
+    expect_identical(c(vec1,vec2),vec_in)
+
+  })

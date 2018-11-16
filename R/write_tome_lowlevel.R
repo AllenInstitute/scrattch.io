@@ -68,6 +68,8 @@ write_tome_data.frame <- function(df,
         stop(paste0(target, " already exists. Set overwrite = TRUE to replace it."))
       } else if(verbosity == 1) {
         return(FALSE)
+      } else if(verbosity == 0) {
+        stop()
       }
 
     }
@@ -208,11 +210,20 @@ write_tome_vector <- function(vec,
     print(paste0("Writing ", target))
   }
 
-  target_path <- sub("/$","",target)
   target_path <- sub("(/.+/).+","\\1",target_path)
 
-  write_tome_group(tome,
-                   target_path)
+  if(sum(grepl("/", target_path)) > 1) {
+    write_tome_group(tome,
+                     target_path)
+  }
+
+  rhdf5::h5createDataset(file = tome,
+                         dataset = target,
+                         dims = length(vec),
+                         maxdims = H5Sunlimited(),
+                         storage.mode = storage.mode(vec),
+                         chunk = 1000,
+                         level = 4)
 
   rhdf5::h5write(vec,
                  tome,
@@ -248,11 +259,15 @@ append_tome_vector <- function(vec,
                                      paste0(group, name),
                                      paste(group, name, sep = "/")))
 
-  existing_object <- ls %>%
+  existing_objects <- ls %>%
     dplyr::filter(full_name == target)
 
   if(length(existing_objects$full_name) == 0) {
     stop(paste0(target," doesn't exist. Use write_tome_vector() instead of append_tome_vector() to write."))
+  }
+
+  if(length(existing_objects$full_name) > 1) {
+    stop(paste0(target," matches multiple objects. Check your file structure with h5ls()."))
   }
 
   vec <- unlist(vec)
@@ -262,19 +277,18 @@ append_tome_vector <- function(vec,
     print(paste0("Appending to ", target))
   }
 
-  target_path <- sub("/$","",target)
-  target_path <- sub("(/.+/).+","\\1",target_path)
-
   current_length <- as.numeric(existing_objects$dim[1])
   new_length <- current_length + vec_length
 
-  rhdf5::h5set_extent(file = tome, dataset = target, dims = new_length)
+  rhdf5::h5set_extent(file = tome, dataset = existing_objects$full_name[1], dims = new_length)
 
   target_indexes <- (current_length + 1):(new_length)
   rhdf5::h5write(obj = vec,
                  file = tome,
                  name = target,
-                 index_list = list(target_indexes))
+                 index = list(target_indexes))
+
+  h5closeAll()
 
   if(verbosity == 1) {
     return(TRUE)
