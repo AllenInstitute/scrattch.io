@@ -16,6 +16,8 @@ test_that(
                                       df_name = "/sample_meta/desc",
                                       stored_as = "data.frame")
 
+    expect_equal(nrow(h5listIdentifier()), 0)
+
     expect_is(tome_desc, "data.frame")
 
     expect_equal_to_reference(
@@ -38,6 +40,8 @@ test_that(
     tome_anno <- read_tome_data.frame(tome = tome_file,
                                       df_name = "/sample_meta/anno",
                                       stored_as = "vectors")
+    expect_equal(nrow(h5listIdentifier()), 0)
+
     tome_anno <- tome_anno[,names(test_anno)]
 
     expect_is(tome_anno, "data.frame")
@@ -58,6 +62,7 @@ test_that(
                                              df_name = "/sample_meta/anno",
                                              columns = names(test_anno)[1:5],
                                              stored_as = "vectors")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_anno_select, "data.frame")
 
@@ -69,6 +74,7 @@ test_that(
                                                   columns = "primary_type",
                                                   match_type = "grep",
                                                   stored_as = "vectors")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_equal(tome_anno_select_grep,
                  test_anno[,c("primary_type_color","primary_type_id","primary_type_label")])
@@ -86,6 +92,7 @@ test_that(
                            match_type = "exact",
                            stored_as = "vectors")
     )
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_error(
       read_tome_data.frame(tome = tome_file,
@@ -95,6 +102,7 @@ test_that(
                            stored_as = "vectors"
                            )
     )
+    expect_equal(nrow(h5listIdentifier()), 0)
 
   }
 )
@@ -110,6 +118,7 @@ test_that(
                            stored_as = "vectors",
                            match_type = "exact")
     )
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_warning(
       read_tome_data.frame(tome = tome_file,
@@ -118,6 +127,7 @@ test_that(
                            stored_as = "vectors",
                            match_type = "grep")
     )
+    expect_equal(nrow(h5listIdentifier()), 0)
 
   }
 )
@@ -136,6 +146,7 @@ test_that(
                            stored_as = "vectors",
                            match_type = "exact",
                            get_all = TRUE)
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_equal(tome_anno_exact, tome_anno_expect)
 
@@ -145,6 +156,7 @@ test_that(
                            stored_as = "vectors",
                            match_type = "grep",
                            get_all = TRUE)
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_equal(tome_anno_grep, tome_anno_expect)
 
@@ -159,6 +171,7 @@ test_that(
   {
     tome_dgC <- read_tome_dgCMatrix(tome = tome_file,
                                     "/data/exon/")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_equal_to_reference(tome_dgC,
                               system.file("testdata/rds",
@@ -167,6 +180,7 @@ test_that(
 
     tome_dgC_t <- read_tome_dgCMatrix(tome = tome_file,
                                       "/data/t_exon/")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     tome_dgC_t <- Matrix::t(tome_dgC_t)
 
@@ -185,6 +199,7 @@ test_that(
 
     tome_serial <- read_tome_serialized(tome = tome_file,
                                         "/dend/primary_type")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_equal_to_reference(tome_serial,
                               system.file("testdata/rds",
@@ -206,6 +221,7 @@ test_that(
                                          units = "counts",
                                          transform = "none",
                                          format = "data.frame")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_one_gene, "data.frame")
     expect_equal(ncol(tome_one_gene), 2)
@@ -220,6 +236,7 @@ test_that(
                                            units = "counts",
                                            transform = "none",
                                            format = "data.frame")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_multi_gene, "data.frame")
     expect_equal(ncol(tome_multi_gene), 4)
@@ -230,6 +247,7 @@ test_that(
                                            units = "counts",
                                            transform = "none",
                                            format = "matrix")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_multi_gene_matrix, "matrix")
     expect_equal(ncol(tome_multi_gene_matrix), 3)
@@ -240,6 +258,7 @@ test_that(
                                                   units = "counts",
                                                   transform = "none",
                                                   format = "dgCMatrix")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_multi_gene_dgCMatrix, "dgCMatrix")
     expect_equal(ncol(tome_multi_gene_dgCMatrix), 3)
@@ -256,6 +275,7 @@ test_that(
                                          units = "counts",
                                          transform = "none",
                                          format = "data.frame")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_one_sample, "data.frame")
     expect_equal(ncol(tome_one_sample), 2)
@@ -272,6 +292,7 @@ test_that(
                                            units = "counts",
                                            transform = "none",
                                            format = "data.frame")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_multi_sample, "data.frame")
     expect_equal(ncol(tome_multi_sample), 4)
@@ -282,6 +303,7 @@ test_that(
                                                   units = "counts",
                                                   transform = "none",
                                                   format = "matrix")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_multi_sample_matrix, "matrix")
     expect_equal(ncol(tome_multi_sample_matrix), 3)
@@ -292,9 +314,52 @@ test_that(
                                                      units = "counts",
                                                      transform = "none",
                                                      format = "dgCMatrix")
+    expect_equal(nrow(h5listIdentifier()), 0)
 
     expect_is(tome_multi_sample_dgCMatrix, "dgCMatrix")
     expect_equal(ncol(tome_multi_sample_dgCMatrix), 3)
+
+  }
+)
+
+context("Write tome annotations")
+test_that(
+  "write_tome_anno() writes annotations to a .tome file",
+  {
+    anno_file <- system.file("testdata",
+                        "rds/anno.RData",
+                        package = "scrattch.io")
+    anno <- readRDS(anno_file)
+
+    temp_file <- tempfile(fileext = ".tome")
+
+    write_tome_anno(anno = anno,
+                    tome = temp_file,
+                    overwrite = FALSE)
+
+    expect_true(file.exists(temp_file))
+    expect_equal(nrow(h5listIdentifier()), 0)
+
+    temp_ls <- h5ls(temp_file)
+
+    expect_true("sample_meta" %in% temp_ls$name)
+    expect_true("anno" %in% temp_ls$name)
+    expect_equal(sum(temp_ls$group == "/sample_meta/anno"), ncol(anno))
+
+    # Error on trying to overwrite if overwrite = FALSE
+    expect_error(write_tome_anno(anno = anno,
+                                 tome = temp_file,
+                                 overwrite = FALSE))
+    expect_equal(nrow(h5listIdentifier()), 0)
+
+    write_tome_anno(anno = anno,
+                    tome = temp_file,
+                    overwrite = TRUE)
+    expect_equal(nrow(h5listIdentifier()), 0)
+
+    expect_true("sample_meta" %in% temp_ls$name)
+    expect_true("anno" %in% temp_ls$name)
+    expect_equal(sum(temp_ls$group == "/sample_meta/anno"), ncol(anno))
 
   }
 )
