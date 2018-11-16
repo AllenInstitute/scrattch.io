@@ -226,6 +226,64 @@ write_tome_vector <- function(vec,
   }
 }
 
+#' Generalized write for appending to individual vector objects to a tome file
+#'
+#' @param vec The vector to store
+#' @param tome Path to the target tome file
+#' @param target The target location within the tome file
+#'
+append_tome_vector <- function(vec,
+                               tome,
+                               target) {
+
+  verbosity <- .scrattch.io_env$verbosity
+
+  if(!file.exists(tome)) {
+    if(verbosity == 2) {
+      stop(paste0(tome," doesn't exist. Use write_tome_vector() instead of append_tome_vector() to write."))
+    } else {
+      stop()
+    }
+  }
+
+  ls <- rhdf5::h5ls(tome) %>%
+    dplyr::mutate(full_name = ifelse(group == "/",
+                                     paste0(group, name),
+                                     paste(group, name, sep = "/")))
+
+  existing_object <- ls %>%
+    dplyr::filter(full_name == target)
+
+  if(length(existing_objects$full_name) == 0) {
+    stop(paste0(target," doesn't exist. Use write_tome_vector() instead of append_tome_vector() to write."))
+  }
+
+  vec <- unlist(vec)
+  vec_length <- length(vec)
+
+  if(verbosity == 2) {
+    print(paste0("Appending to ", target))
+  }
+
+  target_path <- sub("/$","",target)
+  target_path <- sub("(/.+/).+","\\1",target_path)
+
+  current_length <- as.numeric(existing_objects$dim[1])
+  new_length <- current_length + vec_length
+
+  rhdf5::h5set_extent(file = tome, dataset = target, dims = new_length)
+
+  target_indexes <- (current_length + 1):(new_length)
+  rhdf5::h5write(obj = vec,
+                 file = tome,
+                 name = target,
+                 index_list = list(target_indexes))
+
+  if(verbosity == 1) {
+    return(TRUE)
+  }
+}
+
 
 #' Generalized write for individual serialized objects to a tome file
 #'
@@ -375,4 +433,6 @@ write_tome_dgCMatrix <- function(mat,
   rhdf5::h5write(c(nrow(mat), ncol(mat)),
                  tome,
                  paste0(target,"/dims"))
+
+  h5closeAll()
 }

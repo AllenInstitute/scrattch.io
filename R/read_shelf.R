@@ -18,9 +18,9 @@ read_shelf_gene_data <- function(tomes,
                                  format = "data.frame") {
 
   available_genes_list <- purrr::map(tomes,
-                                function(tome) {
-                                  read_tome_gene_names(tome)
-                                })
+                                     function(tome) {
+                                       read_tome_gene_names(tome)
+                                     })
 
   common_genes <- Reduce(intersect, c(list(genes), available_genes_list))
 
@@ -56,11 +56,11 @@ read_shelf_gene_data <- function(tomes,
 #' containing gene expression values and named for the genes; Or a matrix with columns as genes and rows as samples.
 #'
 read_shelf_sample_data <- function(tomes,
-                                 samples,
-                                 regions = "exon",
-                                 units = "counts",
-                                 transform = "none",
-                                 format = "data.frame") {
+                                   samples,
+                                   regions = "exon",
+                                   units = "counts",
+                                   transform = "none",
+                                   format = "data.frame") {
 
   available_genes_list <- purrr::map(tomes,
                                      function(tome) {
