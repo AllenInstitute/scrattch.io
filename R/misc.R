@@ -187,3 +187,70 @@ write_tome_sifter_stats <- function(tome,
 }
 
 
+
+#' Expands a tome file to the expected feather and rda files for molgen-shiny
+#'
+#' This file takes a tome as input and writes all of the necessary files for molgen-shiny to work properly in a feather file
+#'
+#' @param tome Path to the target tome file.1
+#' @param output_folder Folder where output files should be written (default is current directory)
+#' @param dend_name Name of dendrogram to read (default="cluster")
+#'
+convert_tome_to_feather <- function(tome,
+                                    output_folder = getwd(),
+                                    dend_name = "cluster") {
+
+  library(feather)
+  library(scrattch.hicat) # for cpm function
+  library(tibble)
+
+  ## Read in genes, samples, annotations, descriptions, and dendrogram
+  genes     <- read_tome_gene_names(tome)
+  samples   <- read_tome_sample_names(tome)
+  anno      <- read_tome_anno(tome)
+  desc      <- read_tome_anno_desc(tome)
+  dend      <- read_tome_dend(tome,dend_name)
+
+  ## Write out annotations, descriptions, and dendrogram
+  anno$sample_id <- samples # shiny uses sample_id instead of sample_name
+  write_feather(anno,paste0(output_folder,"anno.feather"))
+  write_feather(desc,paste0(output_folder,"desc.feather"))
+  saveRDS(dend,paste0(output_folder,"dend.RData"))
+
+
+  ## Read in, format, and write the main data files
+  exons     <- read_tome_dgCMatrix(tome, "data/exon")
+  introns   <- read_tome_dgCMatrix(tome, "data/intron")
+  data      <- scrattch.hicat::cpm(exons+introns)
+  rm(exons,introns)
+  data      <- as.tibble(as.data.frame(as.matrix(data)))
+  colnames(data)   <- genes
+  data$sample_name <- samples
+  data_t    <- flip_table(data)
+  data$sample_id <- data$sample_name   # shiny uses sample_id instead of sample_name
+  data_t$gene    <- data_t$gene_name   # shiny uses gene instead of gene_name
+  write_feather(data,paste0(output_folder,"data.feather"))
+  write_feather(data_t,paste0(output_folder,"data_t.feather"))
+
+  ## Read in and write the available stats
+  stats <- available_tome_stats(tome)
+  if(length(stats)>0){
+    for(s in stats){
+      stat <- read_tome_stats(tome, s)
+      write_feather(stat,paste0(output_folder,s,".feather"))
+    }
+  }
+
+  ## Read in and write gene information, if available
+  geneInfo      <- try(read_tome_gene_meta(tome))
+  if(class(geneInfo)[1]=="try-error"){
+    print("Gene info not available, and won't be written")
+  } else {
+    geneInfo$gene <- data_t$geneInfo  # shiny uses gene instead of gene_name
+    write_feather(geneInfo,paste0(output_folder,"genes.feather"))
+  }
+}
+
+
+
+
