@@ -200,6 +200,8 @@ convert_tome_to_feather <- function(tome,
                                     output_folder = getwd(),
                                     dend_name = "cluster") {
 
+  if(substr(output_folder,nchar(output_folder),nchar(output_folder))!="/")
+    output_folder <- paste0(output_folder,"/")  # Add a trailing / if needed
   library(feather)
   library(scrattch.hicat) # for cpm function
   library(tibble)
@@ -242,7 +244,7 @@ convert_tome_to_feather <- function(tome,
   }
 
   ## Read in and write gene information, if available
-  geneInfo      <- try(read_tome_gene_meta(tome))
+  geneInfo      <- try(read_tome_gene_meta(tome),silent = TRUE)
   if(class(geneInfo)[1]=="try-error"){
     print("Gene info not available, and won't be written")
   } else {
