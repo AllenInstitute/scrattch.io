@@ -306,8 +306,10 @@ auto_annotate <- function(anno, scale_num = "predicted", na_val_num = 0,
 
   ## Convert sample_id to sample_name, if needed
   anno_out <- anno
-  colnames(anno_out) <- gsub("sample_id", "sample_name", colnames(anno_out))
-
+  if(!is.element("sample_name",colnames(anno_out))){
+    colnames(anno_out) <- gsub("sample_id", "sample_name", colnames(anno_out))
+  }
+  
   ## Determine which columns are not already formatted?
   cn <- colnames(anno_out)
   convertColumns <- cn[(!grepl("_label", cn)) & (!grepl("_id", cn)) & (!grepl("_color", cn))]
@@ -317,7 +319,7 @@ auto_annotate <- function(anno, scale_num = "predicted", na_val_num = 0,
   for (cc in convertColumns) {
     value <- anno_out[, cc]
     if (is.numeric(value)) {
-      if (!is.element(scale_num, c("linear", "log10", "log2", "zscore"))) {
+      if (is.element(scale_num, c("linear", "log10", "log2", "zscore"))) {
         # If scale_num is pre-set for all numeric values...
         anno_out <- annotate_num(df = anno_out, col = cc, scale = scale_num,
                                  na_val = na_val_num, colorset = colorset_num)
