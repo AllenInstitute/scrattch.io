@@ -228,13 +228,13 @@ convert_tome_to_feather <- function(tome,
 
   ## Read in, format, and write the main data files
   if(regions %in% c("both","exon")) {
-    exons     <- read_tome_dgCMatrix(tome, "data/exon")
+    exons     <- read_tome_dgCMatrix(tome, "/data/exon")
 
   }
 
   if(regions %in% c("both","intron")) {
-    if(check_tome_existence(tome, "data/intron")) {
-      introns   <- read_tome_dgCMatrix(tome, "data/intron")
+    if(check_tome_existence(tome, "/data/intron")) {
+      introns   <- read_tome_dgCMatrix(tome, "/data/intron")
     } else {
       regions <- "exon"
       warning("No intron matrix present in tome file - using exon only")
