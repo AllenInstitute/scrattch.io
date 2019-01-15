@@ -101,10 +101,10 @@ large_dgCMatrix_to_matrix <- function (mat,
   all_dense[,chunk_start:chunk_end] <- chunk_mat
 
   if(!is.null(row_names)) {
-    rownames(out_mat) <- row_names
+    rownames(all_dense) <- row_names
   }
   if(!is.null(col_names)) {
-    colnames(out_mat) <- col_names
+    colnames(all_dense) <- col_names
   }
 
   return(all_dense)
