@@ -271,7 +271,8 @@ convert_tome_to_feather <- function(tome,
   if(length(stats)>0){
     for(s in stats){
       stat <- read_tome_stats(tome, s)
-      feather::write_feather(stat, file.path(output_folder,s,".feather"))
+      stat_fn <- paste0(s,".feather")
+      feather::write_feather(stat, file.path(output_folder,stat_fn))
     }
   }
 
