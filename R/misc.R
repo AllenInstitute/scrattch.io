@@ -277,7 +277,7 @@ convert_tome_to_feather <- function(tome,
   }
 
   ## Read in and write gene information, if available
-  if(!check_tome_existence("/gene_meta/genes")){
+  if(!check_tome_existence(tome,"/gene_meta/genes")){
     print("Gene info not available, and won't be written")
   } else {
     gene_info <- read_tome_gene_meta(tome)
