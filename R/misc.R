@@ -271,12 +271,13 @@ convert_tome_to_feather <- function(tome,
   if(length(stats)>0){
     for(s in stats){
       stat <- read_tome_stats(tome, s)
-      feather::write_feather(stat, file.path(output_folder,s,".feather"))
+      stat_fn <- paste0(s,".feather")
+      feather::write_feather(stat, file.path(output_folder,stat_fn))
     }
   }
 
   ## Read in and write gene information, if available
-  if(!check_tome_existence("/gene_meta/genes")){
+  if(!check_tome_existence(tome,"/gene_meta/genes")){
     print("Gene info not available, and won't be written")
   } else {
     gene_info <- read_tome_gene_meta(tome)
