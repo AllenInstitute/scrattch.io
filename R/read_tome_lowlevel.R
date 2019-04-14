@@ -12,7 +12,14 @@
 #'
 read_tome_vector <- function(tome,
                              name) {
-  as.vector(unlist(rhdf5::h5read(tome, name)))
+  read_tome_vector <- function(tome, name) {
+    vec <- unlist(rhdf5::h5read(tome, name, bit64conversion = "bit64"))
+    if(class(vec) == "integer64") {
+      vec
+    } else {
+      as.vector(vec)
+    }
+  }
 
 }
 
