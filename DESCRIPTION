@@ -13,6 +13,7 @@ LazyData: true
 Imports:
     data.table,
     dplyr (>= 0.4.3),
+    jsonlite,
     Matrix (>= 1.2-12),
     lazyeval,
     purrr (>= 0.2.4),
@@ -20,7 +21,7 @@ Imports:
 Depends:
     rhdf5 (>= 2.24.0),
     bit64
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Suggests: 
     testthat,
     feather

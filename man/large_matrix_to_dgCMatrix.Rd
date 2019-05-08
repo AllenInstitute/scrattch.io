@@ -7,7 +7,7 @@
 large_matrix_to_dgCMatrix(mat, chunk_size = 5000)
 }
 \arguments{
-\item{mat}{The matrix file to convert}
+\item{mat}{The matrix object to convert}
 
 \item{chunk_size}{The number of columns to read as a chunk. For ~30k genes, a chunk of 5000 (the default) is ~1GB in memory.}
 }
