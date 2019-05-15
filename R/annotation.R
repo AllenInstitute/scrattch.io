@@ -318,18 +318,23 @@ auto_annotate <- function(anno, scale_num = "predicted", na_val_num = 0,
   ## Automatically annotate the columns
   for (cc in convertColumns) {
     value <- anno_out[, cc]
+		if (sum(!is.na(value))==0)
+		    value = rep("N/A",length(value))  # Account for all NA values
     if (is.numeric(value)) {
+	    if(length(table(value))==1)  
+        value = jitter(value,0.000001)    # Avoid entirely constant values
+	    val2 <- value[!is.na(value)]        # To avoid calculuating mean, max, min on NAs
       if (is.element(scale_num, c("linear", "log10", "log2", "zscore"))) {
         # If scale_num is pre-set for all numeric values...
         anno_out <- annotate_num(df = anno_out, col = cc, scale = scale_num,
                                  na_val = na_val_num, colorset = colorset_num)
       } else {
         # If scale_num is predicted...
-        scalePred <- ifelse(min(value) < 0, "linear", "log10") # Avoid NA values for log scale
-        if ((max(value + 1) / min(value + 1)) < 100) {
+        scalePred <- ifelse(min(val2) < 0, "linear", "log10") # Avoid NA values for log scale
+        if ((max(val2 + 1) / min(val2 + 1)) < 100) {
           scalePred <- "linear"
         }  # Use log scale if large range
-        if (mean((value - min(value)) / diff(range(value))) < 0.01) {
+        if (mean((val2 - min(val2)) / diff(range(val2))) < 0.01) {
           scalePred <- "log10"
         }  # Use log scale if large skew towards high end
         anno_out <- annotate_num(df = anno_out, col = cc, scale = scalePred,
