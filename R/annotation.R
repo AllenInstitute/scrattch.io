@@ -449,7 +449,7 @@ annotate_factor <- function(df,
 
   names(df)[names(df) == col] <- paste0(base, "_label")
 
-  df[[col]] <- as.character(df[[col]]) # convert the factor to a character in the anno
+  df[[paste0(col,"_label")]] <- as.character(df[[paste0(col,"_label")]]) # convert the factor to a character in the anno
 
   df <- dplyr::left_join(df, annotations, by = paste0(base, "_label"))
 
