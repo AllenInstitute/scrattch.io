@@ -257,10 +257,13 @@ cl_to_anno <- function(cl,
 #' @param dat any data frame that you would like to create a description file for
 #' @param name desired names of each element in the description file (default is the column names)
 #' @param use_label_columns should only columns containing "_label" be included (default = FALSE)
+#' @param start_columns character vector of variables to include first in the list 
+#'	(default = NULL, but "cluster" would be a common choice)
 #'
 #' @return a data.frame with columns "base", "name", and "type" for writing to tome
 #'
-create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE) {
+create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE, start_columns = NULL) {
+  dat <- as.data.frame(dat)
   if (use_label_columns) {
     dat <- dat[, grepl("_label", colnames(dat))]
     colnames(dat) <- gsub("_label", "", colnames(dat))
@@ -269,7 +272,11 @@ create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE) {
   desc <- data.frame(base = colnames(dat), name = name, type = "cat")
   for (i in 1:dim(dat)[2]) if (is.element(class(dat[, i]), c("numeric", "integer"))) {
       desc[i, 3] <- "num"
-    }
+  }
+	
+  ## Reorder colums as requested
+  cn   <- c(intersect(start_columns,desc$base),setdiff(desc$base,start_columns))
+  desc <- desc[match(cn,desc$base),]
   desc
 }
 
