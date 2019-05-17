@@ -196,13 +196,15 @@ write_tome_sifter_stats <- function(tome,
 #' @param output_folder Folder where output files should be written (default is current directory)
 #' @param regions Which gene regions to use. Can be "both" (default"), "exon", or "intron".
 #' @param dend_name Name of dendrogram to read (default="cluster")
+#' @param projection_name Name of projection to read (default="tsne"). Currently only compatible with a single projection map.
 #'
 #' @return No R objects returned.
 #'
 convert_tome_to_feather <- function(tome,
                                     output_folder = getwd(),
                                     regions = "both",
-                                    dend_name = "cluster") {
+                                    dend_name = "cluster",
+                                    projection_name = "tsne") {
 
   if(!grepl("/$",output_folder)) {
     output_folder <- paste0(output_folder,"/")  # Add a trailing / if needed
@@ -230,7 +232,6 @@ convert_tome_to_feather <- function(tome,
   ## Read in, format, and write the main data files
   if(regions %in% c("both","exon")) {
     exons     <- read_tome_dgCMatrix(tome, "/data/exon")
-
   }
 
   if(regions %in% c("both","intron")) {
@@ -284,6 +285,19 @@ convert_tome_to_feather <- function(tome,
     gene_info <- read_tome_gene_meta(tome)
     names(gene_info)[names(gene_info) == "gene_name"] <- "gene"  # shiny uses gene instead of gene_name
     feather::write_feather(gene_info, file.path(output_folder,"genes.feather"))
+  }
+  
+  ## Read in and write projection, if available
+  if (!check_tome_existence("hippocampus.tome", "/projection")) {
+    print("TSNE not available, and won't be written")
+  } else {
+    tsne <- read_tome_projection(tome,projection_name)
+		if(!is.element("sample_id",colnames(tsne))) tsne$sample_id <- tsne$sample_name
+		tsne <- tsne[,c("sample_id","x","y")]
+		colnames(tsne) <- c("sample_id",paste0(projection_name,"_x"),paste0(projection_name,"_y"))
+        feather::write_feather(tsne, file.path(output_folder, "tsne.feather"))
+		tsne_desc <- read_tome_projection_desc(tome)
+		feather::write_feather(tsne_desc, file.path(output_folder, "tsne_desc.feather"))
   }
 }
 
