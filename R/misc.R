@@ -216,7 +216,8 @@ convert_tome_to_feather <- function(tome,
   dend      <- read_tome_dend(tome,dend_name)
 
   ## Write out annotations, descriptions, and dendrogram
-  names(anno)[names(anno) == "sample_name"] <- "sample_id" # shiny uses sample_id instead of sample_name
+  if(sum(names(anno) == "sample_id")==0)
+    names(anno)[names(anno) == "sample_name"] <- "sample_id" # shiny uses sample_id instead of sample_name
 
   print("Writing anno.feather")
   feather::write_feather(anno,paste0(output_folder,"anno.feather"))
@@ -287,5 +288,20 @@ convert_tome_to_feather <- function(tome,
 }
 
 
+#' Returns available stats in a tome object
+#'
+#' @param tome the location of the tome file to read
+#'
+#' @return the name of available stats to read
+#' @export
+#'
+#' @examples available_tome_stats(tome)
+#'
+available_tome_stats <- function(tome) {
+  ls <- rhdf5::h5ls(tome)
+  stats_names <- ls$name[ls$group == "/stats"]
+  stats_names <- stats_names[stats_names != "desc"]
+  stats_names
+}
 
 
