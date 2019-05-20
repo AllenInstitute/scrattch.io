@@ -217,10 +217,16 @@ convert_tome_to_feather <- function(tome,
   desc      <- read_tome_anno_desc(tome)
   dend      <- read_tome_dend(tome,dend_name)
 
-  ## Write out annotations, descriptions, and dendrogram
+  ## Update anno column names
+  if(sum(is.element(names(anno),c("sample_name","sample_id")))==2)
+    anno = anno[,colnames(anno)!="sample_name"]
   if(sum(names(anno) == "sample_id")==0)
-    names(anno)[names(anno) == "sample_name"] <- "sample_id" # shiny uses sample_id instead of sample_name
-
+    names(anno)[names(anno) == "sample_name"] <- "sample_id"
+  # shiny uses sample_id instead of sample_name, but crashes if both are present
+  anno <- anno[,match(unique(colnames(anno)),colnames(anno))]
+  # remove duplicate column names  
+ 
+  ## Write out annotations, descriptions, and dendrogram
   print("Writing anno.feather")
   feather::write_feather(anno,paste0(output_folder,"anno.feather"))
   print("Writing desc.feather")
