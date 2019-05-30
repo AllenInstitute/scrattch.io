@@ -5,14 +5,21 @@
 \title{Expands a tome file to the expected feather and rda files for molgen-shiny}
 \usage{
 convert_tome_to_feather(tome, output_folder = getwd(),
-  dend_name = "cluster")
+  regions = "both", dend_name = "cluster", projection_name = "tsne")
 }
 \arguments{
 \item{tome}{Path to the target tome file.1}
 
 \item{output_folder}{Folder where output files should be written (default is current directory)}
 
+\item{regions}{Which gene regions to use. Can be "both" (default"), "exon", or "intron".}
+
 \item{dend_name}{Name of dendrogram to read (default="cluster")}
+
+\item{projection_name}{Name of projection to read (default="tsne"). Currently only compatible with a single projection map.}
+}
+\value{
+No R objects returned.
 }
 \description{
 This file takes a tome as input and writes all of the necessary files for molgen-shiny to work properly in a feather file
