@@ -224,8 +224,8 @@ convert_tome_to_feather <- function(tome,
     names(anno)[names(anno) == "sample_name"] <- "sample_id"
   # shiny uses sample_id instead of sample_name, but crashes if both are present
   anno <- anno[,match(unique(colnames(anno)),colnames(anno))]
-  # remove duplicate column names  
- 
+  # remove duplicate column names
+
   ## Write out annotations, descriptions, and dendrogram
   print("Writing anno.feather")
   feather::write_feather(anno,paste0(output_folder,"anno.feather"))
@@ -292,7 +292,7 @@ convert_tome_to_feather <- function(tome,
     names(gene_info)[names(gene_info) == "gene_name"] <- "gene"  # shiny uses gene instead of gene_name
     feather::write_feather(gene_info, file.path(output_folder,"genes.feather"))
   }
-  
+
   ## Read in and write projection, if available
   if (!check_tome_existence("hippocampus.tome", "/projection")) {
     print("TSNE not available, and won't be written")
@@ -315,7 +315,6 @@ convert_tome_to_feather <- function(tome,
 #' @return the name of available stats to read
 #' @export
 #'
-#' @examples available_tome_stats(tome)
 #'
 available_tome_stats <- function(tome) {
   ls <- rhdf5::h5ls(tome)
