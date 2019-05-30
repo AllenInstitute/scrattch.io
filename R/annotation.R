@@ -257,10 +257,13 @@ cl_to_anno <- function(cl,
 #' @param dat any data frame that you would like to create a description file for
 #' @param name desired names of each element in the description file (default is the column names)
 #' @param use_label_columns should only columns containing "_label" be included (default = FALSE)
+#' @param start_columns character vector of variables to include first in the list 
+#'	(default = NULL, but "cluster" would be a common choice)
 #'
 #' @return a data.frame with columns "base", "name", and "type" for writing to tome
 #'
-create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE) {
+create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE, start_columns = NULL) {
+  dat <- as.data.frame(dat)
   if (use_label_columns) {
     dat <- dat[, grepl("_label", colnames(dat))]
     colnames(dat) <- gsub("_label", "", colnames(dat))
@@ -269,7 +272,11 @@ create_desc <- function(dat, name = colnames(dat), use_label_columns = FALSE) {
   desc <- data.frame(base = colnames(dat), name = name, type = "cat")
   for (i in 1:dim(dat)[2]) if (is.element(class(dat[, i]), c("numeric", "integer"))) {
       desc[i, 3] <- "num"
-    }
+  }
+	
+  ## Reorder colums as requested
+  cn   <- c(intersect(start_columns,desc$base),setdiff(desc$base,start_columns))
+  desc <- desc[match(cn,desc$base),]
   desc
 }
 
@@ -318,18 +325,23 @@ auto_annotate <- function(anno, scale_num = "predicted", na_val_num = 0,
   ## Automatically annotate the columns
   for (cc in convertColumns) {
     value <- anno_out[, cc]
+		if (sum(!is.na(value))==0)
+		    value = rep("N/A",length(value))  # Account for all NA values
     if (is.numeric(value)) {
+	    if(length(table(value))==1)  
+        value = jitter(value,0.000001)    # Avoid entirely constant values
+	    val2 <- value[!is.na(value)]        # To avoid calculuating mean, max, min on NAs
       if (is.element(scale_num, c("linear", "log10", "log2", "zscore"))) {
         # If scale_num is pre-set for all numeric values...
         anno_out <- annotate_num(df = anno_out, col = cc, scale = scale_num,
                                  na_val = na_val_num, colorset = colorset_num)
       } else {
         # If scale_num is predicted...
-        scalePred <- ifelse(min(value) < 0, "linear", "log10") # Avoid NA values for log scale
-        if ((max(value + 1) / min(value + 1)) < 100) {
+        scalePred <- ifelse(min(val2) < 0, "linear", "log10") # Avoid NA values for log scale
+        if ((max(val2 + 1) / min(val2 + 1)) < 100) {
           scalePred <- "linear"
         }  # Use log scale if large range
-        if (mean((value - min(value)) / diff(range(value))) < 0.01) {
+        if (mean((val2 - min(val2)) / diff(range(val2))) < 0.01) {
           scalePred <- "log10"
         }  # Use log scale if large skew towards high end
         anno_out <- annotate_num(df = anno_out, col = cc, scale = scalePred,
@@ -437,7 +449,7 @@ annotate_factor <- function(df,
 
   names(df)[names(df) == col] <- paste0(base, "_label")
 
-  df[[col]] <- as.character(df[[col]]) # convert the factor to a character in the anno
+  df[[paste0(col,"_label")]] <- as.character(df[[paste0(col,"_label")]]) # convert the factor to a character in the anno
 
   df <- dplyr::left_join(df, annotations, by = paste0(base, "_label"))
 
