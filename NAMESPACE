@@ -9,3 +9,4 @@ importFrom("grDevices", "col2rgb", "colorRampPalette", "rainbow",
 importFrom("lazyeval", "expr_text")
 importFrom("stats", "var")
 importFrom("utils", "installed.packages")
+import(bit64)

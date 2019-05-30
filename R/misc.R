@@ -250,13 +250,16 @@ convert_tome_to_feather <- function(tome,
   }
 
   if(regions == "exon") {
-    data <- scrattch.hicat::cpm(exons)
+    total_counts <- c(h5read(tome, "/data/total_exon_counts"))
+    data <- exons / (total_counts / 1e6)
     rm(exons)
   } else if(regions == "intron") {
-    data <- scrattch.hicat::cmp(introns)
+    total_counts <- c(h5read(tome, "/data/total_intron_counts"))
+    data <- introns / (total_counts / 1e6)
     rm(introns)
   } else if(regions == "both") {
-    data      <- scrattch.hicat::cpm(exons + introns)
+    total_counts <- c(h5read(tome, "/data/total_exon_counts")) + c(h5read(tome, "/data/total_intron_counts"))
+    data      <- (exons + introns) / (total_counts / 1e6)
     rm(exons,introns)
   }
 
