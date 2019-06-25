@@ -297,7 +297,7 @@ convert_tome_to_feather <- function(tome,
   }
 
   ## Read in and write projection, if available
-  if (!check_tome_existence("hippocampus.tome", "/projection")) {
+  if (!check_tome_existence(tome, "/projection")) {
     print("TSNE not available, and won't be written")
   } else {
     tsne <- read_tome_projection(tome,projection_name)
