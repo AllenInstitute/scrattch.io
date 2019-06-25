@@ -321,6 +321,7 @@ auto_annotate <- function(anno, scale_num = "predicted", na_val_num = 0,
   cn <- colnames(anno_out)
   convertColumns <- cn[(!grepl("_label", cn)) & (!grepl("_id", cn)) & (!grepl("_color", cn))]
   convertColumns <- setdiff(convertColumns, "sample_name")
+  convertColumns <- setdiff(convertColumns,gsub("_label","",cn)) # Avoid column duplication error
 
   ## Automatically annotate the columns
   for (cc in convertColumns) {
