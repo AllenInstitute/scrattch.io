@@ -210,7 +210,7 @@ write_tome_vector <- function(vec,
     print(paste0("Writing ", target))
   }
 
-  target_path <- sub("(/.+/).+","\\1",target_path)
+  target_path <- sub("(/.+/).+","\\1",target)
 
   if(sum(grepl("/", target_path)) > 1) {
     write_tome_group(tome,
