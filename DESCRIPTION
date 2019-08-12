@@ -18,7 +18,8 @@ Imports:
     purrr (>= 0.2.4),
     viridisLite
 Depends:
-    rhdf5 (>= 2.24.0)
+    rhdf5 (>= 2.24.0),
+    bit64
 RoxygenNote: 6.1.0
 Suggests: 
     testthat,

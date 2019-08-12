@@ -187,3 +187,105 @@ write_tome_sifter_stats <- function(tome,
 }
 
 
+
+#' Expands a tome file to the expected feather and rda files for molgen-shiny
+#'
+#' This file takes a tome as input and writes all of the necessary files for molgen-shiny to work properly in a feather file
+#'
+#' @param tome Path to the target tome file.1
+#' @param output_folder Folder where output files should be written (default is current directory)
+#' @param regions Which gene regions to use. Can be "both" (default"), "exon", or "intron".
+#' @param dend_name Name of dendrogram to read (default="cluster")
+#'
+#' @return No R objects returned.
+#'
+convert_tome_to_feather <- function(tome,
+                                    output_folder = getwd(),
+                                    regions = "both",
+                                    dend_name = "cluster") {
+
+  if(!grepl("/$",output_folder)) {
+    output_folder <- paste0(output_folder,"/")  # Add a trailing / if needed
+  }
+
+  ## Read in genes, samples, annotations, descriptions, and dendrogram
+  genes     <- read_tome_gene_names(tome)
+  samples   <- read_tome_sample_names(tome)
+  anno      <- read_tome_anno(tome)
+  desc      <- read_tome_anno_desc(tome)
+  dend      <- read_tome_dend(tome,dend_name)
+
+  ## Write out annotations, descriptions, and dendrogram
+  names(anno)[names(anno) == "sample_name"] <- "sample_id" # shiny uses sample_id instead of sample_name
+
+  print("Writing anno.feather")
+  feather::write_feather(anno,paste0(output_folder,"anno.feather"))
+  print("Writing desc.feather")
+  feather::write_feather(desc,paste0(output_folder,"desc.feather"))
+  print("Writing dend.RData")
+  saveRDS(dend,paste0(output_folder,"dend.RData"))
+
+
+  ## Read in, format, and write the main data files
+  if(regions %in% c("both","exon")) {
+    exons     <- read_tome_dgCMatrix(tome, "/data/exon")
+
+  }
+
+  if(regions %in% c("both","intron")) {
+    if(check_tome_existence(tome, "/data/intron")) {
+      introns   <- read_tome_dgCMatrix(tome, "/data/intron")
+    } else {
+      regions <- "exon"
+      warning("No intron matrix present in tome file - using exon only")
+    }
+  }
+
+  if(regions == "exon") {
+    data <- scrattch.hicat::cpm(exons)
+    rm(exons)
+  } else if(regions == "intron") {
+    data <- scrattch.hicat::cmp(introns)
+    rm(introns)
+  } else if(regions == "both") {
+    data      <- scrattch.hicat::cpm(exons + introns)
+    rm(exons,introns)
+  }
+
+  rownames(data) <- samples
+  colnames(data) <- genes
+
+  data      <- cbind(sample_id = rownames(data),
+                     as.data.frame(large_dgCMatrix_to_matrix(data)))
+
+  print("Writing data.feather")
+  feather::write_feather(data, file.path(output_folder,"data.feather"))
+
+  data    <- flip_table(data, gene_col = "gene", sample_col = "sample_id")
+
+  print("Writing data_t.feather")
+  feather::write_feather(data, file.path(output_folder,"data_t.feather"))
+
+  ## Read in and write the available stats
+  stats <- available_tome_stats(tome)
+  if(length(stats)>0){
+    for(s in stats){
+      stat <- read_tome_stats(tome, s)
+      stat_fn <- paste0(s,".feather")
+      feather::write_feather(stat, file.path(output_folder,stat_fn))
+    }
+  }
+
+  ## Read in and write gene information, if available
+  if(!check_tome_existence(tome,"/gene_meta/genes")){
+    print("Gene info not available, and won't be written")
+  } else {
+    gene_info <- read_tome_gene_meta(tome)
+    names(gene_info)[names(gene_info) == "gene_name"] <- "gene"  # shiny uses gene instead of gene_name
+    feather::write_feather(gene_info, file.path(output_folder,"genes.feather"))
+  }
+}
+
+
+
+

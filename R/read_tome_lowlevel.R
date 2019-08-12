@@ -12,7 +12,12 @@
 #'
 read_tome_vector <- function(tome,
                              name) {
-  as.vector(unlist(rhdf5::h5read(tome, name)))
+  vec <- unlist(rhdf5::h5read(tome, name, bit64conversion = "bit64"))
+  if(class(vec) == "integer64") {
+    vec
+  } else {
+    as.vector(vec)
+  }
 
 }
 
@@ -165,27 +170,24 @@ read_tome_genes_jagged <- function(tome,
     exon_starts <- read_tome_vector(tome, "data/exon/p")[gene_index] + 1
     exon_ends <- read_tome_vector(tome, "data/exon/p")[(gene_index + 1)]
 
-    exon_values <- purrr::map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/exon/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    index_list <- unlist(map2(exon_starts, exon_ends, function(x,y) { x:y }))
+    split_list <- unlist(map(1:length(exon_starts), function(x) { rep(x, length(exon_starts[x]:exon_ends[x])) }))
 
-    exon_sample_indexes <- purrr::map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/exon/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    exon_values <- rhdf5::h5read(tome, "data/exon/x", index = list(index_list))
+    exon_values <- split(exon_values, split_list)
+    names(exon_values) <- NULL
+
+    exon_sample_indexes <- rhdf5::h5read(tome, "data/exon/i", index = list(index_list))
+    exon_sample_indexes <- split(exon_sample_indexes, split_list)
+    names(exon_sample_indexes) <- NULL
+
+    exon_pointers <- c(0, cumsum(map_int(exon_values, length)))
+    names(exon_pointers) <- NULL
+
 
     exon <- list(x = exon_values,
                  i = exon_sample_indexes,
-                 p = c(0, cumsum(map_int(exon_values, length))))
+                 p = exon_pointers)
 
 
   }
@@ -196,27 +198,24 @@ read_tome_genes_jagged <- function(tome,
     intron_starts <- read_tome_vector(tome, "data/intron/p")[gene_index] + 1
     intron_ends <- read_tome_vector(tome, "data/intron/p")[(gene_index + 1)]
 
-    intron_values <- purrr::map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/intron/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    index_list <- unlist(map2(intron_starts, intron_ends, function(x,y) { x:y }))
+    split_list <- unlist(map(1:length(intron_starts), function(x) { rep(x, length(intron_starts[x]:intron_ends[x])) }))
 
-    intron_sample_indexes <- purrr::map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/intron/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    intron_values <- rhdf5::h5read(tome, "data/intron/x", index = list(index_list))
+    intron_values <- split(intron_values, split_list)
+    names(intron_values) <- NULL
+
+    intron_sample_indexes <- rhdf5::h5read(tome, "data/intron/i", index = list(index_list))
+    intron_sample_indexes <- split(intron_sample_indexes, split_list)
+    names(intron_sample_indexes) <- NULL
+
+    intron_pointers <- c(0, cumsum(map_int(intron_values, length)))
+    names(intron_pointers) <- NULL
+
 
     intron <- list(x = intron_values,
-                   i = intron_sample_indexes,
-                   p = c(0, cumsum(map_int(intron_values, length))))
+                 i = intron_sample_indexes,
+                 p = intron_pointers)
 
   }
 
@@ -280,27 +279,24 @@ read_tome_samples_jagged <- function(tome,
     exon_starts <- read_tome_vector(tome, "data/t_exon/p")[sample_index] + 1
     exon_ends <- read_tome_vector(tome, "data/t_exon/p")[(sample_index + 1)]
 
-    exon_values <- purrr::map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/t_exon/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    index_list <- unlist(map2(exon_starts, exon_ends, function(x,y) { x:y }))
+    split_list <- unlist(map(1:length(exon_starts), function(x) { rep(x, length(exon_starts[x]:exon_ends[x])) }))
 
-    exon_sample_indexes <- purrr::map2(exon_starts, exon_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/t_exon/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    exon_values <- rhdf5::h5read(tome, "data/t_exon/x", index = list(index_list))
+    exon_values <- split(exon_values, split_list)
+    names(exon_values) <- NULL
+
+    exon_sample_indexes <- rhdf5::h5read(tome, "data/t_exon/i", index = list(index_list))
+    exon_sample_indexes <- split(exon_sample_indexes, split_list)
+    names(exon_sample_indexes) <- NULL
+
+    exon_pointers <- c(0, cumsum(map_int(exon_values, length)))
+    names(exon_pointers) <- NULL
+
 
     exon <- list(x = exon_values,
                  i = exon_sample_indexes,
-                 p = c(0, cumsum(map_int(exon_values, length))))
+                 p = exon_pointers)
 
 
   }
@@ -311,27 +307,24 @@ read_tome_samples_jagged <- function(tome,
     intron_starts <- read_tome_vector(tome, "data/t_intron/p")[sample_index] + 1
     intron_ends <- read_tome_vector(tome, "data/t_intron/p")[(sample_index + 1)]
 
-    intron_values <- purrr::map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/t_intron/x", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    index_list <- unlist(map2(intron_starts, intron_ends, function(x,y) { x:y }))
+    split_list <- unlist(map(1:length(intron_starts), function(x) { rep(x, length(intron_starts[x]:intron_ends[x])) }))
 
-    intron_sample_indexes <- purrr::map2(intron_starts, intron_ends, function(start, end) {
-      if(end > start) {
-        values <- rhdf5::h5read(tome, "data/t_intron/i", index = list(start:end))
-      } else {
-        values <- NA
-      }
-      values
-    })
+    intron_values <- rhdf5::h5read(tome, "data/t_intron/x", index = list(index_list))
+    intron_values <- split(intron_values, split_list)
+    names(intron_values) <- NULL
+
+    intron_sample_indexes <- rhdf5::h5read(tome, "data/t_intron/i", index = list(index_list))
+    intron_sample_indexes <- split(intron_sample_indexes, split_list)
+    names(intron_sample_indexes) <- NULL
+
+    intron_pointers <- c(0, cumsum(map_int(intron_values, length)))
+    names(intron_pointers) <- NULL
+
 
     intron <- list(x = intron_values,
-                   i = intron_sample_indexes,
-                   p = c(0, cumsum(map_int(intron_values, length))))
+                 i = intron_sample_indexes,
+                 p = intron_pointers)
 
   }
 
