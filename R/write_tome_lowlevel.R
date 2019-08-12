@@ -210,7 +210,7 @@ write_tome_vector <- function(vec,
     print(paste0("Writing ", target))
   }
 
-  target_path <- sub("(/.+/).+","\\1",target_path)
+  target_path <- sub("(/.+/).+","\\1",target)
 
   if(sum(grepl("/", target_path)) > 1) {
     write_tome_group(tome,
@@ -280,7 +280,9 @@ append_tome_vector <- function(vec,
   current_length <- as.numeric(existing_objects$dim[1])
   new_length <- current_length + vec_length
 
-  rhdf5::h5set_extent(file = tome, dataset = existing_objects$full_name[1], dims = new_length)
+  rhdf5::h5set_extent(file = tome,
+                      dataset = existing_objects$full_name[1],
+                      dims = new_length)
 
   target_indexes <- (current_length + 1):(new_length)
   rhdf5::h5write(obj = vec,
@@ -396,13 +398,18 @@ write_tome_dgCMatrix <- function(mat,
                                  overwrite = NULL,
                                  compression_level = 4) {
 
-  #library(Matrix)
-
   if(is.null(overwrite)) {
     overwrite <- .scrattch.io_env$overwrite
   }
 
   verbosity <- .scrattch.io_env$verbosity
+
+  if(!file.exists(tome)) {
+    if(verbosity == 2) {
+      print(paste0(tome," doesn't exist. Creating new file."))
+    }
+    rhdf5::h5createFile(tome)
+  }
 
   target_path <- sub("/$","",target)
   write_tome_group(tome,
@@ -414,6 +421,7 @@ write_tome_dgCMatrix <- function(mat,
   rhdf5::h5createDataset(tome,
                          dataset = paste0(target,"/x"),
                          dims = length(mat@x),
+                         maxdims = H5Sunlimited(),
                          chunk = 1000,
                          level = compression_level)
   rhdf5::h5write(mat@x,
@@ -427,6 +435,7 @@ write_tome_dgCMatrix <- function(mat,
   rhdf5::h5createDataset(tome,
                          dataset = paste0(target,"/i"),
                          dims = length(mat@x),
+                         maxdims = H5Sunlimited(),
                          chunk = 1000,
                          level = compression_level)
   rhdf5::h5write(mat@i,
@@ -437,6 +446,12 @@ write_tome_dgCMatrix <- function(mat,
   if(verbosity == 2) {
     print(paste0("Writing ",target,"/p."))
   }
+  rhdf5::h5createDataset(tome,
+                         dataset = paste0(target,"/p"),
+                         dims = length(mat@p),
+                         maxdims = H5Sunlimited(),
+                         chunk = 1000,
+                         level = compression_level)
   rhdf5::h5write(mat@p,
                  tome,
                  paste0(target,"/p"))
@@ -446,4 +461,62 @@ write_tome_dgCMatrix <- function(mat,
                  paste0(target,"/dims"))
 
   h5closeAll()
+}
+
+#' Add columns to a sparse matrix stored in .tome format
+#'
+#' @param mat The matrix to bind to an existing matrix
+#' @param tome The .tome file to use
+#' @param target The location in the .tome file to bind to
+#'
+cbind_tome_dgCMatrix <- function(mat,
+                                 tome,
+                                 target) {
+  if(!class(mat) %in% c("matrix","dgCMatrix")) {
+    stop("mat must have class matrix or dgCMatrix")
+  }
+
+  ls <- rhdf5::h5ls(tome) %>%
+    dplyr::mutate(full_name = ifelse(group == "/",
+                                     paste0(group, name),
+                                     paste(group, name, sep = "/")))
+
+  existing_objects <- ls %>%
+    dplyr::filter(group == target | full_name == target)
+
+  if(nrow(existing_objects) == 0) {
+    stop(paste0(target, " does not exist in ", tome,". Check target, or write_tome_data()/write_tome_dgCMatrix first."))
+  }
+
+  target_dims <- read_tome_vector(tome,
+                                  name = paste0(target,"/dims"))
+
+  if(nrow(mat) != target_dims[1]) {
+    stop(paste0("nrows in mat", " (",nrow(mat),") do no match nrows in ", target, " (",target_dims[1],")."))
+  }
+
+  if(class(mat) %in% c("matrix","dgTMatrix")) {
+    mat <- as(mat, "dgCMatrix")
+  }
+
+  append_tome_vector(mat@x,
+                     tome = tome,
+                     target = paste0(target, "/x"))
+
+  append_tome_vector(mat@i,
+                     tome = tome,
+                     target = paste0(target, "/i"))
+
+  max_existing_p <- as.integer(existing_objects$dim[existing_objects$name == "x"])
+  append_tome_vector(mat@p[-1] + max_existing_p,
+                     tome = tome,
+                     target = paste0(target, "/p"))
+
+  new_dims <- target_dims
+  new_dims[2] <- new_dims[2] + ncol(mat)
+  write_tome_vector(new_dims,
+                    tome = tome,
+                    target = paste0(target, "/dims"),
+                    overwrite = TRUE)
+
 }

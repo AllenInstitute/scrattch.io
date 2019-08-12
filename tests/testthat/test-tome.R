@@ -392,3 +392,42 @@ test_that(
     expect_identical(c(vec1,vec2),vec_in)
 
   })
+
+test_that(
+  "cbind_tome_dgCMatrix() appends values to an existing sparse matrix",
+  {
+    temp_file <- tempfile(fileext = ".tome")
+
+    vals1 <- sample(c(0L,1L), 10000, replace = TRUE, prob = c(0.8, 0.2))
+    vals2 <- sample(c(0L,5L), 10000, replace = TRUE, prob = c(0.8, 0.2))
+
+    mat1 <- as(matrix(vals1, ncol = 10), "dgCMatrix")
+    mat2 <- as(matrix(vals2, ncol = 10), "dgCMatrix")
+    mat3 <- as(matrix(vals2, ncol = 5), "dgCMatrix")
+
+    write_tome_dgCMatrix(mat = mat1,
+                         tome = temp_file,
+                         target = "/data",
+                         overwrite = FALSE,
+                         compression_level = 4)
+
+    cbind_tome_dgCMatrix(mat = mat2,
+                         tome = temp_file,
+                         target = "/data")
+
+    mat_in <- read_tome_dgCMatrix(tome = temp_file,
+                                  target = "/data")
+
+    expect_equal(dim(mat_in), c(nrow(mat1), 20))
+    expect_identical(cbind(mat1, mat2), mat_in)
+
+    # Should error with non-matrix
+    expect_error(cbind_tome_dgCMatrix(mat = vals1,
+                                      tome = tome_file,
+                                      target = "/data"))
+    # Should error with incorrect nrow
+    expect_error(cbind_tome_dgCMatrix(mat = mat3,
+                                      tome = temp_file,
+                                      target = "/data"))
+  }
+)
