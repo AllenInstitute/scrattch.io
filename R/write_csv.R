@@ -28,6 +28,7 @@ write_dgCMatrix_csv <- function(mat,
   n_row <- length(row_names)
   n_col <- length(col_names)
 
+  chunk_size = min(chunk_size, n_row)
   n_chunks <- floor(n_row/chunk_size)
 
   # Initial chunk
@@ -41,7 +42,7 @@ write_dgCMatrix_csv <- function(mat,
   data.table::fwrite(chunk_df, file = filename, append = F)
 
   # chunkation over chunks
-  for(chunk in 2:n_chunks) {
+  for(chunk in seq(n_chunks)[-1]) {
     chunk_start <- 1 + chunk_size * (chunk - 1)
     chunk_end <- chunk_size * chunk
     print(paste0("Writing rows ",chunk_start," to ", chunk_end))
@@ -53,9 +54,10 @@ write_dgCMatrix_csv <- function(mat,
   # Remaining samples
   chunk_start <- (n_chunks*chunk_size + 1)
   chunk_end <- n_row
-  print(paste0("Writing rows ",chunk_start," to ", chunk_end))
-  chunk_mat <- t(as.matrix(mat[,chunk_start:chunk_end]))
-  chunk_df <- cbind(data.frame(col1 = row_names[chunk_start:chunk_end]),as.data.frame(chunk_mat))
-  data.table::fwrite(chunk_df, file = filename, append = T)
-
+  if (chunk_start < chunk_end) {
+    print(paste0("Writing rows ",chunk_start," to ", chunk_end))
+    chunk_mat <- t(as.matrix(mat[,chunk_start:chunk_end]))
+    chunk_df <- cbind(data.frame(col1 = row_names[chunk_start:chunk_end]),as.data.frame(chunk_mat))
+    data.table::fwrite(chunk_df, file = filename, append = T)
+  }
 }
