@@ -66,7 +66,7 @@ varibow <- function(n_colors) {
   sats <- rep_len(c(0.55,0.7,0.85,1),length.out = n_colors)
   vals <- rep_len(c(1,0.8,0.6),length.out = n_colors)
   cols = sub("FF$","",grDevices::rainbow(n_colors, s = sats, v = vals))
-  cols =str_pad(cols, width=7, side="right", pad="0")
+  cols = stringr::str_pad(cols, width=7, side="right", pad="0")
     
     return(cols)
 }
