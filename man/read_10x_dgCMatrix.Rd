@@ -4,7 +4,7 @@
 \alias{read_10x_dgCMatrix}
 \title{Read a whole sparse matrix directly from a 10X-style .h5 file}
 \usage{
-read_10x_dgCMatrix(h5, target)
+read_10x_dgCMatrix(h5, target = "matrix")
 }
 \arguments{
 \item{h5}{.h5 file to read.}

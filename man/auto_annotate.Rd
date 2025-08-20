@@ -4,10 +4,16 @@
 \alias{auto_annotate}
 \title{Automatically format an annotation file}
 \usage{
-auto_annotate(anno, scale_num = "predicted", na_val_num = 0,
-  colorset_num = c("darkblue", "white", "red"), sort_label_cat = TRUE,
-  na_val_cat = "ZZ_Missing", colorset_cat = "varibow",
-  color_order_cat = "sort")
+auto_annotate(
+  anno,
+  scale_num = "predicted",
+  na_val_num = 0,
+  colorset_num = c("darkblue", "white", "red"),
+  sort_label_cat = TRUE,
+  na_val_cat = "ZZ_Missing",
+  colorset_cat = "varibow",
+  color_order_cat = "sort"
+)
 }
 \arguments{
 \item{anno}{an existing annotation data frame}

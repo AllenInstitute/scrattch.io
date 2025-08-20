@@ -4,8 +4,15 @@
 \alias{annotate_cat}
 \title{Generate colors and ids for categorical annotations}
 \usage{
-annotate_cat(df, col = NULL, base = NULL, sort_label = T,
-  na_val = "ZZ_Missing", colorset = "varibow", color_order = "sort")
+annotate_cat(
+  df,
+  col = NULL,
+  base = NULL,
+  sort_label = T,
+  na_val = "ZZ_Missing",
+  colorset = "varibow",
+  color_order = "sort"
+)
 }
 \arguments{
 \item{df}{data frame to annotate}

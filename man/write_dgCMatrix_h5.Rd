@@ -4,8 +4,13 @@
 \alias{write_dgCMatrix_h5}
 \title{Write a dgCMatrix to an h5 file similar to cellRanger format}
 \usage{
-write_dgCMatrix_h5(mat, cols_are = "gene_names", h5_target,
-  ref_name = "mm10-1.2.0_premrna", gene_ids = NULL)
+write_dgCMatrix_h5(
+  mat,
+  cols_are = "gene_names",
+  h5_target,
+  ref_name = "mm10-1.2.0_premrna",
+  gene_ids = NULL
+)
 }
 \arguments{
 \item{mat}{a dgCMatrix to write.}

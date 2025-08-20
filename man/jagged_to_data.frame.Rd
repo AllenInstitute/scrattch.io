@@ -4,8 +4,11 @@
 \alias{jagged_to_data.frame}
 \title{Convert a jagged list of gene counts to a data.frame}
 \usage{
-jagged_to_data.frame(jagged, rows = c("sample_names", "gene_names"),
-  cols = c("gene_names", "sample_names"))
+jagged_to_data.frame(
+  jagged,
+  rows = c("sample_names", "gene_names"),
+  cols = c("gene_names", "sample_names")
+)
 }
 \arguments{
 \item{jagged}{The jagged list object to convert.}

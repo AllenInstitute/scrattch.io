@@ -4,8 +4,7 @@
 \alias{build_feather}
 \title{Write scrattch data to feather files}
 \usage{
-build_feather(anno = NULL, data = NULL, desc = NULL,
-  feather_dir = NULL)
+build_feather(anno = NULL, data = NULL, desc = NULL, feather_dir = NULL)
 }
 \arguments{
 \item{anno}{An annotations data.frame}

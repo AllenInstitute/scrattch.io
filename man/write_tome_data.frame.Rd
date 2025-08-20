@@ -4,8 +4,7 @@
 \alias{write_tome_data.frame}
 \title{Generalized write for data.frames to a tome file}
 \usage{
-write_tome_data.frame(df, tome, target, store_as = "vectors",
-  overwrite = NULL)
+write_tome_data.frame(df, tome, target, store_as = "vectors", overwrite = NULL)
 }
 \arguments{
 \item{df}{The data.frame to store}

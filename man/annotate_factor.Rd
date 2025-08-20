@@ -4,8 +4,14 @@
 \alias{annotate_factor}
 \title{Generate colors and ids for categorical annotations that are factors}
 \usage{
-annotate_factor(df, col = NULL, base = NULL, na_val = "ZZ_Missing",
-  colorset = "varibow", color_order = "sort")
+annotate_factor(
+  df,
+  col = NULL,
+  base = NULL,
+  na_val = "ZZ_Missing",
+  colorset = "varibow",
+  color_order = "sort"
+)
 }
 \arguments{
 \item{df}{data frame to annotate}

@@ -4,8 +4,13 @@
 \alias{write_tome_dgCMatrix}
 \title{Generalized write for dgCMatrix objects to a tome file}
 \usage{
-write_tome_dgCMatrix(mat, tome, target, overwrite = NULL,
-  compression_level = 4)
+write_tome_dgCMatrix(
+  mat,
+  tome,
+  target,
+  overwrite = NULL,
+  compression_level = 4
+)
 }
 \arguments{
 \item{mat}{The dgCMatrix object to store}

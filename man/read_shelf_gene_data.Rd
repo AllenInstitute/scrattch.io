@@ -4,8 +4,14 @@
 \alias{read_shelf_gene_data}
 \title{Read gene data across a set of tomes that share the same genes}
 \usage{
-read_shelf_gene_data(tomes, genes, regions = "exon", units = "counts",
-  transform = "none", format = "data.frame")
+read_shelf_gene_data(
+  tomes,
+  genes,
+  regions = "exon",
+  units = "counts",
+  transform = "none",
+  format = "data.frame"
+)
 }
 \arguments{
 \item{tomes}{a character vector of tome file locations}

@@ -4,8 +4,14 @@
 \alias{read_tome_gene_data}
 \title{Read Gene Expression Data from a tome file}
 \usage{
-read_tome_gene_data(tome, genes = NULL, regions = "exon",
-  units = "counts", transform = "none", format = "data.frame")
+read_tome_gene_data(
+  tome,
+  genes = NULL,
+  regions = "exon",
+  units = "counts",
+  transform = "none",
+  format = "data.frame"
+)
 }
 \arguments{
 \item{tome}{tome file to read. Required.}

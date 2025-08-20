@@ -4,8 +4,11 @@
 \alias{jagged_to_dgCMatrix}
 \title{Convert a jagged list of gene counts to a sparse, dgCMatrix}
 \usage{
-jagged_to_dgCMatrix(jagged, rows = c("sample_names", "gene_names"),
-  cols = c("gene_names", "sample_names"))
+jagged_to_dgCMatrix(
+  jagged,
+  rows = c("sample_names", "gene_names"),
+  cols = c("gene_names", "sample_names")
+)
 }
 \arguments{
 \item{jagged}{The jagged list object to convert.}

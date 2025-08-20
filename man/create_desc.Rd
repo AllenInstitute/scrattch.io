@@ -4,8 +4,12 @@
 \alias{create_desc}
 \title{Create a generic description file}
 \usage{
-create_desc(dat, name = colnames(dat), use_label_columns = FALSE,
-  start_columns = NULL)
+create_desc(
+  dat,
+  name = colnames(dat),
+  use_label_columns = FALSE,
+  start_columns = NULL
+)
 }
 \arguments{
 \item{dat}{any data frame that you would like to create a description file for}

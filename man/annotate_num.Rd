@@ -4,8 +4,14 @@
 \alias{annotate_num}
 \title{Generate colors and ids for numeric annotations}
 \usage{
-annotate_num(df, col = NULL, base = NULL, scale = "log10",
-  na_val = 0, colorset = c("darkblue", "white", "red"))
+annotate_num(
+  df,
+  col = NULL,
+  base = NULL,
+  scale = "log10",
+  na_val = 0,
+  colorset = c("darkblue", "white", "red")
+)
 }
 \arguments{
 \item{df}{data frame to annotate}
